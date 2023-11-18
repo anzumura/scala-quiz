@@ -1,7 +1,6 @@
 package quiz
 
 import org.scalatest.funsuite.AnyFunSuite
-import Kanji._
 
 class KanjiTest extends AnyFunSuite {
   // sample Kanji fields
@@ -18,13 +17,13 @@ class KanjiTest extends AnyFunSuite {
   private val differentFrequency = 2489
   private val year = 2023
 
-  private def checkKanjiFields(k: Kanji) = {
+  private def checkFields(k: Kanji) = {
     assert(name == k.name)
     assert(radical == k.radical)
     assert(strokes == k.strokes)
   }
 
-  private def checkLinkedKanjiFields(k: Kanji, link: Kanji) = {
+  private def checkLinkedFields(k: Kanji, link: Kanji) = {
     assert(k.link == Option(link))
     assert(k.newName.contains(link.name))
     assert(k.meaning == link.meaning)
@@ -41,32 +40,26 @@ class KanjiTest extends AnyFunSuite {
     assert(k.oldNames.isEmpty)
   }
 
-  test("KanjiType enum has expected values") {
-    import Type._
-    assert(
-      Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei,
-        Ucd) sameElements Type.values)
+  private def checkLoadedFields(k: Kanji) = {
+    assert(meaning == k.meaning)
+    assert(reading == k.reading)
+    assert(k.link.isEmpty)
+    checkFields(k)
   }
 
-  test("Grade enum has expected values") {
-    import Grade._
-    assert(Seq(G1, G2, G3, G4, G5, G6, S, None) sameElements Grade.values)
+  private def checkNumberedFields(k: Kanji) = {
+    assert(kyu == k.kyu)
+    assert(number == k.number)
+    assert(k.oldNames.isEmpty)
+    assert(!k.hasLinkedReadings)
+    checkLoadedFields(k)
   }
 
-  test("Level enum has expected values") {
-    import Level._
-    assert(Seq(N5, N4, N3, N2, N1, None) sameElements Level.values)
-  }
-
-  test("Kyu enum has expected values") {
-    import Kyu._
-    assert(Seq(K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None)
-      sameElements Kyu.values)
-  }
-
-  test("JinmeiReason enum has expected values") {
-    import JinmeiReason._
-    assert(Seq(Names, Print, Variant, Moved, Simple, Other, None) sameElements
-      JinmeiReason.values)
+  private def checkOfficialFields(k: Kanji) = {
+    assert(level == k.level)
+    assert(frequency == k.frequency)
+    assert(year == k.year)
+    assert(k.newName.isEmpty)
+    checkNumberedFields(k)
   }
 }

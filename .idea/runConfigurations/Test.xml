@@ -10,6 +10,7 @@
     <option name="classBuf">
       <list>
         <option value="quiz.KanjiTest" />
+        <option value="quiz.KanjiTypeTest" />
       </list>
     </option>
     <option name="shortenClasspath" value="NONE" />
