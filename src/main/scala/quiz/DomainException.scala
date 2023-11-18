@@ -1,3 +1,3 @@
 package quiz
 
-case class DomainException(msg: String) extends Exception(msg) {}
+case class DomainException(private val msg: String) extends Exception(msg) {}

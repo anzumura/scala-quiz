@@ -50,7 +50,7 @@ object Kanji {
     override def frequency: Int = lf.frequency
     override def kyu: Kyu.Value = lf.kyu
     override def meaning: String = lf.link.meaning
-    override def reading: String = lf.link.meaning
+    override def reading: String = lf.link.reading
     override def hasLinkedReadings = true
     override def newName: Option[String] = link.map(_.name)
   }
@@ -181,6 +181,9 @@ final class LinkedJinmeiKanji(name: String, radical: String, strokes: Int,
   link: Kanji, frequency: Int, kyu: Kyu.Value)
   extends Linked(Fields(name, radical, strokes),
     LinkedFields(link, frequency, kyu)) {
+  if (!link.isInstanceOf[Official]) error(
+    "link must be JouyouKanji or JinmeiKanji")
+
   override def kanjiType: KanjiType.Value = KanjiType.LinkedJinmei
 }
 
@@ -191,5 +194,7 @@ final class LinkedOldKanji(name: String, radical: String, strokes: Int,
   link: Kanji, frequency: Int, kyu: Kyu.Value)
   extends Linked(Fields(name, radical, strokes),
     LinkedFields(link, frequency, kyu)) {
+  if (!link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")
+
   override def kanjiType: KanjiType.Value = KanjiType.LinkedOld
 }

@@ -62,4 +62,115 @@ class KanjiTest extends AnyFunSuite {
     assert(k.newName.isEmpty)
     checkNumberedFields(k)
   }
+
+  test("create Jouyou Kanji with valid grade") {
+    Grade.values.filter(_ != Grade.None).foreach { grade =>
+      val k = new JouyouKanji(name, radical, strokes, meaning, reading, kyu,
+        number, level, frequency, year, grade)
+      checkOfficialFields(k)
+      assert(KanjiType.Jouyou == k.kanjiType)
+      assert(grade == k.grade)
+      assert(JinmeiReason.None == k.reason)
+    }
+  }
+
+  test("error for Jouyou Kanji with no grade") {
+    val e = intercept[DomainException] {
+      new JouyouKanji(name, radical, strokes, meaning, reading, kyu, number,
+        level, frequency, year, Grade.None)
+    }
+    assert("JouyouKanji: must have a valid grade" == e.getMessage)
+  }
+
+  test("create Jinmei Kanji with valid reason") {
+    JinmeiReason.values.filter(_ != JinmeiReason.None).foreach { reason =>
+      val k = new JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
+        number, level, frequency, year, reason)
+      checkOfficialFields(k)
+      assert(KanjiType.Jinmei == k.kanjiType)
+      assert(reason == k.reason)
+      assert(Grade.None == k.grade)
+    }
+  }
+
+  test("error for Jinmei Kanji with no reason") {
+    val e = intercept[DomainException] {
+      new JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+        level, frequency, year, JinmeiReason.None)
+    }
+    assert("JinmeiKanji: must have a valid reason" == e.getMessage)
+  }
+
+  test("error for Jinmei Kanji with no year") {
+    val e = intercept[DomainException] {
+      new JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+        level, frequency, 0, JinmeiReason.Names)
+    }
+    assert("JinmeiKanji: must have a valid year" == e.getMessage)
+  }
+
+  test("create Extra Kanji with no new name") {
+    val k = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
+      number, None)
+    checkNumberedFields(k)
+    assert(KanjiType.Extra == k.kanjiType)
+    assert(k.newName.isEmpty)
+  }
+
+  test("create Extra Kanji with a new name") {
+    val newName = "犬"
+    val k = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
+      number, Option(newName))
+    checkNumberedFields(k)
+    assert(KanjiType.Extra == k.kanjiType)
+    assert(k.newName.contains(newName))
+  }
+
+  test("error for Kanji with number <= 0") {
+    Seq(-1, 0).foreach { num =>
+      val e = intercept[DomainException] {
+        new ExtraKanji(name, radical, strokes, meaning, reading, kyu, num, None)
+      }
+      assert("ExtraKanji: number must be greater than zero" == e.getMessage)
+    }
+  }
+
+  test("create Linked Jinmei Kanji") {
+    val link = new JouyouKanji(name, radical, strokes, meaning, reading, kyu,
+      number, level, frequency, year, Grade.G2)
+    val k = new LinkedJinmeiKanji(name, radical, strokes, link,
+      differentFrequency, differentKyu)
+    checkLinkedFields(k, link)
+    assert(KanjiType.LinkedJinmei == k.kanjiType)
+  }
+
+  test("create Linked Old Kanji") {
+    val link = new JouyouKanji(name, radical, strokes, meaning, reading, kyu,
+      number, level, frequency, year, Grade.G2)
+    val k = new LinkedOldKanji(name, radical, strokes, link, differentFrequency,
+      differentKyu)
+    checkLinkedFields(k, link)
+    assert(KanjiType.LinkedOld == k.kanjiType)
+  }
+
+  test("error for Linked Jinmei Kanji with non-official link") {
+    val link = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
+      number, None)
+    val e = intercept[DomainException] {
+      new LinkedJinmeiKanji(name, radical, strokes, link, differentFrequency,
+        differentKyu)
+    }
+    assert("LinkedJinmeiKanji: link must be JouyouKanji or JinmeiKanji" ==
+      e.getMessage)
+  }
+
+  test("error for Linked Old Kanji with non-Jouyou link") {
+    val link = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
+      number, None)
+    val e = intercept[DomainException] {
+      new LinkedOldKanji(name, radical, strokes, link, differentFrequency,
+        differentKyu)
+    }
+    assert("LinkedOldKanji: link must be JouyouKanji" == e.getMessage)
+  }
 }
