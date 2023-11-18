@@ -1,1 +1,1 @@
-# sdala-quiz
+# scala-quiz
