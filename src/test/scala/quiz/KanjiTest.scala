@@ -173,4 +173,51 @@ class KanjiTest extends AnyFunSuite {
     }
     assert("LinkedOldKanji: link must be JouyouKanji" == e.getMessage)
   }
+
+  test("create Frequency Kanji") {
+    Seq(true, false).foreach { linkedReadings =>
+      val k = new FrequencyKanji(name, radical, strokes, meaning, reading,
+        false, Nil, linkedReadings, kyu, frequency)
+      checkLoadedFields(k)
+      assert(KanjiType.Frequency == k.kanjiType)
+      assert(k.oldNames.isEmpty)
+      assert(k.newName.isEmpty)
+      assert(linkedReadings == k.hasLinkedReadings)
+      assert(kyu == k.kyu)
+      assert(frequency == k.frequency)
+    }
+  }
+
+  test("error for Frequency Kanji with no frequency") {
+    Seq(-1, 0).foreach { f =>
+      val e = intercept[DomainException] {
+        new FrequencyKanji(name, radical, strokes, meaning, reading, false, Nil,
+          false, kyu, f)
+      }
+      assert(
+        "FrequencyKanji: frequency must be greater than zero" == e.getMessage)
+    }
+  }
+
+  test("create Kentei Kanji") {
+    Seq(true, false).foreach { linkedReadings =>
+      val k = new KenteiKanji(name, radical, strokes, meaning, reading, false,
+        Nil, linkedReadings, kyu)
+      checkLoadedFields(k)
+      assert(KanjiType.Kentei == k.kanjiType)
+      assert(k.oldNames.isEmpty)
+      assert(k.newName.isEmpty)
+      assert(linkedReadings == k.hasLinkedReadings)
+      assert(kyu == k.kyu)
+      assert(0 == k.frequency)
+    }
+  }
+
+  test("error for Kentei Kanji with no kyu") {
+    val e = intercept[DomainException] {
+      new KenteiKanji(name, radical, strokes, meaning, reading, false, Nil,
+        false, Kyu.None)
+    }
+    assert("KenteiKanji: must have a valid kyu" == e.getMessage)
+  }
 }

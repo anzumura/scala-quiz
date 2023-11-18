@@ -155,15 +155,19 @@ final class FrequencyKanji(name: String, radical: String, strokes: Int,
   extends Standard(Fields(name, radical, strokes),
     LoadedFields(meaning, reading),
     OtherFields(oldLinks, linkNames, linkedReadings), kyu) {
+  if (frequency <= 0) error("frequency must be greater than zero")
+
   override def kanjiType: KanjiType.Value = KanjiType.Frequency
 }
 
 final class KenteiKanji(name: String, radical: String, strokes: Int,
   meaning: String, reading: String, oldLinks: Boolean, linkNames: List[String],
-  linkedReadings: Boolean, kyu: Kyu.Value, override val frequency: Int)
+  linkedReadings: Boolean, kyu: Kyu.Value)
   extends Standard(Fields(name, radical, strokes),
     LoadedFields(meaning, reading),
     OtherFields(oldLinks, linkNames, linkedReadings), kyu) {
+  if (kyu == Kyu.None) error("must have a valid kyu")
+
   override def kanjiType: KanjiType.Value = KanjiType.Kentei
 }
 
