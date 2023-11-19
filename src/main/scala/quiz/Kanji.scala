@@ -2,7 +2,7 @@ package quiz
 
 import Kanji._
 
-sealed abstract class Kanji(private val f: Fields) {
+sealed abstract class Kanji protected (private val f: Fields) {
   def name: String = f.name
   def radical: String = f.radical
   def strokes: Int = f.strokes
@@ -45,7 +45,8 @@ object Kanji {
    * and almost all of them are in Kentei KJ1 or K1. However, none of them have
    * a JLPT level.
    */
-  sealed abstract class Linked(f: Fields, private val lf: LinkedFields)
+  sealed abstract class Linked protected (f: Fields,
+      private val lf: LinkedFields)
       extends Kanji(f) {
     override def link: Option[Kanji] = Option(lf.link)
     override def frequency: Int = lf.frequency
@@ -59,7 +60,8 @@ object Kanji {
   /**
    * contains 'meaning' and 'reading' fields loaded from files
    */
-  sealed abstract class Loaded(f: Fields, private val lf: LoadedFields)
+  sealed abstract class Loaded protected (f: Fields,
+      private val lf: LoadedFields)
       extends Kanji(f) {
     override def meaning: String = lf.meaning
     override def reading: String = lf.reading
@@ -67,7 +69,7 @@ object Kanji {
 
   // abstract subclasses of Loaded
 
-  sealed abstract class Numbered(f: Fields, lf: LoadedFields,
+  sealed abstract class Numbered protected (f: Fields, lf: LoadedFields,
       private val nf: NumberedFields)
       extends Loaded(f, lf) {
     if (nf.number <= 0) error("number must be greater than zero")
@@ -76,7 +78,7 @@ object Kanji {
     override def number: Int = nf.number
   }
 
-  sealed abstract class Other(f: Fields, lf: LoadedFields,
+  sealed abstract class Other protected (f: Fields, lf: LoadedFields,
       private val of: OtherFields)
       extends Loaded(f, lf) {
     override def oldNames: List[String] = if (of.oldLinks) of.linkNames else Nil
@@ -87,7 +89,7 @@ object Kanji {
 
   // abstract subclasses of Numbered
 
-  sealed abstract class Official(f: Fields, lf: LoadedFields,
+  sealed abstract class Official protected (f: Fields, lf: LoadedFields,
       nf: NumberedFields, private val of: OfficialFields)
       extends Numbered(f, lf, nf) {
     override def level: Level.Value = of.level
@@ -97,8 +99,8 @@ object Kanji {
 
   // abstract subclasses of Other
 
-  sealed abstract class Standard(f: Fields, lf: LoadedFields, of: OtherFields,
-      override val kyu: Kyu.Value)
+  sealed abstract class Standard protected (f: Fields, lf: LoadedFields,
+      of: OtherFields, override val kyu: Kyu.Value)
       extends Other(f, lf, of) {}
 }
 
@@ -141,52 +143,72 @@ object JinmeiKanji {
       OfficialFields(level, frequency, year), reason)
 }
 
-final class JouyouKanji(name: String, radical: String, strokes: Int,
-    meaning: String, reading: String, kyu: Kyu.Value, number: Int,
-    level: Level.Value, frequency: Int, year: Int,
-    override val grade: Grade.Value)
-    extends Official(Fields(name, radical, strokes),
-      LoadedFields(meaning, reading), NumberedFields(kyu, number),
-      OfficialFields(level, frequency, year)) {
+final class JouyouKanji private (f: Fields, lf: LoadedFields,
+    nf: NumberedFields, of: OfficialFields, override val grade: Grade.Value)
+    extends Official(f, lf, nf, of) {
   if (grade == Grade.None) error("must have a valid grade")
 
   override def kanjiType: KanjiType.Value = KanjiType.Jouyou
 }
 
+object JouyouKanji {
+  def apply(name: String, radical: String, strokes: Int, meaning: String,
+      reading: String, kyu: Kyu.Value, number: Int, level: Level.Value,
+      frequency: Int, year: Int, grade: Grade.Value): JouyouKanji =
+    new JouyouKanji(Fields(name, radical, strokes),
+      LoadedFields(meaning, reading), NumberedFields(kyu, number),
+      OfficialFields(level, frequency, year), grade)
+}
+
 // concrete subclass of Kanji.Other
 
-final class UcdKanji(name: String, radical: String, strokes: Int,
-    meaning: String, reading: String, oldLinks: Boolean,
-    linkNames: List[String], linkedReadings: Boolean)
-    extends Other(Fields(name, radical, strokes),
-      LoadedFields(meaning, reading),
-      OtherFields(oldLinks, linkNames, linkedReadings)) {
+final class UcdKanji private (f: Fields, lf: LoadedFields, of: OtherFields)
+    extends Other(f, lf, of) {
   override def kanjiType: KanjiType.Value = KanjiType.Ucd
+}
+
+object UcdKanji {
+  def apply(name: String, radical: String, strokes: Int, meaning: String,
+      reading: String, oldLinks: Boolean, linkNames: List[String],
+      linkedReadings: Boolean): UcdKanji =
+    new UcdKanji(Fields(name, radical, strokes), LoadedFields(meaning, reading),
+      OtherFields(oldLinks, linkNames, linkedReadings))
 }
 
 // concrete subclasses of Kanji.Standard
 
-final class FrequencyKanji(name: String, radical: String, strokes: Int,
-    meaning: String, reading: String, oldLinks: Boolean,
-    linkNames: List[String], linkedReadings: Boolean, kyu: Kyu.Value,
-    override val frequency: Int)
-    extends Standard(Fields(name, radical, strokes),
-      LoadedFields(meaning, reading),
-      OtherFields(oldLinks, linkNames, linkedReadings), kyu) {
+final class FrequencyKanji private (f: Fields, lf: LoadedFields,
+    of: OtherFields, kyu: Kyu.Value, override val frequency: Int)
+    extends Standard(f, lf, of, kyu) {
   if (frequency <= 0) error("frequency must be greater than zero")
 
   override def kanjiType: KanjiType.Value = KanjiType.Frequency
 }
 
-final class KenteiKanji(name: String, radical: String, strokes: Int,
-    meaning: String, reading: String, oldLinks: Boolean,
-    linkNames: List[String], linkedReadings: Boolean, kyu: Kyu.Value)
-    extends Standard(Fields(name, radical, strokes),
+object FrequencyKanji {
+  def apply(name: String, radical: String, strokes: Int, meaning: String,
+      reading: String, oldLinks: Boolean, linkNames: List[String],
+      linkedReadings: Boolean, kyu: Kyu.Value, frequency: Int): FrequencyKanji =
+    new FrequencyKanji(Fields(name, radical, strokes),
       LoadedFields(meaning, reading),
-      OtherFields(oldLinks, linkNames, linkedReadings), kyu) {
+      OtherFields(oldLinks, linkNames, linkedReadings), kyu, frequency)
+}
+
+final class KenteiKanji private (f: Fields, lf: LoadedFields, of: OtherFields,
+    kyu: Kyu.Value)
+    extends Standard(f, lf, of, kyu) {
   if (kyu == Kyu.None) error("must have a valid kyu")
 
   override def kanjiType: KanjiType.Value = KanjiType.Kentei
+}
+
+object KenteiKanji {
+  def apply(name: String, radical: String, strokes: Int, meaning: String,
+      reading: String, oldLinks: Boolean, linkNames: List[String],
+      linkedReadings: Boolean, kyu: Kyu.Value): KenteiKanji =
+    new KenteiKanji(Fields(name, radical, strokes),
+      LoadedFields(meaning, reading),
+      OtherFields(oldLinks, linkNames, linkedReadings), kyu)
 }
 
 // concrete subclasses of Kanji.Linked
@@ -200,25 +222,34 @@ final class KenteiKanji(name: String, radical: String, strokes: Int,
  * <li> 18 are alternate forms of standard JinmeiKanji
  * </ul>
  */
-final class LinkedJinmeiKanji(name: String, radical: String, strokes: Int,
-    link: Kanji, frequency: Int, kyu: Kyu.Value)
-    extends Linked(Fields(name, radical, strokes),
-      LinkedFields(link, frequency, kyu)) {
-  if (!link.isInstanceOf[Official])
+final class LinkedJinmeiKanji(f: Fields, lf: LinkedFields)
+    extends Linked(f, lf) {
+  if (!lf.link.isInstanceOf[Official])
     error("link must be JouyouKanji or JinmeiKanji")
 
   override def kanjiType: KanjiType.Value = KanjiType.LinkedJinmei
+}
+
+object LinkedJinmeiKanji {
+  def apply(name: String, radical: String, strokes: Int, link: Kanji,
+      frequency: Int, kyu: Kyu.Value): LinkedJinmeiKanji =
+    new LinkedJinmeiKanji(Fields(name, radical, strokes),
+      LinkedFields(link, frequency, kyu))
 }
 
 /**
  * 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants
  * that aren't already included in the 230 Jinmeiyō 'official variants'.
  */
-final class LinkedOldKanji(name: String, radical: String, strokes: Int,
-    link: Kanji, frequency: Int, kyu: Kyu.Value)
-    extends Linked(Fields(name, radical, strokes),
-      LinkedFields(link, frequency, kyu)) {
-  if (!link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")
+final class LinkedOldKanji(f: Fields, lf: LinkedFields) extends Linked(f, lf) {
+  if (!lf.link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")
 
   override def kanjiType: KanjiType.Value = KanjiType.LinkedOld
+}
+
+object LinkedOldKanji {
+  def apply(name: String, radical: String, strokes: Int, link: Kanji,
+      frequency: Int, kyu: Kyu.Value): LinkedOldKanji =
+    new LinkedOldKanji(Fields(name, radical, strokes),
+      LinkedFields(link, frequency, kyu))
 }

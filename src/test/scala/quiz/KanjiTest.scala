@@ -65,8 +65,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Jouyou Kanji with valid grade") {
     Grade.values.filter(_ != Grade.None).foreach { grade =>
-      val k = new JouyouKanji(name, radical, strokes, meaning, reading, kyu,
-        number, level, frequency, year, grade)
+      val k = JouyouKanji(name, radical, strokes, meaning, reading, kyu, number,
+        level, frequency, year, grade)
       checkOfficialFields(k)
       assert(KanjiType.Jouyou == k.kanjiType)
       assert(grade == k.grade)
@@ -76,8 +76,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("error for Jouyou Kanji with no grade") {
     val e = intercept[DomainException] {
-      new JouyouKanji(name, radical, strokes, meaning, reading, kyu, number,
-        level, frequency, year, Grade.None)
+      JouyouKanji(name, radical, strokes, meaning, reading, kyu, number, level,
+        frequency, year, Grade.None)
     }
     assert("JouyouKanji: must have a valid grade" == e.getMessage)
   }
@@ -135,18 +135,18 @@ class KanjiTest extends AnyFunSuite {
   }
 
   test("create Linked Jinmei Kanji") {
-    val link = new JouyouKanji(name, radical, strokes, meaning, reading, kyu,
+    val link = JouyouKanji(name, radical, strokes, meaning, reading, kyu,
       number, level, frequency, year, Grade.G2)
-    val k = new LinkedJinmeiKanji(name, radical, strokes, link,
-      differentFrequency, differentKyu)
+    val k = LinkedJinmeiKanji(name, radical, strokes, link, differentFrequency,
+      differentKyu)
     checkLinkedFields(k, link)
     assert(KanjiType.LinkedJinmei == k.kanjiType)
   }
 
   test("create Linked Old Kanji") {
-    val link = new JouyouKanji(name, radical, strokes, meaning, reading, kyu,
+    val link = JouyouKanji(name, radical, strokes, meaning, reading, kyu,
       number, level, frequency, year, Grade.G2)
-    val k = new LinkedOldKanji(name, radical, strokes, link, differentFrequency,
+    val k = LinkedOldKanji(name, radical, strokes, link, differentFrequency,
       differentKyu)
     checkLinkedFields(k, link)
     assert(KanjiType.LinkedOld == k.kanjiType)
@@ -155,18 +155,17 @@ class KanjiTest extends AnyFunSuite {
   test("error for Linked Jinmei Kanji with non-official link") {
     val link = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
     val e = intercept[DomainException] {
-      new LinkedJinmeiKanji(name, radical, strokes, link, differentFrequency,
+      LinkedJinmeiKanji(name, radical, strokes, link, differentFrequency,
         differentKyu)
     }
     assert(
-      "LinkedJinmeiKanji: link must be JouyouKanji or JinmeiKanji" == e
-        .getMessage)
+      "LinkedJinmeiKanji: link must be JouyouKanji or JinmeiKanji" == e.getMessage)
   }
 
   test("error for Linked Old Kanji with non-Jouyou link") {
     val link = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
     val e = intercept[DomainException] {
-      new LinkedOldKanji(name, radical, strokes, link, differentFrequency,
+      LinkedOldKanji(name, radical, strokes, link, differentFrequency,
         differentKyu)
     }
     assert("LinkedOldKanji: link must be JouyouKanji" == e.getMessage)
@@ -174,8 +173,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Frequency Kanji") {
     Seq(true, false).foreach { linkedReadings =>
-      val k = new FrequencyKanji(name, radical, strokes, meaning, reading,
-        false, Nil, linkedReadings, kyu, frequency)
+      val k = FrequencyKanji(name, radical, strokes, meaning, reading, false,
+        Nil, linkedReadings, kyu, frequency)
       checkLoadedFields(k)
       assert(KanjiType.Frequency == k.kanjiType)
       assert(k.oldNames.isEmpty)
@@ -189,7 +188,7 @@ class KanjiTest extends AnyFunSuite {
   test("error for Frequency Kanji with no frequency") {
     Seq(-1, 0).foreach { f =>
       val e = intercept[DomainException] {
-        new FrequencyKanji(name, radical, strokes, meaning, reading, false, Nil,
+        FrequencyKanji(name, radical, strokes, meaning, reading, false, Nil,
           false, kyu, f)
       }
       assert(
@@ -199,8 +198,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Kentei Kanji") {
     Seq(true, false).foreach { linkedReadings =>
-      val k = new KenteiKanji(name, radical, strokes, meaning, reading, false,
-        Nil, linkedReadings, kyu)
+      val k = KenteiKanji(name, radical, strokes, meaning, reading, false, Nil,
+        linkedReadings, kyu)
       checkLoadedFields(k)
       assert(KanjiType.Kentei == k.kanjiType)
       assert(k.oldNames.isEmpty)
@@ -213,15 +212,15 @@ class KanjiTest extends AnyFunSuite {
 
   test("error for Kentei Kanji with no kyu") {
     val e = intercept[DomainException] {
-      new KenteiKanji(name, radical, strokes, meaning, reading, false, Nil,
-        false, Kyu.None)
+      KenteiKanji(name, radical, strokes, meaning, reading, false, Nil, false,
+        Kyu.None)
     }
     assert("KenteiKanji: must have a valid kyu" == e.getMessage)
   }
 
   test("create Ucd Kanji") {
     Seq(true, false).foreach { linkedReadings =>
-      val k = new UcdKanji(name, radical, strokes, meaning, reading, false, Nil,
+      val k = UcdKanji(name, radical, strokes, meaning, reading, false, Nil,
         linkedReadings)
       checkLoadedFields(k)
       assert(KanjiType.Ucd == k.kanjiType)
@@ -235,8 +234,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Ucd Kanji with old names") {
     val oldNames = List("辨", "瓣", "辯")
-    val k = new UcdKanji(name, radical, strokes, meaning, reading, true,
-      oldNames, false)
+    val k =
+      UcdKanji(name, radical, strokes, meaning, reading, true, oldNames, false)
     checkLoadedFields(k)
     assert(oldNames == k.oldNames)
     assert(k.newName.isEmpty)
@@ -244,7 +243,7 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Ucd Kanji with new name") {
     val newName = "弁"
-    val k = new UcdKanji(name, radical, strokes, meaning, reading, false,
+    val k = UcdKanji(name, radical, strokes, meaning, reading, false,
       List(newName), false)
     checkLoadedFields(k)
     assert(k.oldNames.isEmpty)
