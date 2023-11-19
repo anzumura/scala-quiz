@@ -220,4 +220,36 @@ class KanjiTest extends AnyFunSuite {
     }
     assert("KenteiKanji: must have a valid kyu" == e.getMessage)
   }
+
+  test("create Ucd Kanji") {
+    Seq(true, false).foreach { linkedReadings =>
+      val k = new UcdKanji(name, radical, strokes, meaning, reading, false,
+        Nil, linkedReadings)
+      checkLoadedFields(k)
+      assert(KanjiType.Ucd == k.kanjiType)
+      assert(k.oldNames.isEmpty)
+      assert(k.newName.isEmpty)
+      assert(linkedReadings == k.hasLinkedReadings)
+      assert(Kyu.None == k.kyu)
+      assert(0 == k.frequency)
+    }
+  }
+
+  test("create Ucd Kanji with old names") {
+    val oldNames = List("辨", "瓣", "辯")
+    val k = new UcdKanji(name, radical, strokes, meaning, reading, true,
+      oldNames, false)
+    checkLoadedFields(k)
+    assert(oldNames == k.oldNames)
+    assert(k.newName.isEmpty)
+  }
+
+  test("create Ucd Kanji with new name") {
+    val newName = "弁"
+    val k = new UcdKanji(name, radical, strokes, meaning, reading, false,
+      List(newName), false)
+    checkLoadedFields(k)
+    assert(k.oldNames.isEmpty)
+    assert(k.newName.contains(newName))
+  }
 }
