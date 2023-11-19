@@ -84,8 +84,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Jinmei Kanji with valid reason") {
     JinmeiReason.values.filter(_ != JinmeiReason.None).foreach { reason =>
-      val k = new JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
-        number, level, frequency, year, reason)
+      val k = JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+        level, frequency, year, reason)
       checkOfficialFields(k)
       assert(KanjiType.Jinmei == k.kanjiType)
       assert(reason == k.reason)
@@ -95,23 +95,22 @@ class KanjiTest extends AnyFunSuite {
 
   test("error for Jinmei Kanji with no reason") {
     val e = intercept[DomainException] {
-      new JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
-        level, frequency, year, JinmeiReason.None)
+      JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number, level,
+        frequency, year, JinmeiReason.None)
     }
     assert("JinmeiKanji: must have a valid reason" == e.getMessage)
   }
 
   test("error for Jinmei Kanji with no year") {
     val e = intercept[DomainException] {
-      new JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
-        level, frequency, 0, JinmeiReason.Names)
+      JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number, level,
+        frequency, 0, JinmeiReason.Names)
     }
     assert("JinmeiKanji: must have a valid year" == e.getMessage)
   }
 
   test("create Extra Kanji with no new name") {
-    val k = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
-      number, None)
+    val k = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
     checkNumberedFields(k)
     assert(KanjiType.Extra == k.kanjiType)
     assert(k.newName.isEmpty)
@@ -119,8 +118,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Extra Kanji with a new name") {
     val newName = "犬"
-    val k = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
-      number, Option(newName))
+    val k = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number,
+      Option(newName))
     checkNumberedFields(k)
     assert(KanjiType.Extra == k.kanjiType)
     assert(k.newName.contains(newName))
@@ -129,7 +128,7 @@ class KanjiTest extends AnyFunSuite {
   test("error for Kanji with number <= 0") {
     Seq(-1, 0).foreach { num =>
       val e = intercept[DomainException] {
-        new ExtraKanji(name, radical, strokes, meaning, reading, kyu, num, None)
+        ExtraKanji(name, radical, strokes, meaning, reading, kyu, num)
       }
       assert("ExtraKanji: number must be greater than zero" == e.getMessage)
     }
@@ -154,19 +153,18 @@ class KanjiTest extends AnyFunSuite {
   }
 
   test("error for Linked Jinmei Kanji with non-official link") {
-    val link = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
-      number, None)
+    val link = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
     val e = intercept[DomainException] {
       new LinkedJinmeiKanji(name, radical, strokes, link, differentFrequency,
         differentKyu)
     }
-    assert("LinkedJinmeiKanji: link must be JouyouKanji or JinmeiKanji" ==
-      e.getMessage)
+    assert(
+      "LinkedJinmeiKanji: link must be JouyouKanji or JinmeiKanji" == e
+        .getMessage)
   }
 
   test("error for Linked Old Kanji with non-Jouyou link") {
-    val link = new ExtraKanji(name, radical, strokes, meaning, reading, kyu,
-      number, None)
+    val link = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
     val e = intercept[DomainException] {
       new LinkedOldKanji(name, radical, strokes, link, differentFrequency,
         differentKyu)
@@ -223,8 +221,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Ucd Kanji") {
     Seq(true, false).foreach { linkedReadings =>
-      val k = new UcdKanji(name, radical, strokes, meaning, reading, false,
-        Nil, linkedReadings)
+      val k = new UcdKanji(name, radical, strokes, meaning, reading, false, Nil,
+        linkedReadings)
       checkLoadedFields(k)
       assert(KanjiType.Ucd == k.kanjiType)
       assert(k.oldNames.isEmpty)

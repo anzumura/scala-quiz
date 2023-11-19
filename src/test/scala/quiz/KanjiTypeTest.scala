@@ -5,9 +5,8 @@ import org.scalatest.funsuite.AnyFunSuite
 class KanjiTypeTest extends AnyFunSuite {
   test("KanjiType enum has expected values") {
     import KanjiType._
-    assert(
-      Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei,
-        Ucd) sameElements KanjiType.values)
+    assert(Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra,
+      Kentei, Ucd) sameElements KanjiType.values)
   }
 
   test("Grade enum has expected values") {
