@@ -1,5 +1,7 @@
 package quiz
 
+import scala.language.implicitConversions
+
 /**
  * used to identify which official group (Jouyou or Jinmei) a Kanji belongs to
  * (or has a link to) as well as a few more groups for less common Kanji
@@ -60,4 +62,18 @@ object Kyu extends Enumeration {
 object JinmeiReason extends Enumeration {
   type JinmeiReason = Value
   val Names, Print, Variant, Moved, Simple, Other, None = Value
+}
+
+sealed trait LinkedReadings
+case object HasLinkedReadings extends LinkedReadings
+case object NoLinkedReadings extends LinkedReadings
+object LinkedReadings {
+  implicit def toBoolean(x: LinkedReadings): Boolean = x eq HasLinkedReadings
+}
+
+sealed trait OldLinks
+case object HasOldLinks extends OldLinks
+case object NoOldLinks extends OldLinks
+object OldLinks {
+  implicit def toBoolean(x: OldLinks): Boolean = x eq HasOldLinks
 }

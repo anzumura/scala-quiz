@@ -15,7 +15,7 @@ sealed abstract class Kanji protected (private val f: Fields) {
   def frequency: Int = 0
   def kyu: Kyu.Value = Kyu.None
   def year: Int = 0
-  def hasLinkedReadings: Boolean = false
+  def linkedReadings: LinkedReadings = NoLinkedReadings
   def oldNames: List[String] = Nil
   def newName: Option[String] = None
   def grade: Grade.Value = Grade.None
@@ -33,8 +33,8 @@ object Kanji {
   case class LinkedFields(link: Kanji, frequency: Int, kyu: Kyu.Value)
   case class LoadedFields(meaning: String, reading: String)
   case class NumberedFields(kyu: Kyu.Value, number: Int)
-  case class OtherFields(oldLinks: Boolean, linkNames: List[String],
-      linkedReadings: Boolean)
+  case class OtherFields(oldLinks: OldLinks, linkNames: List[String],
+      linkedReadings: LinkedReadings)
   case class OfficialFields(level: Level.Value, frequency: Int, year: Int)
 
   // abstract subclasses of Kanji
@@ -53,7 +53,7 @@ object Kanji {
     override def kyu: Kyu.Value = lf.kyu
     override def meaning: String = lf.link.meaning
     override def reading: String = lf.link.reading
-    override def hasLinkedReadings = true
+    override def linkedReadings: LinkedReadings = HasLinkedReadings
     override def newName: Option[String] = link.map(_.name)
   }
 
@@ -84,7 +84,7 @@ object Kanji {
     override def oldNames: List[String] = if (of.oldLinks) of.linkNames else Nil
     override def newName: Option[String] =
       if (of.oldLinks) None else of.linkNames.headOption
-    override def hasLinkedReadings: Boolean = of.linkedReadings
+    override def linkedReadings: LinkedReadings = of.linkedReadings
   }
 
   // abstract subclasses of Numbered
@@ -169,8 +169,8 @@ final class UcdKanji private (f: Fields, lf: LoadedFields, of: OtherFields)
 
 object UcdKanji {
   def apply(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, oldLinks: Boolean, linkNames: List[String],
-      linkedReadings: Boolean): UcdKanji =
+      reading: String, oldLinks: OldLinks, linkNames: List[String],
+      linkedReadings: LinkedReadings): UcdKanji =
     new UcdKanji(Fields(name, radical, strokes), LoadedFields(meaning, reading),
       OtherFields(oldLinks, linkNames, linkedReadings))
 }
@@ -187,8 +187,9 @@ final class FrequencyKanji private (f: Fields, lf: LoadedFields,
 
 object FrequencyKanji {
   def apply(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, oldLinks: Boolean, linkNames: List[String],
-      linkedReadings: Boolean, kyu: Kyu.Value, frequency: Int): FrequencyKanji =
+      reading: String, oldLinks: OldLinks, linkNames: List[String],
+      linkedReadings: LinkedReadings, kyu: Kyu.Value, frequency: Int)
+      : FrequencyKanji =
     new FrequencyKanji(Fields(name, radical, strokes),
       LoadedFields(meaning, reading),
       OtherFields(oldLinks, linkNames, linkedReadings), kyu, frequency)
@@ -204,8 +205,8 @@ final class KenteiKanji private (f: Fields, lf: LoadedFields, of: OtherFields,
 
 object KenteiKanji {
   def apply(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, oldLinks: Boolean, linkNames: List[String],
-      linkedReadings: Boolean, kyu: Kyu.Value): KenteiKanji =
+      reading: String, oldLinks: OldLinks, linkNames: List[String],
+      linkedReadings: LinkedReadings, kyu: Kyu.Value): KenteiKanji =
     new KenteiKanji(Fields(name, radical, strokes),
       LoadedFields(meaning, reading),
       OtherFields(oldLinks, linkNames, linkedReadings), kyu)
