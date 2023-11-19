@@ -2,7 +2,7 @@ package quiz
 
 import org.scalatest.funsuite.AnyFunSuite
 
-class KanjiTest extends AnyFunSuite {
+object KanjiTest {
   // sample Kanji fields
   private val name = "海"
   private val radical = "水"
@@ -16,6 +16,10 @@ class KanjiTest extends AnyFunSuite {
   private val frequency = 200
   private val differentFrequency = 2489
   private val year = 2023
+}
+
+class KanjiTest extends AnyFunSuite {
+  import KanjiTest._
 
   private def checkFields(k: Kanji) = {
     assert(name == k.name)
