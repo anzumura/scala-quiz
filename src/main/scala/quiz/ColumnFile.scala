@@ -4,6 +4,7 @@ import collection.mutable
 import ColumnFile._
 
 import java.io.{File, IOException}
+import java.nio.file.Path
 import scala.collection.immutable.SortedSet
 import scala.io.Source
 
@@ -11,37 +12,39 @@ import scala.io.Source
  * class for loading data from a delimiter separated file with a header row
  * containing the column names
  */
-class ColumnFile(path: File, val delimiter: Char, columns: Column*) {
-  if (columns.isEmpty) throw DomainException("must specify at least one column")
-  private val fileName = path.getName
-  private val rowValues = new Array[String](columns.size)
+class ColumnFile private (path: Path, val delimiter: Char, cols: Seq[Column]) {
+  private val fileName = path.getFileName.toString
+  private val rowValues = new Array[String](cols.size)
   private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
-  private val source = Source.fromFile(path)
+  private val source = Source.fromFile(path.toFile)
   private val lines = source.getLines()
 
-  private var currentRow = 0
+  private var _currentRow = 0
 
   try {
     if (!lines.hasNext) error("missing header row")
-    val cols = columns.map(c => (c.name, c)) to mutable.Map
-    val foundCols = mutable.Set.empty[String]
+    val colsIn = cols.map(c => (c.name, c)) to mutable.Map
+    val colsFound = mutable.Set.empty[String]
     lines.next().split(delimiter).zipWithIndex.foreach { s =>
-      if (!foundCols.add(s._1)) error(s"duplicate header '${s._1}'")
-      cols.remove(s._1) match {
+      if (!colsFound.add(s._1)) error(s"duplicate header '${s._1}'")
+      colsIn.remove(s._1) match {
         case Some(c) => columnToPos(c.number) = s._2
         case _ => error(s"unrecognized header '${s._1}'")
       }
     }
-    cols.size match {
+    colsIn.size match {
       case 0 =>
-      case 1 => error(s"column '${cols.keys.mkString}' not found")
+      case 1 => error(s"column '${colsIn.keys.mkString}' not found")
       case s => error(
-          s"$s columns not found: '${SortedSet(cols.keys).mkString("', '")}'")
+          s"$s columns not found: '${SortedSet(colsIn.keys).mkString("', '")}'")
     }
   } catch {
     case e: IOException =>
       throw DomainException("failed to read header row: " + e.getMessage)
   }
+
+  def numColumns: Int = rowValues.length
+  def currentRow: Int = _currentRow
 
   // make these methods protected to help support testing
   protected def readRow(): String = lines.next()
@@ -58,6 +61,15 @@ class ColumnFile(path: File, val delimiter: Char, columns: Column*) {
 }
 
 object ColumnFile {
+  val DefaultDelimiter: Char = '\t'
+
+  def apply(path: Path, delimiter: Char, cols: Column*): ColumnFile = {
+    if (cols.isEmpty) throw DomainException("must specify at least one column")
+    new ColumnFile(path, delimiter, cols)
+  }
+  def apply(path: Path, cols: Column*): ColumnFile =
+    apply(path, DefaultDelimiter, cols: _*)
+
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1
 
