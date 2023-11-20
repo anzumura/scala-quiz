@@ -3,9 +3,8 @@ package quiz
 import collection.mutable
 import ColumnFile._
 
-import java.io.IOException
 import java.nio.file.Path
-import scala.collection.immutable.SortedSet
+import java.io.IOException
 import scala.io.Source
 
 /**
@@ -66,8 +65,8 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
       colsIn.size match {
         case 0 => (source, lines)
         case 1 => error(s"column '${colsIn.keys.mkString}' not found")
-        case s => error(
-            s"$s columns not found: '${SortedSet(colsIn.keys).mkString("', '")}'")
+        case s => error(colsIn.keys.toIndexedSeq.sorted.mkString(
+              s"$s columns not found: '", "', '", "'"))
       }
     } catch {
       case e: DomainException =>

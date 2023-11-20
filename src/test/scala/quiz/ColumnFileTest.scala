@@ -6,25 +6,9 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
+
 import ColumnFile._
 import ColumnFileTest._
-
-object ColumnFileTest {
-  val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
-  private val testFile = "test.txt"
-
-  private def clearDirectory(d: Path): Unit = {
-    Files.walk(d).toScala(LazyList).foreach { f =>
-      if (Files.isRegularFile(f)) Files.delete(f)
-    }
-  }
-
-  class TestColumnFile(path: Path, sep: Char, cols: Seq[Column])
-      extends ColumnFile(path, sep, cols) {
-    // make close public so tests can force closing the underlying file
-    override def close(): Unit = { super.close() }
-  }
-}
 
 class ColumnFileTest
     extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
@@ -65,10 +49,25 @@ class ColumnFileTest
     assert(errorMsg("missing header row") == e.getMessage)
   }
 
-  // on Windows this creates a directory under ~/AppData/Local/Temp
-  private val tempDir = Files.createTempDirectory("tempDir")
+  test("error for duplicate header") {
+    val e = intercept[DomainException] { create(cols, "col1\tcol1") }
+    assert(errorMsg("duplicate header 'col1'") == e.getMessage)
+  }
 
-  private var testColumnFile = Option.empty[TestColumnFile]
+  test("error for unrecognized header") {
+    val e = intercept[DomainException] { create(cols, "col11") }
+    assert(errorMsg("unrecognized header 'col11'") == e.getMessage)
+  }
+
+  test("error for one missing column") {
+    val e = intercept[DomainException] { create(cols, "col1\tcol3") }
+    assert(errorMsg("column 'col2' not found") == e.getMessage)
+  }
+
+  test("error for multiple missing columns") {
+    val e = intercept[DomainException] { create(cols, "col2") }
+    assert(errorMsg("2 columns not found: 'col1', 'col3'") == e.getMessage)
+  }
 
   // delete all files from 'tempDir' after each test
   override protected def afterEach(): Unit = {
@@ -103,6 +102,11 @@ class ColumnFileTest
   private def create(cols: Seq[Column], lines: String*): ColumnFile = {
     create(DefaultSeparator, cols, lines: _*)
   }
+
+  // on Windows tempDir is created in ~/AppData/Local/Temp
+  private val tempDir = Files.createTempDirectory("tempDir")
+  private val testFile = "test.txt"
+  private var testColumnFile = Option.empty[TestColumnFile]
 }
 
 class ColumnFileColumnTest extends AnyFunSuite {
@@ -129,5 +133,21 @@ class ColumnFileColumnTest extends AnyFunSuite {
     assert(cols.head != x) // classes are different
     x = cols.head
     assert(cols.head == x) // classes are the same
+  }
+}
+
+object ColumnFileTest {
+  val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
+
+  private def clearDirectory(d: Path): Unit = {
+    Files.walk(d).toScala(LazyList).foreach { f =>
+      if (Files.isRegularFile(f)) Files.delete(f)
+    }
+  }
+
+  private class TestColumnFile(path: Path, sep: Char, cols: Seq[Column])
+      extends ColumnFile(path, sep, cols) {
+    // make close public so tests can force closing the underlying file
+    override def close(): Unit = { super.close() }
   }
 }
