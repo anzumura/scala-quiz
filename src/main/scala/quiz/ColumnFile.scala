@@ -13,34 +13,25 @@ import scala.io.Source
  * containing the column names
  */
 class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
+  if (cols.isEmpty) throw DomainException("must specify at least one column")
+
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)
   private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
-  private val source = Source.fromFile(path.toFile)
-  private val lines = source.getLines()
-
   private var _currentRow = 0
 
-  try {
-    if (!lines.hasNext) error("missing header row")
-    val colsIn = cols.map(c => (c.name, c)) to mutable.Map
-    val colsFound = mutable.Set.empty[String]
-    lines.next().split(sep).zipWithIndex.foreach { s =>
-      if (!colsFound.add(s._1)) error(s"duplicate header '${s._1}'")
-      colsIn.remove(s._1) match {
-        case Some(c) => columnToPos(c.number) = s._2
-        case _ => error(s"unrecognized header '${s._1}'")
-      }
+  private val (source, lines) = {
+    val colsIn = mutable.Map.empty[String, Column]
+    cols.foreach(c =>
+      if (colsIn.put(c.name, c).nonEmpty)
+        throw DomainException(s"duplicate column '$c'")
+    )
+    try {
+      processHeaderRow(Source.fromFile(path.toFile), colsIn)
+    } catch {
+      case e: IOException =>
+        throw DomainException("failed to read header row: " + e.getMessage)
     }
-    colsIn.size match {
-      case 0 =>
-      case 1 => error(s"column '${colsIn.keys.mkString}' not found")
-      case s => error(
-          s"$s columns not found: '${SortedSet(colsIn.keys).mkString("', '")}'")
-    }
-  } catch {
-    case e: IOException =>
-      throw DomainException("failed to read header row: " + e.getMessage)
   }
 
   def numColumns: Int = rowValues.length
@@ -58,15 +49,38 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
     val result = s"$msg - file: $fileName"
     if (currentRow > 0) s"$result, row: $currentRow" else result
   }
+
+  private def processHeaderRow(source: Source,
+      colsIn: mutable.Map[String, Column]) =
+    try {
+      val lines = source.getLines()
+      if (!lines.hasNext) error("missing header row")
+      val colsFound = mutable.Set.empty[String]
+      lines.next().split(sep).zipWithIndex.foreach { s =>
+        if (!colsFound.add(s._1)) error(s"duplicate header '${s._1}'")
+        colsIn.remove(s._1) match {
+          case Some(c) => columnToPos(c.number) = s._2
+          case _ => error(s"unrecognized header '${s._1}'")
+        }
+      }
+      colsIn.size match {
+        case 0 => (source, lines)
+        case 1 => error(s"column '${colsIn.keys.mkString}' not found")
+        case s => error(
+            s"$s columns not found: '${SortedSet(colsIn.keys).mkString("', '")}'")
+      }
+    } catch {
+      case e: DomainException =>
+        source.close
+        throw e
+    }
 }
 
 object ColumnFile {
   val DefaultSeparator: Char = '\t'
 
-  def apply(path: Path, sep: Char, cols: Column*): ColumnFile = {
-    if (cols.isEmpty) throw DomainException("must specify at least one column")
+  def apply(path: Path, sep: Char, cols: Column*): ColumnFile =
     new ColumnFile(path, sep, cols)
-  }
   def apply(path: Path, cols: Column*): ColumnFile =
     apply(path, DefaultSeparator, cols: _*)
 

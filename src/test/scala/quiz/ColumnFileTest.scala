@@ -6,7 +6,6 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
-
 import ColumnFile._
 import ColumnFileTest._
 
@@ -16,11 +15,7 @@ object ColumnFileTest {
 
   private def clearDirectory(d: Path): Unit = {
     Files.walk(d).toScala(LazyList).foreach { f =>
-      try {
-        if (Files.isRegularFile(f)) Files.delete(f)
-      } catch {
-        case e: Throwable => println(e.getMessage)
-      }
+      if (Files.isRegularFile(f)) Files.delete(f)
     }
   }
 
@@ -33,6 +28,43 @@ object ColumnFileTest {
 
 class ColumnFileTest
     extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
+  test("create with one column") {
+    assert(1 == create(cols.take(1), "col1").numColumns)
+  }
+
+  test("create with multiple columns") {
+    assert(2 == create(cols.take(2), "col1\tcol2").numColumns)
+  }
+
+  test("create space delimited file") {
+    assert(2 == create(' ', cols.take(2), "col1 col2").numColumns)
+  }
+
+  test("current row is zero before any data rows are processed") {
+    assert(0 == create(cols.take(1), "col1").currentRow)
+  }
+
+  test("error for empty columns") {
+    val e = intercept[DomainException] { ColumnFile(Path.of("")) }
+    assert("must specify at least one column" == e.getMessage)
+  }
+
+  test("error for duplicate columns") {
+    val c = cols.head
+    val e = intercept[DomainException] { ColumnFile(Path.of(""), c, c) }
+    assert(s"duplicate column '$c'" == e.getMessage)
+  }
+
+  test("error for unable to read file") {
+    val e = intercept[DomainException] { ColumnFile(Path.of("x"), cols.head) }
+    assert(e.getMessage.startsWith(s"failed to read header row: x"))
+  }
+
+  test("error missing header row") {
+    val e = intercept[DomainException] { create(cols) }
+    assert(errorMsg("missing header row") == e.getMessage)
+  }
+
   // on Windows this creates a directory under ~/AppData/Local/Temp
   private val tempDir = Files.createTempDirectory("tempDir")
 
@@ -49,6 +81,12 @@ class ColumnFileTest
     Files.deleteIfExists(tempDir)
   }
 
+  private def errorMsg(msg: String) = s"$msg - file: $testFile"
+  private def errorMsg(msg: String, row: Int): String =
+    s"${errorMsg(msg)}, row: $row"
+  private def errorMsg(msg: String, row: Int, c: Column, s: String): String =
+    s"${errorMsg(msg, row)}, column: '$c', value: '$s'"
+
   private def writeTempFile(lines: Seq[String]) = {
     val path = Files.createFile(tempDir.resolve(testFile))
     Files.write(path, lines.asJava)
@@ -64,10 +102,6 @@ class ColumnFileTest
 
   private def create(cols: Seq[Column], lines: String*): ColumnFile = {
     create(DefaultSeparator, cols, lines: _*)
-  }
-
-  test("create with one column") {
-    assert(1 == create(cols.take(1), "col1").numColumns)
   }
 }
 
