@@ -238,9 +238,8 @@ class KanjiTest extends AnyFunSuite {
 
   test("create Ucd Kanji with old names") {
     val oldNames = List("辨", "瓣", "辯")
-    val k =
-      UcdKanji(name, radical, strokes, meaning, reading, HasOldLinks, oldNames,
-        NoLinkedReadings)
+    val k = UcdKanji(name, radical, strokes, meaning, reading, HasOldLinks,
+      oldNames, NoLinkedReadings)
     checkLoadedFields(k)
     assert(oldNames == k.oldNames)
     assert(k.newName.isEmpty)
