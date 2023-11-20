@@ -3,7 +3,7 @@ package quiz
 import collection.mutable
 import ColumnFile._
 
-import java.io.{File, IOException}
+import java.io.IOException
 import java.nio.file.Path
 import scala.collection.immutable.SortedSet
 import scala.io.Source
@@ -12,7 +12,7 @@ import scala.io.Source
  * class for loading data from a delimiter separated file with a header row
  * containing the column names
  */
-class ColumnFile private (path: Path, val delimiter: Char, cols: Seq[Column]) {
+class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)
   private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
@@ -25,7 +25,7 @@ class ColumnFile private (path: Path, val delimiter: Char, cols: Seq[Column]) {
     if (!lines.hasNext) error("missing header row")
     val colsIn = cols.map(c => (c.name, c)) to mutable.Map
     val colsFound = mutable.Set.empty[String]
-    lines.next().split(delimiter).zipWithIndex.foreach { s =>
+    lines.next().split(sep).zipWithIndex.foreach { s =>
       if (!colsFound.add(s._1)) error(s"duplicate header '${s._1}'")
       colsIn.remove(s._1) match {
         case Some(c) => columnToPos(c.number) = s._2
@@ -46,7 +46,7 @@ class ColumnFile private (path: Path, val delimiter: Char, cols: Seq[Column]) {
   def numColumns: Int = rowValues.length
   def currentRow: Int = _currentRow
 
-  // make these methods protected to help support testing
+  // methods to help support testing
   protected def readRow(): String = lines.next()
   protected def close(): Unit = source.close()
 
@@ -61,20 +61,20 @@ class ColumnFile private (path: Path, val delimiter: Char, cols: Seq[Column]) {
 }
 
 object ColumnFile {
-  val DefaultDelimiter: Char = '\t'
+  val DefaultSeparator: Char = '\t'
 
-  def apply(path: Path, delimiter: Char, cols: Column*): ColumnFile = {
+  def apply(path: Path, sep: Char, cols: Column*): ColumnFile = {
     if (cols.isEmpty) throw DomainException("must specify at least one column")
-    new ColumnFile(path, delimiter, cols)
+    new ColumnFile(path, sep, cols)
   }
   def apply(path: Path, cols: Column*): ColumnFile =
-    apply(path, DefaultDelimiter, cols: _*)
+    apply(path, DefaultSeparator, cols: _*)
 
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1
 
   /**
-   * represents a column in a {@code ColumnFile}. Instances are used to get
+   * represents a column in a <pre>ColumnFile</pre>. Instances are used to get
    * values from each row and the same Column instance can be used in multiple
    * ColumnFiles.
    */
