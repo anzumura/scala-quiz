@@ -55,6 +55,16 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
     rowValues(pos)
   }
 
+  /**
+   * @param col column contained in this file
+   * @param max max value allowed (check is only applied if max is non-negative)
+   * @return unsigned int value for the given column in current row
+   * @throws DomainException if get fails or value can't be converted to an
+   *                         unsigned int less than or equal to max
+   */
+  def getUInt(col: Column, max: Int = NoMaxValue): Int =
+    processUInt(get(col), col, max)
+
   // methods to help support testing
   protected def readRow(): String = lines.next()
   protected def close(): Unit = source.close()
@@ -74,11 +84,11 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
       val lines = source.getLines()
       if (!lines.hasNext) error("missing header row")
       val colsFound = mutable.Set.empty[String]
-      lines.next().split(sep).zipWithIndex.foreach { s =>
-        if (!colsFound.add(s._1)) error(s"duplicate header '${s._1}'")
-        colsIn.remove(s._1) match {
-          case Some(c) => columnToPos(c.number) = s._2
-          case _ => error(s"unrecognized header '${s._1}'")
+      lines.next().split(sep).zipWithIndex.foreach { case (s, pos) =>
+        if (!colsFound.add(s)) error(s"duplicate header '$s'")
+        colsIn.remove(s) match {
+          case Some(c) => columnToPos(c.number) = pos
+          case _ => error(s"unrecognized header '$s'")
         }
       }
       colsIn.size match {
@@ -95,16 +105,25 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
 
   private def processNextRow(): Unit =
     try {
-      val fields = readRow().split(splitRegex, -1)
+      val vals = readRow().split(splitRegex, -1)
       _currentRow += 1
-      fields.length match {
+      vals.length match {
         case l if l < numColumns => error("not enough columns")
         case l if l > numColumns => error("too many columns")
-        case _ => fields.zipWithIndex.foreach(s => rowValues(s._2) = s._1)
+        case _ => vals.zipWithIndex.foreach { case (s, i) => rowValues(i) = s }
       }
     } catch {
       case e: IOException => error("failed to read next row: " + e.getMessage)
     }
+
+  private def processUInt(s: String, col: Column, max: Int) = (try {
+    Integer.parseUnsignedInt(s)
+  } catch {
+    case _: Throwable => error("convert to UInt failed", col, s)
+  }) match {
+    case x if max >= 0 && max < x => error(s"exceeded max value $max", col, s)
+    case x => x
+  }
 
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)

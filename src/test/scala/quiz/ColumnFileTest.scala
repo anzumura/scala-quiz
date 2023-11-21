@@ -116,8 +116,7 @@ class ColumnFileTest
       }
       val e = intercept[DomainException] { f.nextRow() }
       f.close()
-      assert(
-        "failed to read next row: bad read - file: test.txt" == e.getMessage)
+      assert(errorMsg("failed to read next row: bad read") == e.getMessage)
     }
 
     "failed close" in {
@@ -167,6 +166,65 @@ class ColumnFileTest
       // make sure all data has been read
       assert(!f.nextRow())
       assert(3 == f.currentRow)
+    }
+
+    "before nextRow fails" in {
+      val f = create(Seq(col1), "col1", "Val")
+      val e = intercept[DomainException] { f.get(col1) }
+      assert(errorMsg(
+        "'nextRow' must be called before calling 'get'") == e.getMessage)
+    }
+
+    "column created after creating ColumnFile is 'unrecognized'" in {
+      val f = create(Seq(col1), "col1", "Val")
+      assert(f.nextRow())
+      val c = Column("Created After")
+      val e = intercept[DomainException] { f.get(c) }
+      assert(errorMsg("unrecognized column 'Created After'", 1) == e.getMessage)
+    }
+
+    "column not included in ColumnFile is 'invalid'" in {
+      val c = Column("Created Before")
+      val f = create(Seq(col1), "col1", "Val")
+      assert(f.nextRow())
+      val e = intercept[DomainException] { f.get(c) }
+      assert(errorMsg("invalid column 'Created Before'", 1) == e.getMessage)
+    }
+
+    "unsigned int value" in {
+      val f = create(cols.take(2), "col1\tcol2", "0\t123")
+      f.nextRow()
+      assert(0 == f.getUInt(col1))
+      assert(123 == f.getUInt(col2))
+    }
+
+    "invalid unsigned int" in {
+      val f = create(cols.take(2), "col1\tcol2", "bad\t-123")
+      f.nextRow()
+      Seq((col1, "bad"), (col2, "-123")).foreach { case (c, s) =>
+        val e = intercept[DomainException] { f.getUInt(c) }
+        assert(errorMsg("convert to UInt failed", 1, c, s) == e.getMessage)
+      }
+    }
+
+    "unsigned int with max value" in {
+      val f = create(Seq(col1), "col1", "0", "123")
+      f.nextRow()
+      assert(0 == f.getUInt(col1, 0))
+      f.nextRow()
+      assert(123 == f.getUInt(col1, -1))
+      assert(123 == f.getUInt(col1, 123))
+      assert(123 == f.getUInt(col1, Int.MaxValue))
+    }
+
+    "unsigned int exceeding max value" in {
+      val f = create(Seq(col1), "col1", "18", "100")
+      Seq((0, "18"), (99, "100")).foreach { case (max, s) =>
+        f.nextRow()
+        val e = intercept[DomainException] { f.getUInt(col1, max) }
+        assert(errorMsg(s"exceeded max value $max", f.currentRow, col1,
+          s) == e.getMessage)
+      }
     }
   }
 
