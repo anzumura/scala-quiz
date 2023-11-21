@@ -12,6 +12,9 @@ import ColumnFileTest._
 
 class ColumnFileTest
     extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
+
+  // constructor tests
+
   test("create with one column") {
     assert(1 == create(cols.take(1), "col1").numColumns)
   }
@@ -69,6 +72,42 @@ class ColumnFileTest
     assert(errorMsg("2 columns not found: 'col1', 'col3'") == e.getMessage)
   }
 
+  // nextRow tests
+
+  test("error for nextRow called after close") {
+    val f = create(cols.take(1), "col1")
+    assert(!f.nextRow())
+    val e = intercept[DomainException] { f.nextRow() }
+    assert(s"file: '$testFile' has been closed" == e.getMessage)
+  }
+
+  test("error for nextRow with too many columns") {
+    val f = create(cols.take(1), "col1", "A", "B\tC", "D")
+    assert(f.nextRow())
+    assert(1 == f.currentRow)
+    assert("A" == f.get(cols.head))
+    // the second row has two values so an exception is thrown, but current
+    // row is incremented so that processing can continue after the bad row
+    val e = intercept[DomainException] { f.nextRow() }
+    assert(errorMsg("too many columns", 2) == e.getMessage)
+    assert(2 == f.currentRow)
+    // call nextRow to move to the third row and continue processing
+    assert(f.nextRow())
+    assert(3 == f.currentRow)
+    assert("D" == f.get(cols.head))
+  }
+
+  test("error for nextRow with not enough columns") {
+    val f = create(cols.take(2), "col1\tcol2", "A", "B\tC")
+    val e = intercept[DomainException] { f.nextRow() }
+    assert(errorMsg("not enough columns", 1) == e.getMessage)
+    // call nextRow to move to the second row and continue processing
+    assert(f.nextRow())
+    assert(2 == f.currentRow)
+    assert("B" == f.get(cols.head))
+    assert("C" == f.get(cols.drop(1).head))
+  }
+
   // delete all files from 'tempDir' after each test
   override protected def afterEach(): Unit = {
     testColumnFile.foreach(_.close())
@@ -86,7 +125,7 @@ class ColumnFileTest
   private def errorMsg(msg: String, row: Int, c: Column, s: String): String =
     s"${errorMsg(msg, row)}, column: '$c', value: '$s'"
 
-  private def writeTempFile(lines: Seq[String]) = {
+  private def writeTestFile(lines: Seq[String]) = {
     val path = Files.createFile(tempDir.resolve(testFile))
     Files.write(path, lines.asJava)
     path
@@ -94,7 +133,7 @@ class ColumnFileTest
 
   private def create(sep: Char, cols: Seq[Column], lines: String*) = {
     testColumnFile.foreach(_.close())
-    val f = new TestColumnFile(writeTempFile(lines), sep, cols)
+    val f = new TestColumnFile(writeTestFile(lines), sep, cols)
     testColumnFile = Option(f)
     f
   }
@@ -105,7 +144,6 @@ class ColumnFileTest
 
   // on Windows tempDir is created in ~/AppData/Local/Temp
   private val tempDir = Files.createTempDirectory("tempDir")
-  private val testFile = "test.txt"
   private var testColumnFile = Option.empty[TestColumnFile]
 }
 
@@ -138,6 +176,7 @@ class ColumnFileColumnTest extends AnyFunSuite {
 
 object ColumnFileTest {
   val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
+  private val testFile = "test.txt"
 
   private def clearDirectory(d: Path): Unit = {
     Files.walk(d).toScala(LazyList).foreach { f =>

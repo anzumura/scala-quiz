@@ -14,27 +14,46 @@ import scala.io.Source
 class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
   if (cols.isEmpty) throw DomainException("must specify at least one column")
 
-  private val fileName = path.getFileName.toString
-  private val rowValues = new Array[String](cols.size)
-  private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
-  private var _currentRow = 0
-
-  private val (source, lines) = {
-    val colsIn = mutable.Map.empty[String, Column]
-    cols.foreach(c =>
-      if (colsIn.put(c.name, c).nonEmpty)
-        throw DomainException(s"duplicate column '$c'")
-    )
-    try {
-      processHeaderRow(Source.fromFile(path.toFile), colsIn)
-    } catch {
-      case e: IOException =>
-        throw DomainException("failed to read header row: " + e.getMessage)
-    }
-  }
-
   def numColumns: Int = rowValues.length
   def currentRow: Int = _currentRow
+
+  /**
+   * read next row, this method must be called before calling get methods. If
+   * there's no more rows then false is returned and the file is closed - thus
+   * calling nextRow again after the file is closed raises an exception.
+   *
+   * @return true if a row was read or false if there is no more data
+   * @throws DomainException if reading the next row fails or has incorrect
+   *                         number of columns
+   */
+  def nextRow(): Boolean = {
+    if (_closed) throw DomainException(s"file: '$fileName' has been closed")
+    val hasNext = lines.hasNext
+    if (hasNext) processNextRow()
+    else
+      try {
+        close()
+        _closed = true
+      } catch {
+        case e: IOException =>
+          throw DomainException("failed to close: " + e.getMessage)
+      }
+    hasNext
+  }
+
+  /**
+   * @param col column contained in this file
+   * @return string value for the given column in current row
+   * @throws DomainException if nextRow hasn't been called yet or the given
+   *                         column isn't part of this file
+   */
+  def get(col: Column): String = {
+    if (_currentRow == 0) error("'nextRow' must be called before calling 'get'")
+    if (col.number >= columnToPos.length) error(s"unrecognized column '$col'")
+    val pos = columnToPos(col.number)
+    if (pos == ColumnNotFound) error(s"invalid column '$col'")
+    rowValues(pos)
+  }
 
   // methods to help support testing
   protected def readRow(): String = lines.next()
@@ -73,6 +92,40 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
         source.close
         throw e
     }
+
+  private def processNextRow(): Unit = {
+    try {
+      val fields = readRow().split(sep)
+      _currentRow += 1
+      fields.length match {
+        case l if l < numColumns => error("not enough columns")
+        case l if l > numColumns => error("too many columns")
+        case _ => fields.zipWithIndex.foreach(s => rowValues(s._2) = s._1)
+      }
+    } catch {
+      case e: IOException => error("failed to read next row: " + e.getMessage)
+    }
+  }
+
+  private val fileName = path.getFileName.toString
+  private val rowValues = new Array[String](cols.size)
+  private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
+  private var _currentRow = 0
+  private var _closed = false
+
+  private val (source, lines) = {
+    val colsIn = mutable.Map.empty[String, Column]
+    cols.foreach(c =>
+      if (colsIn.put(c.name, c).nonEmpty)
+        throw DomainException(s"duplicate column '$c'")
+    )
+    try {
+      processHeaderRow(Source.fromFile(path.toFile), colsIn)
+    } catch {
+      case e: IOException =>
+        throw DomainException("failed to read header row: " + e.getMessage)
+    }
+  }
 }
 
 object ColumnFile {
