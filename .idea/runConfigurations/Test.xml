@@ -12,7 +12,7 @@
         <option value="quiz.KanjiTest" />
         <option value="quiz.KanjiTypeTest" />
         <option value="quiz.ColumnFileTest" />
-        <option value="quiz.ColumnFileColumnTest" />
+        <option value="quiz.ColumnTest" />
       </list>
     </option>
     <option name="shortenClasspath" value="NONE" />
