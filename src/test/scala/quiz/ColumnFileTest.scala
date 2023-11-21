@@ -2,13 +2,13 @@ package quiz
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import quiz.ColumnFile._
+import quiz.ColumnFileTest._
 
+import java.io.IOException
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
-
-import ColumnFile._
-import ColumnFileTest._
 
 class ColumnFileTest
     extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
@@ -108,6 +108,30 @@ class ColumnFileTest
     assert("C" == f.get(cols.drop(1).head))
   }
 
+  test("error for nextRow failed read") {
+    val path = Files.createFile(tempDir.resolve(testFile))
+    Files.writeString(path, "col1\nA")
+    val f = new TestColumnFile(path, '\t', cols.take(1)) {
+      override def readRow(): String = throw new IOException("bad read")
+    }
+    val e = intercept[DomainException] { f.nextRow() }
+    f.close()
+    assert("failed to read next row: bad read - file: test.txt" == e.getMessage)
+  }
+
+  test("error for nextRow failed close") {
+    val path = Files.createFile(tempDir.resolve(testFile))
+    Files.writeString(path, "col1")
+    val f = new ColumnFile(path, '\t', cols.take(1)) {
+      override def close(): Unit = {
+        super.close()
+        throw new IOException("bad close")
+      }
+    }
+    val e = intercept[DomainException] { f.nextRow() }
+    assert("failed to close: bad close" == e.getMessage)
+  }
+
   // delete all files from 'tempDir' after each test
   override protected def afterEach(): Unit = {
     testColumnFile.foreach(_.close())
@@ -142,8 +166,6 @@ class ColumnFileTest
     create(DefaultSeparator, cols, lines: _*)
   }
 
-  // on Windows tempDir is created in ~/AppData/Local/Temp
-  private val tempDir = Files.createTempDirectory("tempDir")
   private var testColumnFile = Option.empty[TestColumnFile]
 }
 
@@ -177,6 +199,8 @@ class ColumnFileColumnTest extends AnyFunSuite {
 object ColumnFileTest {
   val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
   private val testFile = "test.txt"
+  // on Windows tempDir is created in ~/AppData/Local/Temp
+  private val tempDir = Files.createTempDirectory("tempDir")
 
   private def clearDirectory(d: Path): Unit = {
     Files.walk(d).toScala(LazyList).foreach { f =>
