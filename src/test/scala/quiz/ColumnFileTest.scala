@@ -141,6 +141,33 @@ class ColumnFileTest
       assert(f.nextRow())
       assert(expected == f.get(col1))
     }
+
+    "values after nextRow returns false" in {
+      val f = create(cols.take(2), "col1\tcol2", "A\tB")
+      Seq(true, false).foreach { rowRetrieved =>
+        assert(rowRetrieved == f.nextRow())
+        assert(1 == f.currentRow) // row number doesn't change
+        assert("A" == f.get(col1))
+        assert("B" == f.get(col2))
+      }
+    }
+
+    "empty values" in {
+      val f = create(cols, "col1\tcol2\tcol3", "\tB\tC", "A\t\tC", "\t\t")
+      f.nextRow() // first value is empty
+      assert(f.get(col1).isEmpty)
+      assert("B" == f.get(col2))
+      assert("C" == f.get(col3))
+      f.nextRow() // second value is empty
+      assert("A" == f.get(col1))
+      assert(f.get(col2).isEmpty)
+      assert("C" == f.get(col3))
+      f.nextRow() // all values are empty
+      cols.foreach { c => assert(f.get(c).isEmpty) }
+      // make sure all data has been read
+      assert(!f.nextRow())
+      assert(3 == f.currentRow)
+    }
   }
 
   // delete all files from 'tempDir' after each test
@@ -182,7 +209,7 @@ class ColumnFileTest
 
 class ColumnTest extends AnyFreeSpec {
   "toString returns column name" in {
-    assert(cols.head.toString == "col1")
+    assert(col1.toString == "col1")
   }
 
   "number is assigned based on creation order" in {
@@ -200,10 +227,10 @@ class ColumnTest extends AnyFreeSpec {
       assert(c == Column(c.name))
       assert(c != Column(c.name + "x"))
     }
-    var x: Any = cols.head.name
-    assert(cols.head != x) // classes are different
-    x = cols.head
-    assert(cols.head == x) // classes are the same
+    var x: Any = col1.name
+    assert(col1 != x) // classes are different
+    x = col1
+    assert(col1 == x) // classes are the same
   }
 }
 

@@ -93,9 +93,9 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
         throw e
     }
 
-  private def processNextRow(): Unit = {
+  private def processNextRow(): Unit =
     try {
-      val fields = readRow().split(sep)
+      val fields = readRow().split(splitRegex, -1)
       _currentRow += 1
       fields.length match {
         case l if l < numColumns => error("not enough columns")
@@ -105,11 +105,11 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
     } catch {
       case e: IOException => error("failed to read next row: " + e.getMessage)
     }
-  }
 
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)
   private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
+  private val splitRegex = sep.toString // needed for regex split function
   private var _currentRow = 0
   private var _closed = false
 
