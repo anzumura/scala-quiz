@@ -15,11 +15,11 @@ class ColumnFileTest
 
   "create" - {
     "one column" in {
-      assert(1 == create(cols.take(1), "col1").numColumns)
+      assert(1 == create(Seq(col1), "col1").numColumns)
     }
 
     "current row zero before any rows are requested" in {
-      assert(0 == create(cols.take(1), "col1").currentRow)
+      assert(0 == create(Seq(col1), "col1").currentRow)
     }
 
     "multiple columns" in {
@@ -33,113 +33,88 @@ class ColumnFileTest
 
   "create errors" - {
     "empty columns" in {
-      val e = intercept[DomainException] {
-        ColumnFile(Path.of(""))
-      }
+      val e = intercept[DomainException] { ColumnFile(Path.of("")) }
       assert("must specify at least one column" == e.getMessage)
     }
 
     "duplicate columns" in {
-      val c = cols.head
-      val e = intercept[DomainException] {
-        ColumnFile(Path.of(""), c, c)
-      }
-      assert(s"duplicate column '$c'" == e.getMessage)
+      val e = intercept[DomainException] { ColumnFile(Path.of(""), col1, col1) }
+      assert(s"duplicate column '$col1'" == e.getMessage)
     }
 
     "missing file" in {
-      val e = intercept[DomainException] {
-        ColumnFile(Path.of("x"), cols.head)
-      }
+      val e = intercept[DomainException] { ColumnFile(Path.of("x"), col1) }
       assert(e.getMessage.startsWith(s"failed to read header row: x"))
     }
 
     "missing header row" in {
-      val e = intercept[DomainException] {
-        create(cols)
-      }
+      val e = intercept[DomainException] { create(cols) }
       assert(errorMsg("missing header row") == e.getMessage)
     }
 
     "duplicate header columns" in {
-      val e = intercept[DomainException] {
-        create(cols, "col1\tcol1")
-      }
+      val e = intercept[DomainException] { create(cols, "col1\tcol1") }
       assert(errorMsg("duplicate header 'col1'") == e.getMessage)
     }
 
     "unrecognized header column" in {
-      val e = intercept[DomainException] {
-        create(cols, "col11")
-      }
+      val e = intercept[DomainException] { create(cols, "col11") }
       assert(errorMsg("unrecognized header 'col11'") == e.getMessage)
     }
 
     "one missing column" in {
-      val e = intercept[DomainException] {
-        create(cols, "col1\tcol3")
-      }
+      val e = intercept[DomainException] { create(cols, "col1\tcol3") }
       assert(errorMsg("column 'col2' not found") == e.getMessage)
     }
 
     "multiple missing columns" in {
-      val e = intercept[DomainException] {
-        create(cols, "col2")
-      }
+      val e = intercept[DomainException] { create(cols, "col2") }
       assert(errorMsg("2 columns not found: 'col1', 'col3'") == e.getMessage)
     }
   }
 
-  "nextRow errors" - {
+  "nextRow" - {
     "called after close" in {
-      val f = create(cols.take(1), "col1")
+      val f = create(Seq(col1), "col1")
       assert(!f.nextRow())
-      val e = intercept[DomainException] {
-        f.nextRow()
-      }
+      val e = intercept[DomainException] { f.nextRow() }
       assert(s"file: '$testFile' has been closed" == e.getMessage)
     }
 
     "too many columns" in {
-      val f = create(cols.take(1), "col1", "A", "B\tC", "D")
+      val f = create(Seq(col1), "col1", "A", "B\tC", "D")
       assert(f.nextRow())
       assert(1 == f.currentRow)
-      assert("A" == f.get(cols.head))
+      assert("A" == f.get(col1))
       // the second row has two values so an exception is thrown, but current
       // row is incremented so that processing can continue after the bad row
-      val e = intercept[DomainException] {
-        f.nextRow()
-      }
+      val e = intercept[DomainException] { f.nextRow() }
       assert(errorMsg("too many columns", 2) == e.getMessage)
       assert(2 == f.currentRow)
       // call nextRow to move to the third row and continue processing
       assert(f.nextRow())
       assert(3 == f.currentRow)
-      assert("D" == f.get(cols.head))
+      assert("D" == f.get(col1))
     }
 
     "not enough columns" in {
       val f = create(cols.take(2), "col1\tcol2", "A", "B\tC")
-      val e = intercept[DomainException] {
-        f.nextRow()
-      }
+      val e = intercept[DomainException] { f.nextRow() }
       assert(errorMsg("not enough columns", 1) == e.getMessage)
       // call nextRow to move to the second row and continue processing
       assert(f.nextRow())
       assert(2 == f.currentRow)
-      assert("B" == f.get(cols.head))
-      assert("C" == f.get(cols.drop(1).head))
+      assert("B" == f.get(col1))
+      assert("C" == f.get(col2))
     }
 
-    "error for nextRow failed read" in {
+    "failed read" in {
       val path = Files.createFile(tempDir.resolve(testFile))
       Files.writeString(path, "col1\nA")
-      val f = new TestColumnFile(path, '\t', cols.take(1)) {
+      val f = new TestColumnFile(path, '\t', col1) {
         override def readRow(): String = throw new IOException("bad read")
       }
-      val e = intercept[DomainException] {
-        f.nextRow()
-      }
+      val e = intercept[DomainException] { f.nextRow() }
       f.close()
       assert(
         "failed to read next row: bad read - file: test.txt" == e.getMessage)
@@ -148,16 +123,23 @@ class ColumnFileTest
     "failed close" in {
       val path = Files.createFile(tempDir.resolve(testFile))
       Files.writeString(path, "col1")
-      val f = new ColumnFile(path, '\t', cols.take(1)) {
+      val f = new TestColumnFile(path, '\t', col1) {
         override def close(): Unit = {
           super.close()
           throw new IOException("bad close")
         }
       }
-      val e = intercept[DomainException] {
-        f.nextRow()
-      }
+      val e = intercept[DomainException] { f.nextRow() }
       assert("failed to close: bad close" == e.getMessage)
+    }
+  }
+
+  "get" - {
+    "string value" in {
+      val expected = "Val"
+      val f = create(Seq(col1), "col1", expected)
+      assert(f.nextRow())
+      assert(expected == f.get(col1))
     }
   }
 
@@ -186,7 +168,7 @@ class ColumnFileTest
 
   private def create(sep: Char, cols: Seq[Column], lines: String*) = {
     testColumnFile.foreach(_.close())
-    val f = new TestColumnFile(writeTestFile(lines), sep, cols)
+    val f = new TestColumnFile(writeTestFile(lines), sep, cols: _*)
     testColumnFile = Option(f)
     f
   }
@@ -227,6 +209,7 @@ class ColumnTest extends AnyFreeSpec {
 
 object ColumnFileTest {
   val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
+  val col1 :: col2 :: col3 :: Nil = cols.toList
   private val testFile = "test.txt"
   // on Windows tempDir is created in ~/AppData/Local/Temp
   private val tempDir = Files.createTempDirectory("tempDir")
@@ -237,7 +220,7 @@ object ColumnFileTest {
     }
   }
 
-  private class TestColumnFile(path: Path, sep: Char, cols: Seq[Column])
+  private class TestColumnFile(path: Path, sep: Char, cols: Column*)
       extends ColumnFile(path, sep, cols) {
     // make close public so tests can force closing the underlying file
     override def close(): Unit = { super.close() }
