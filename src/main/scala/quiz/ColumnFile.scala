@@ -1,10 +1,10 @@
 package quiz
 
-import collection.mutable
-import ColumnFile._
+import quiz.ColumnFile._
 
-import java.nio.file.Path
 import java.io.IOException
+import java.nio.file.Path
+import scala.collection.mutable
 import scala.io.Source
 
 /**

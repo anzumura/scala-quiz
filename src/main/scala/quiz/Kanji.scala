@@ -1,6 +1,6 @@
 package quiz
 
-import Kanji._
+import quiz.Kanji._
 
 sealed abstract class Kanji protected (private val f: Fields) {
   def name: String = f.name
