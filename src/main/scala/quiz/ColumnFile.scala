@@ -44,7 +44,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
   /**
    * @param col column contained in this file
    * @return string value for the given column in current row
-   * @throws DomainException if nextRow hasn't been called yet or the given
+   * @throws DomainException if `nextRow` hasn't been called yet or the given
    *                         column isn't part of this file
    */
   def get(col: Column): String = {
@@ -59,11 +59,22 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
    * @param col column contained in this file
    * @param max max value allowed (check is only applied if max is non-negative)
    * @return unsigned int value for the given column in current row
-   * @throws DomainException if get fails or value can't be converted to an
+   * @throws DomainException if `get` fails or value can't be converted to an
    *                         unsigned int less than or equal to max
    */
   def getUInt(col: Column, max: Int = NoMaxValue): Int =
     processUInt(get(col), col, max)
+
+  /**
+   * @param col column contained in this file
+   * @return true for "Y" or "T", false for "N", "F" or ""
+   * @throws DomainException if `get` fails or value is unrecognized
+   */
+  def getBool(col: Column): Boolean = get(col) match {
+    case "Y" | "T" => true
+    case "N" | "F" | "" => false
+    case s => error("convert to bool failed", col, s)
+  }
 
   // methods to help support testing
   protected def readRow(): String = lines.next()
@@ -159,7 +170,7 @@ object ColumnFile {
   private val ColumnNotFound, NoMaxValue = -1
 
   /**
-   * represents a column in a <pre>ColumnFile</pre>. Instances are used to get
+   * represents a column in a `ColumnFile`. Instances are used to get
    * values from each row and the same Column instance can be used in multiple
    * ColumnFiles.
    */

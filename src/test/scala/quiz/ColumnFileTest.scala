@@ -226,6 +226,16 @@ class ColumnFileTest
           s) == e.getMessage)
       }
     }
+
+    "bool values" in {
+      val f = create(cols, "col1\tcol2\tcol3", "Y\tT\tx", "N\tF\t")
+      f.nextRow()
+      assert(f.getBool(col1) && f.getBool(col2))
+      val e = intercept[DomainException] { f.getBool(col3) }
+      assert(errorMsg("convert to bool failed", 1, col3, "x") == e.getMessage)
+      f.nextRow()
+      cols.foreach(c => assert(!f.getBool(c)))
+    }
   }
 
   // delete all files from 'tempDir' after each test
