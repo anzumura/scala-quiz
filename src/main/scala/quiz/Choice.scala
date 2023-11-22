@@ -138,9 +138,7 @@ object Choice {
   sealed trait UseQuit
   case object QuitOn extends UseQuit
   case object QuitOff extends UseQuit
-  object UseQuit {
-    implicit def toBoolean(x: UseQuit): Boolean = x eq QuitOn
-  }
+  implicit def toBoolean(x: UseQuit): Boolean = x eq QuitOn
 
   def apply(): Choice = new Choice
   def apply(q: Char, d: String = DefaultQuitDescription): Choice =
