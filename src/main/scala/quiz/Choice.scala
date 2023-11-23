@@ -54,21 +54,16 @@ class Choice private (private var _quit: Option[Char] = None,
     getChoice(getPrompt(msg, c, defaultChoice), c, defaultChoice)
   }
 
-  // 'get' overloads to avoid forcing the caller to use Option[defaultChoice)
-  def get(msg: String, choices: Choices, defaultChoice: Char): Char =
-    get(msg, choices, Option(defaultChoice))
-  def get(msg: String, choices: Choices, useQuit: UseQuit): Char =
-    get(msg, choices, None, useQuit)
-  def get(msg: String, choices: Choices, defaultChoice: Char, useQuit: UseQuit)
-      : Char = get(msg, choices, Option(defaultChoice), useQuit)
-  // 'get' overloads that don't require 'msg'
-  def get(choices: Choices): Char = get("", choices, None)
-  def get(choices: Choices, defaultChoice: Char): Char =
-    get("", choices, Option(defaultChoice))
-  def get(choices: Choices, useQuit: UseQuit): Char =
-    get("", choices, None, useQuit)
-  def get(choices: Choices, defaultChoice: Char, useQuit: UseQuit): Char =
-    get("", choices, Option(defaultChoice), useQuit)
+  // 'get' overloads using 'd' Char for default choice instead of Option[Char]
+  def get(m: String, c: Choices, d: Char): Char = get(m, c, Option(d))
+  def get(m: String, c: Choices, u: UseQuit): Char = get(m, c, None, u)
+  def get(m: String, c: Choices, d: Char, u: UseQuit): Char =
+    get(m, c, Option(d), u)
+  // overloads without a 'm' message parameter (defaults to empty string)
+  def get(c: Choices): Char = get("", c)
+  def get(c: Choices, d: Char): Char = get("", c, d)
+  def get(c: Choices, u: UseQuit): Char = get("", c, u)
+  def get(c: Choices, d: Char, u: UseQuit): Char = get("", c, d, u)
 
   @tailrec
   private def getChoice(prompt: String, choices: Choices,
@@ -134,6 +129,55 @@ class Choice private (private var _quit: Option[Char] = None,
 object Choice {
   type Choices = Map[Char, String]
   def Choices(xs: (Char, String)*): Choices = Map(xs: _*)
+
+  // inclusive range of choices with empty descriptions for 'Choice.get' method.
+  // For example:
+  //   val c = Choice()
+  //   Range('1', '6').get(c, "grade", Map('h' -> "high"))
+  // results in a prompt of "grade (1-6, h=high): "
+  case class Range(start: Char, end: Char) {
+    checkChoice(start, "range start")
+    checkChoice(end, "range end")
+    if (start > end) error(s"start '$start' is greater than end '$end")
+
+    // call 'Choice.get' methods including values from this range instance
+    def get(o: Choice, m: String): Char = o.get(m, this)
+    def get(o: Choice, m: String, d: Char): Char = o.get(m, this, d)
+    def get(o: Choice, m: String, u: UseQuit): Char = o.get(m, this, u)
+    def get(o: Choice, m: String, d: Char, u: UseQuit): Char =
+      o.get(m, this, d, u)
+    def get(o: Choice, m: String, c: Choices): Char = o.get(m, merge(c))
+    def get(o: Choice, m: String, c: Choices, d: Char): Char =
+      o.get(m, merge(c), d)
+    def get(o: Choice, m: String, c: Choices, u: UseQuit): Char =
+      o.get(m, merge(c), u)
+    def get(o: Choice, m: String, c: Choices, d: Char, u: UseQuit): Char =
+      o.get(m, merge(c), d, u)
+    // overloads without message
+    def get(o: Choice): Char = o.get(this)
+    def get(o: Choice, d: Char): Char = o.get(this, d)
+    def get(o: Choice, u: UseQuit): Char = o.get(this, u)
+    def get(o: Choice, d: Char, u: UseQuit): Char = o.get(this, d, u)
+    def get(o: Choice, c: Choices): Char = o.get(merge(c))
+    def get(o: Choice, c: Choices, d: Char): Char = o.get(merge(c), d)
+    def get(o: Choice, c: Choices, u: UseQuit): Char = o.get(merge(c), u)
+    def get(o: Choice, c: Choices, d: Char, u: UseQuit): Char =
+      o.get(merge(c), d, u)
+
+    private def merge(c: Choices): Choices = {
+      var result = c
+      (start to end).foreach { c =>
+        result = result.updatedWith(c) {
+          case Some(x) => error(s"range option '$x' already in choices'")
+          case None => Option("")
+        }
+      }
+      result
+    }
+  }
+
+  implicit def toChoices(r: Range): Choices =
+    Choices((r.start to r.end).map(c => (c, "")): _*)
 
   val DefaultQuitDescription = "quit"
 
