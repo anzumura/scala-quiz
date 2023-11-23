@@ -1,6 +1,5 @@
 package quiz
 
-import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import quiz.ColumnFile._
 import quiz.ColumnFileTest._
@@ -9,67 +8,63 @@ import java.io.IOException
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
+import scala.util.Using
 
 class ColumnFileTest
-    extends AnyFreeSpec with BeforeAndAfterEach with BeforeAndAfterAll {
+    extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
 
   "create" - {
     "one column" in {
-      assert(1 == create(Seq(col1), "col1").numColumns)
+      assert(create(Seq(col1), "col1").numColumns == 1)
     }
 
     "current row zero before any rows are requested" in {
-      assert(0 == create(Seq(col1), "col1").currentRow)
+      assert(create(Seq(col1), "col1").currentRow == 0)
     }
 
     "multiple columns" in {
-      assert(2 == create(cols.take(2), "col1\tcol2").numColumns)
+      assert(create(cols.take(2), "col1\tcol2").numColumns == 2)
     }
 
     "space delimited file" in {
-      assert(2 == create(' ', cols.take(2), "col1 col2").numColumns)
+      assert(create(' ', cols.take(2), "col1 col2").numColumns == 2)
     }
   }
 
   "create errors" - {
     "empty columns" in {
-      val e = intercept[DomainException] { ColumnFile(Path.of("")) }
-      assert("must specify at least one column" == e.getMessage)
+      domainException(ColumnFile(Path.of("")),
+        "must specify at least one column")
     }
 
     "duplicate columns" in {
-      val e = intercept[DomainException] { ColumnFile(Path.of(""), col1, col1) }
-      assert(s"duplicate column '$col1'" == e.getMessage)
+      domainException(ColumnFile(Path.of(""), col1, col1),
+        s"duplicate column '$col1'")
     }
 
     "missing file" in {
-      val e = intercept[DomainException] { ColumnFile(Path.of("x"), col1) }
-      assert(e.getMessage.startsWith(s"failed to read header row: x"))
+      domainException(ColumnFile(Path.of("x"), col1),
+        _.startsWith(s"failed to read header row: x"))
     }
 
     "missing header row" in {
-      val e = intercept[DomainException] { create(cols) }
-      assert(errorMsg("missing header row") == e.getMessage)
+      fileError(create(cols), "missing header row")
     }
 
     "duplicate header columns" in {
-      val e = intercept[DomainException] { create(cols, "col1\tcol1") }
-      assert(errorMsg("duplicate header 'col1'") == e.getMessage)
+      fileError(create(cols, "col1\tcol1"), "duplicate header 'col1'")
     }
 
     "unrecognized header column" in {
-      val e = intercept[DomainException] { create(cols, "col11") }
-      assert(errorMsg("unrecognized header 'col11'") == e.getMessage)
+      fileError(create(cols, "col11"), "unrecognized header 'col11'")
     }
 
     "one missing column" in {
-      val e = intercept[DomainException] { create(cols, "col1\tcol3") }
-      assert(errorMsg("column 'col2' not found") == e.getMessage)
+      fileError(create(cols, "col1\tcol3"), "column 'col2' not found")
     }
 
     "multiple missing columns" in {
-      val e = intercept[DomainException] { create(cols, "col2") }
-      assert(errorMsg("2 columns not found: 'col1', 'col3'") == e.getMessage)
+      fileError(create(cols, "col2"), "2 columns not found: 'col1', 'col3'")
     }
   }
 
@@ -77,46 +72,40 @@ class ColumnFileTest
     "called after close" in {
       val f = create(Seq(col1), "col1")
       assert(!f.nextRow())
-      val e = intercept[DomainException] { f.nextRow() }
-      assert(s"file: '$testFile' has been closed" == e.getMessage)
+      domainException(f.nextRow(), s"file: '$testFile' has been closed")
     }
 
     "too many columns" in {
       val f = create(Seq(col1), "col1", "A", "B\tC", "D")
       assert(f.nextRow())
-      assert(1 == f.currentRow)
-      assert("A" == f.get(col1))
+      assert(f.currentRow == 1)
+      assert(f.get(col1) == "A")
       // the second row has two values so an exception is thrown, but current
       // row is incremented so that processing can continue after the bad row
-      val e = intercept[DomainException] { f.nextRow() }
-      assert(errorMsg("too many columns", 2) == e.getMessage)
-      assert(2 == f.currentRow)
+      fileError(f.nextRow(), "too many columns", 2)
+      assert(f.currentRow == 2)
       // call nextRow to move to the third row and continue processing
       assert(f.nextRow())
-      assert(3 == f.currentRow)
-      assert("D" == f.get(col1))
+      assert(f.currentRow == 3)
+      assert(f.get(col1) == "D")
     }
 
     "not enough columns" in {
       val f = create(cols.take(2), "col1\tcol2", "A", "B\tC")
-      val e = intercept[DomainException] { f.nextRow() }
-      assert(errorMsg("not enough columns", 1) == e.getMessage)
+      fileError(f.nextRow(), "not enough columns", 1)
       // call nextRow to move to the second row and continue processing
       assert(f.nextRow())
-      assert(2 == f.currentRow)
-      assert("B" == f.get(col1))
-      assert("C" == f.get(col2))
+      assert(f.currentRow == 2)
+      assert(f.get(col1) == "B")
+      assert(f.get(col2) == "C")
     }
 
     "failed read" in {
       val path = Files.createFile(tempDir.resolve(testFile))
       Files.writeString(path, "col1\nA")
-      val f = new TestColumnFile(path, '\t', col1) {
+      Using.resource(new TestColumnFile(path, '\t', col1) {
         override def readRow(): String = throw new IOException("bad read")
-      }
-      val e = intercept[DomainException] { f.nextRow() }
-      f.close()
-      assert(errorMsg("failed to read next row: bad read") == e.getMessage)
+      })(f => fileError(f.nextRow(), "failed to read next row: bad read"))
     }
 
     "failed close" in {
@@ -128,8 +117,7 @@ class ColumnFileTest
           throw new IOException("bad close")
         }
       }
-      val e = intercept[DomainException] { f.nextRow() }
-      assert("failed to close: bad close" == e.getMessage)
+      domainException(f.nextRow(), "failed to close: bad close")
     }
   }
 
@@ -138,16 +126,16 @@ class ColumnFileTest
       val expected = "Val"
       val f = create(Seq(col1), "col1", expected)
       assert(f.nextRow())
-      assert(expected == f.get(col1))
+      assert(f.get(col1) == expected)
     }
 
     "values after nextRow returns false" in {
       val f = create(cols.take(2), "col1\tcol2", "A\tB")
       Seq(true, false).foreach { rowRetrieved =>
         assert(rowRetrieved == f.nextRow())
-        assert(1 == f.currentRow) // row number doesn't change
-        assert("A" == f.get(col1))
-        assert("B" == f.get(col2))
+        assert(f.currentRow == 1) // row number doesn't change
+        assert(f.get(col1) == "A")
+        assert(f.get(col2) == "B")
       }
     }
 
@@ -155,75 +143,69 @@ class ColumnFileTest
       val f = create(cols, "col1\tcol2\tcol3", "\tB\tC", "A\t\tC", "\t\t")
       f.nextRow() // first value is empty
       assert(f.get(col1).isEmpty)
-      assert("B" == f.get(col2))
-      assert("C" == f.get(col3))
+      assert(f.get(col2) == "B")
+      assert(f.get(col3) == "C")
       f.nextRow() // second value is empty
-      assert("A" == f.get(col1))
+      assert(f.get(col1) == "A")
       assert(f.get(col2).isEmpty)
-      assert("C" == f.get(col3))
+      assert(f.get(col3) == "C")
       f.nextRow() // all values are empty
       cols.foreach { c => assert(f.get(c).isEmpty) }
       // make sure all data has been read
       assert(!f.nextRow())
-      assert(3 == f.currentRow)
+      assert(f.currentRow == 3)
     }
 
     "before nextRow fails" in {
       val f = create(Seq(col1), "col1", "Val")
-      val e = intercept[DomainException] { f.get(col1) }
-      assert(errorMsg(
-        "'nextRow' must be called before calling 'get'") == e.getMessage)
+      fileError(f.get(col1), "'nextRow' must be called before calling 'get'")
     }
 
     "column created after creating ColumnFile is 'unrecognized'" in {
       val f = create(Seq(col1), "col1", "Val")
       assert(f.nextRow())
       val c = Column("Created After")
-      val e = intercept[DomainException] { f.get(c) }
-      assert(errorMsg("unrecognized column 'Created After'", 1) == e.getMessage)
+      fileError(f.get(c), "unrecognized column 'Created After'", 1)
     }
 
     "column not included in ColumnFile is 'invalid'" in {
       val c = Column("Created Before")
       val f = create(Seq(col1), "col1", "Val")
       assert(f.nextRow())
-      val e = intercept[DomainException] { f.get(c) }
-      assert(errorMsg("invalid column 'Created Before'", 1) == e.getMessage)
+      fileError(f.get(c), "invalid column 'Created Before'", 1)
     }
 
     "unsigned int value" in {
       val f = create(cols.take(2), "col1\tcol2", "0\t123")
       f.nextRow()
-      assert(0 == f.getUInt(col1))
-      assert(123 == f.getUInt(col2))
+      assert(f.getUInt(col1) == 0)
+      assert(f.getUInt(col2) == 123)
     }
 
     "invalid unsigned int" in {
       val f = create(cols.take(2), "col1\tcol2", "bad\t-123")
       f.nextRow()
       Seq((col1, "bad"), (col2, "-123")).foreach { case (c, s) =>
-        val e = intercept[DomainException] { f.getUInt(c) }
-        assert(errorMsg("convert to UInt failed", 1, c, s) == e.getMessage)
+        fileError(f.getUInt(c), "convert to UInt failed", 1, c, s)
       }
     }
 
     "unsigned int with max value" in {
       val f = create(Seq(col1), "col1", "0", "123")
       f.nextRow()
-      assert(0 == f.getUInt(col1, 0))
+      assert(f.getUInt(col1, 0) == 0)
       f.nextRow()
-      assert(123 == f.getUInt(col1, -1))
-      assert(123 == f.getUInt(col1, 123))
-      assert(123 == f.getUInt(col1, Int.MaxValue))
+      assert(f.getUInt(col1, -1) == 123)
+      assert(f.getUInt(col1, 123) == 123)
+      assert(f.getUInt(col1, Int.MaxValue) == 123)
     }
 
     "unsigned int exceeding max value" in {
       val f = create(Seq(col1), "col1", "18", "100")
       Seq((0, "18"), (99, "100")).foreach { case (max, s) =>
         f.nextRow()
-        val e = intercept[DomainException] { f.getUInt(col1, max) }
-        assert(errorMsg(s"exceeded max value $max", f.currentRow, col1,
-          s) == e.getMessage)
+        fileError(f.getUInt(col1, max), s"exceeded max value $max",
+          f.currentRow, col1, s)
       }
     }
 
@@ -231,8 +213,7 @@ class ColumnFileTest
       val f = create(cols, "col1\tcol2\tcol3", "Y\tT\tx", "N\tF\t")
       f.nextRow()
       assert(f.getBool(col1) && f.getBool(col2))
-      val e = intercept[DomainException] { f.getBool(col3) }
-      assert(errorMsg("convert to bool failed", 1, col3, "x") == e.getMessage)
+      fileError(f.getBool(col3), "convert to bool failed", 1, col3, "x")
       f.nextRow()
       cols.foreach(c => assert(!f.getBool(c)))
     }
@@ -249,11 +230,17 @@ class ColumnFileTest
     Files.deleteIfExists(tempDir)
   }
 
-  private def errorMsg(msg: String) = s"$msg - file: $testFile"
-  private def errorMsg(msg: String, row: Int): String =
-    s"${errorMsg(msg)}, row: $row"
-  private def errorMsg(msg: String, row: Int, c: Column, s: String): String =
-    s"${errorMsg(msg, row)}, column: '$c', value: '$s'"
+  private def fileMsg(msg: String): String = s"$msg - file: $testFile"
+  private def fileMsg(msg: String, row: Int): String =
+    s"${fileMsg(msg)}, row: $row"
+
+  private def fileError(f: => Any, msg: String): Unit =
+    domainException(f, fileMsg(msg))
+  private def fileError(f: => Any, msg: String, row: Int): Unit =
+    domainException(f, fileMsg(msg, row))
+  private def fileError(
+      f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
+    domainException(f, s"${fileMsg(msg, row)}, column: '$c', value: '$s'")
 
   private def writeTestFile(lines: Seq[String]) = {
     val path = Files.createFile(tempDir.resolve(testFile))
@@ -275,7 +262,7 @@ class ColumnFileTest
   private var testColumnFile = Option.empty[TestColumnFile]
 }
 
-class ColumnTest extends AnyFreeSpec {
+class ColumnTest extends BaseTest {
   "toString returns column name" in {
     assert(col1.toString == "col1")
   }
@@ -316,7 +303,7 @@ object ColumnFileTest {
   }
 
   private class TestColumnFile(path: Path, sep: Char, cols: Column*)
-      extends ColumnFile(path, sep, cols) {
+      extends ColumnFile(path, sep, cols) with AutoCloseable {
     // make close public so tests can force closing the underlying file
     override def close(): Unit = { super.close() }
   }

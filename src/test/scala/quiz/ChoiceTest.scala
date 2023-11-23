@@ -1,11 +1,10 @@
 package quiz
 
-import org.scalatest.freespec.AnyFreeSpec
 import quiz.Choice._
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 
-class ChoiceTest extends AnyFreeSpec {
+class ChoiceTest extends BaseTest {
   "create with default options" in {
     val c = Choice()
     assert(c.quit.isEmpty)
@@ -28,8 +27,7 @@ class ChoiceTest extends AnyFreeSpec {
   }
 
   "create with invalid quit option" in {
-    val e = intercept[DomainException] { Choice(12: Char) }
-    assert(e.getMessage == "invalid quit option: '0xc'")
+    domainException(Choice(12: Char), "invalid quit option: '0xc'")
   }
 
   "update quit value" in {
@@ -44,8 +42,7 @@ class ChoiceTest extends AnyFreeSpec {
 
   "update to invalid quit option" in {
     val c = Choice()
-    val e = intercept[DomainException] { c.quit = Option(13) }
-    assert(e.getMessage == "invalid quit option: '0xd'")
+    domainException(c.quit = Option(13), "invalid quit option: '0xd'")
   }
 
   "update quit and quit description" in {
@@ -148,27 +145,26 @@ class ChoiceTest extends AnyFreeSpec {
   "get errors" - {
     "no choices specified" in {
       val c = Choice()
-      val e = intercept[DomainException] { c.get(Map()) }
-      assert(e.getMessage == "must specify at least one choice")
+      domainException(c.get(Map()), "must specify at least one choice")
     }
 
     "invalid choice" in {
       val c = Choice()
-      val e = intercept[DomainException] { c.get(Map(('a', "A"), (14, "bad"))) }
-      assert(e.getMessage == "invalid option: '0xe'")
+      domainException(c.get(Map(('a', "A"), (14, "bad"))),
+        "invalid option: '0xe'")
     }
 
     "default option not in choices" in {
       val c = Choice()
-      val e = intercept[DomainException] { c.get(Map(('a', "")), 'b') }
-      assert(e.getMessage == "default option 'b' not in choices")
+      domainException(c.get(Map(('a', "")), 'b'),
+        "default option 'b' not in choices")
     }
 
     "quit option in choices" in {
       val c = Choice()
       c.setQuit('a')
-      val e = intercept[DomainException] { c.get(Map(('a', ""))) }
-      assert(e.getMessage == "quit option 'a' already in choices")
+      domainException(c.get(Map(('a', ""))),
+        "quit option 'a' already in choices")
     }
   }
 
@@ -219,7 +215,7 @@ class ChoiceTest extends AnyFreeSpec {
         c.setQuit('q')
         assert(a2c.get(c, choices) == 'b')
         assert(os.toString == prompt + ", q=quit): ")
-          os.reset()
+        os.reset()
         assert(a2c.get(c, msg, choices) == 'b')
         assert(os.toString == msgPrompt + ", q=quit): ")
       }
