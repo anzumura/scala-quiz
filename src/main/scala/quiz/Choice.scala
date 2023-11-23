@@ -155,12 +155,12 @@ object Choice {
 
     private def merge(c: Choices) = {
       var result = c
-      (start to end).foreach { c =>
+      (start to end).foreach(c =>
         result = result.updatedWith(c) {
-          case Some(_) => error(s"range option '$c' already in choices")
           case None => Option("")
+          case _ => error(s"range option '$c' already in choices")
         }
-      }
+      )
       result
     }
   }
