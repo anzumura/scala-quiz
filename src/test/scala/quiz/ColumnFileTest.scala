@@ -287,6 +287,10 @@ class ColumnTest extends BaseTest {
     x = col1
     assert(col1 == x) // classes are the same
   }
+
+  "hasCode is based on number" in {
+    assert(col1.hashCode == col1.number.hashCode)
+  }
 }
 
 object ColumnFileTest {
