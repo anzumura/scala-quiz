@@ -135,10 +135,15 @@ class ChoiceTest extends BaseTest {
       assert(os.toString == "(a) def 'a': ")
     }
 
-    "invalid option prompts again" in {
-      val (c, os) = create("z\n1")
+    "invalid options prompt again" in {
+      // input has 3 invalid options:
+      // 1: 'z' is not included in Choices
+      // 2: 'xx' is not a single character
+      // 3: empty line (invalid when no default option is set)
+      val (c, os) = create("z\nxx\n\n1")
       assert(c.get(Map('1' -> "")) == '1')
-      assert(os.toString == "(1): (1): ")
+      // expect 4 prompts (3 bad options followed by a good one)
+      assert(os.toString == "(1): ".repeat(4))
     }
   }
 
