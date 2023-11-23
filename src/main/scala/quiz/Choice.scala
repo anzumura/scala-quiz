@@ -66,12 +66,11 @@ class Choice private (private var _quit: Option[Char] = None,
   def get(c: Choices, d: Char, u: UseQuit): Char = get("", c, d, u)
 
   @tailrec
-  private def getChoice(prompt: String, choices: Choices,
-      defaultChoice: Option[Char] = None): Char = {
-    (read(prompt), defaultChoice) match {
-      case (Some(choice), _) if choices.contains(choice) => choice
+  private def getChoice(prompt: String, c: Choices, d: Option[Char]): Char = {
+    (read(prompt), d) match {
+      case (Some(choice), _) if c.contains(choice) => choice
       case (None, Some(choice)) => choice
-      case _ => getChoice(prompt, choices, defaultChoice)
+      case _ => getChoice(prompt, c, d)
     }
   }
 
