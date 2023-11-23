@@ -251,6 +251,27 @@ class ChoiceTest extends BaseTest {
     }
   }
 
+  "get range errors" - {
+    "invalid range start" in {
+      domainException(Range(15, 'c'), "invalid range start: '0xf'")
+    }
+
+    "invalid range end" in {
+      domainException(Range('c', 10), "invalid range end: '0xa'")
+    }
+
+    "start greater than end" in {
+      domainException(Range('c', 'b'), "start 'c' is greater than end 'b'")
+    }
+
+    "range overlaps with Choices" in {
+      val c = Choice()
+      val overlap = 'd'
+      domainException(Range('a', 'f').get(c, Map(overlap -> "")),
+        s"range option '$overlap' already in choices")
+    }
+  }
+
   private def create(input: String = "") = {
     val is = new ByteArrayInputStream((input + '\n').getBytes())
     val os = new ByteArrayOutputStream()

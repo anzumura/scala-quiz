@@ -138,7 +138,7 @@ object Choice {
   case class Range(start: Char, end: Char) {
     checkChoice(start, "range start")
     checkChoice(end, "range end")
-    if (start > end) error(s"start '$start' is greater than end '$end")
+    if (start > end) error(s"start '$start' is greater than end '$end'")
 
     // call 'Choice.get' methods with this range merged into 'Choices'
     def get(o: Choice, m: String, c: Choices, u: UseQuit = QuitOn): Char =
@@ -157,7 +157,7 @@ object Choice {
       var result = c
       (start to end).foreach { c =>
         result = result.updatedWith(c) {
-          case Some(x) => error(s"range option '$x' already in choices'")
+          case Some(_) => error(s"range option '$c' already in choices")
           case None => Option("")
         }
       }
