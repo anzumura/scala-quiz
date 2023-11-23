@@ -38,9 +38,9 @@ class Choice private (private var _quit: Option[Char] = None,
    * @param choices set of choices the user must choose from
    * @param defaultChoice optional default choice (for just pressing return)
    * @return one of the choices from `choices` or possibly the 'quit option'
-   * @throws DomainError if `def` is provided, but it's not in `choicesIn`
-   * @throws DomainError if 'quit option' has been set and is also in `choices`
-   * @throws DomainError if any choice in `choices` is not printable Ascii
+   * @throws DomainException if `def` is provided, but it's not in `choicesIn`
+   * @throws DomainException if 'quit option' is set and is also in `choices`
+   * @throws DomainException if any choice in `choices` is not printable Ascii
    */
   def get(msg: String, choices: Choices, defaultChoice: Option[Char] = None,
       useQuit: UseQuit = QuitOn): Char = {
@@ -133,6 +133,8 @@ class Choice private (private var _quit: Option[Char] = None,
 
 object Choice {
   type Choices = Map[Char, String]
+  def Choices(xs: (Char, String)*): Choices = Map(xs: _*)
+
   val DefaultQuitDescription = "quit"
 
   sealed trait UseQuit

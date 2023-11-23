@@ -61,7 +61,7 @@ class ChoiceTest extends AnyFreeSpec {
     "one choice" in {
       val (c, os) = create("a")
       val msg = "my choice"
-      assert('a' == c.get(msg, Map(('a', "first"))))
+      assert('a' == c.get(msg, Choices(('a', "first")), QuitOn))
       assert(s"$msg (a=first): " == os.toString)
     }
 
