@@ -32,18 +32,18 @@ class Choice private (private var _quit: Option[Char] = None,
 
   /**
    * read in a choice from `is` provided in the ctor
+   * @param choices set of choices the user must choose from
    * @param msg beginning part of prompt message written to `os` specified in
    *            the ctor, the rest of the prompt message shows the choices
    * @param useQuit if 'QuitOff' then 'quit option' is not included in choices
-   * @param choices set of choices the user must choose from
    * @param defaultChoice optional default choice (for just pressing return)
    * @return one of the choices from `choices` or possibly the 'quit option'
    * @throws DomainException if `def` is provided, but it's not in `choicesIn`
    * @throws DomainException if 'quit option' is set and is also in `choices`
    * @throws DomainException if any choice in `choices` is not printable Ascii
    */
-  def get(msg: String, choices: Choices, defaultChoice: Option[Char] = None,
-      useQuit: UseQuit = QuitOn): Char = {
+  def get(choices: Choices, msg: String = "", useQuit: UseQuit = QuitOn,
+      defaultChoice: Option[Char] = None): Char = {
     val c = quit.map(q =>
       if (useQuit) {
         if (choices.contains(q)) error(s"quit option '$q' already in choices")
@@ -55,15 +55,13 @@ class Choice private (private var _quit: Option[Char] = None,
   }
 
   // 'get' overloads using 'd' Char for default choice instead of Option[Char]
-  def get(m: String, c: Choices, u: UseQuit): Char = get(m, c, None, u)
-  def get(m: String, c: Choices, d: Char): Char = get(m, c, Option(d))
-  def get(m: String, c: Choices, d: Char, u: UseQuit): Char =
-    get(m, c, Option(d), u)
+  def get(c: Choices, m: String, d: Char): Char = get(c, m, QuitOn, Option(d))
+  def get(c: Choices, m: String, d: Char, u: UseQuit): Char =
+    get(c, m, u, Option(d))
   // overloads without 'm' message parameter (defaults to empty string)
-  def get(c: Choices): Char = get("", c)
-  def get(c: Choices, u: UseQuit): Char = get("", c, u)
-  def get(c: Choices, d: Char): Char = get("", c, d)
-  def get(c: Choices, d: Char, u: UseQuit): Char = get("", c, d, u)
+  def get(c: Choices, u: UseQuit): Char = get(c, "", u)
+  def get(c: Choices, d: Char): Char = get(c, "", d)
+  def get(c: Choices, d: Char, u: UseQuit): Char = get(c, "", d, u)
 
   @tailrec
   private def getChoice(prompt: String, c: Choices, d: Option[Char]): Char = {
@@ -140,13 +138,12 @@ object Choice {
     if (start > end) error(s"start '$start' is greater than end '$end'")
 
     // call 'Choice.get' methods with this range merged into 'Choices'
-    def get(o: Choice, m: String, c: Choices, u: UseQuit = QuitOn): Char =
-      o.get(m, merge(c), u)
-    def get(o: Choice, m: String, c: Choices, d: Char): Char =
-      o.get(m, merge(c), d)
-    def get(o: Choice, m: String, c: Choices, d: Char, u: UseQuit): Char =
-      o.get(m, merge(c), d, u)
-    def get(o: Choice, c: Choices): Char = o.get(merge(c))
+    def get(o: Choice, c: Choices, m: String = "", u: UseQuit = QuitOn): Char =
+      o.get(merge(c), m, u)
+    def get(o: Choice, c: Choices, m: String, d: Char): Char =
+      o.get(merge(c), m, d)
+    def get(o: Choice, c: Choices, m: String, d: Char, u: UseQuit): Char =
+      o.get(merge(c), m, d, u)
     def get(o: Choice, c: Choices, u: UseQuit): Char = o.get(merge(c), u)
     def get(o: Choice, c: Choices, d: Char): Char = o.get(merge(c), d)
     def get(o: Choice, c: Choices, d: Char, u: UseQuit): Char =

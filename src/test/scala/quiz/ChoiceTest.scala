@@ -58,7 +58,7 @@ class ChoiceTest extends BaseTest {
     "one choice" in {
       val (c, os) = create("a")
       val msg = "my choice"
-      assert(c.get(msg, Choices(('a', "first")), QuitOn) == 'a')
+      assert(c.get(Choices(('a', "first")), msg, QuitOn) == 'a')
       assert(os.toString == s"$msg (a=first): ")
     }
 
@@ -97,7 +97,7 @@ class ChoiceTest extends BaseTest {
     "with default" in {
       val (c, os) = create("a")
       val msg = "my default"
-      assert(c.get(msg, Map(('a', "first")), 'a') == 'a')
+      assert(c.get(Map(('a', "first")), msg, 'a') == 'a')
       assert(os.toString == s"$msg (a=first) def 'a': ")
     }
 
@@ -117,7 +117,7 @@ class ChoiceTest extends BaseTest {
     "suppress 'quit' option" in {
       val (c, os) = create("a")
       c.setQuit('q')
-      assert(c.get("my msg", Map(('a', "")), QuitOff) == 'a')
+      assert(c.get(Map(('a', "")), "my msg", QuitOff) == 'a')
       assert(os.toString == "my msg (a): ")
     }
 
@@ -221,7 +221,7 @@ class ChoiceTest extends BaseTest {
         assert(a2c.get(c, choices) == 'b')
         assert(os.toString == prompt + ", q=quit): ")
         os.reset()
-        assert(a2c.get(c, msg, choices) == 'b')
+        assert(a2c.get(c, choices, msg) == 'b')
         assert(os.toString == msgPrompt + ", q=quit): ")
       }
 
@@ -231,7 +231,7 @@ class ChoiceTest extends BaseTest {
         assert(a2c.get(c, choices, QuitOff) == 'b')
         assert(os.toString == prompt + "): ")
         os.reset()
-        assert(a2c.get(c, msg, choices, QuitOff) == 'b')
+        assert(a2c.get(c, choices, msg, QuitOff) == 'b')
         assert(os.toString == msgPrompt + "): ")
       }
 
@@ -240,7 +240,7 @@ class ChoiceTest extends BaseTest {
         assert(a2c.get(c, choices, 'a') == 'a')
         assert(os.toString == prompt + ") def 'a': ")
         os.reset()
-        assert(a2c.get(c, msg, choices, 'a') == 'a')
+        assert(a2c.get(c, choices, msg, 'a') == 'a')
         assert(os.toString == msgPrompt + ") def 'a': ")
       }
 
@@ -250,7 +250,7 @@ class ChoiceTest extends BaseTest {
         assert(a2c.get(c, choices, 'a', QuitOff) == 'a')
         assert(os.toString == prompt + ") def 'a': ")
         os.reset()
-        assert(a2c.get(c, msg, choices, 'a', QuitOff) == 'a')
+        assert(a2c.get(c, choices, msg, 'a', QuitOff) == 'a')
         assert(os.toString == msgPrompt + ") def 'a': ")
       }
     }
