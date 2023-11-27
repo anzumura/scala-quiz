@@ -1,6 +1,5 @@
 package quiz
 
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import quiz.ColumnFile._
 import quiz.ColumnFileTest._
 
@@ -10,9 +9,7 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
 import scala.util.Using
 
-class ColumnFileTest
-    extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
-
+class ColumnFileTest extends FileTest {
   "create" - {
     "one column" in {
       assert(create(Seq(col1), "col1").numColumns == 1)
@@ -219,15 +216,9 @@ class ColumnFileTest
     }
   }
 
-  // delete all files from 'tempDir' after each test
   override protected def afterEach(): Unit = {
     testColumnFile.foreach(_.close())
-    clearDirectory(tempDir)
-  }
-
-  // delete 'tempDir' after all tests
-  override protected def afterAll(): Unit = {
-    Files.deleteIfExists(tempDir)
+    super.afterEach()
   }
 
   private def fileMsg(msg: String): String = s"$msg - file: $testFile"
@@ -296,15 +287,6 @@ class ColumnTest extends BaseTest {
 object ColumnFileTest {
   val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
   val col1 :: col2 :: col3 :: Nil = cols.toList
-  private val testFile = "test.txt"
-  // on Windows tempDir is created in ~/AppData/Local/Temp
-  private val tempDir = Files.createTempDirectory("tempDir")
-
-  private def clearDirectory(d: Path): Unit = {
-    Files.walk(d).toScala(LazyList).foreach { f =>
-      if (Files.isRegularFile(f)) Files.delete(f)
-    }
-  }
 
   private class TestColumnFile(path: Path, sep: Char, cols: Column*)
       extends ColumnFile(path, sep, cols) with AutoCloseable {
