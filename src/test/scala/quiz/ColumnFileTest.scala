@@ -6,7 +6,6 @@ import quiz.ColumnFileTest._
 import java.io.IOException
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
-import scala.jdk.StreamConverters.StreamHasToScala
 import scala.util.Using
 
 class ColumnFileTest extends FileTest {
@@ -69,7 +68,7 @@ class ColumnFileTest extends FileTest {
     "called after close" in {
       val f = create(Seq(col1), "col1")
       assert(!f.nextRow())
-      domainException(f.nextRow(), s"file: '$testFile' has been closed")
+      domainException(f.nextRow(), s"file: '$testFileName' has been closed")
     }
 
     "too many columns" in {
@@ -98,7 +97,7 @@ class ColumnFileTest extends FileTest {
     }
 
     "failed read" in {
-      val path = Files.createFile(tempDir.resolve(testFile))
+      val path = Files.createFile(testFile)
       Files.writeString(path, "col1\nA")
       Using.resource(new TestColumnFile(path, '\t', col1) {
         override def readRow(): String = throw new IOException("bad read")
@@ -106,7 +105,7 @@ class ColumnFileTest extends FileTest {
     }
 
     "failed close" in {
-      val path = Files.createFile(tempDir.resolve(testFile))
+      val path = Files.createFile(tempDir.resolve(testFileName))
       Files.writeString(path, "col1")
       val f = new TestColumnFile(path, '\t', col1) {
         override def close(): Unit = {
@@ -221,7 +220,7 @@ class ColumnFileTest extends FileTest {
     super.afterEach()
   }
 
-  private def fileMsg(msg: String): String = s"$msg - file: $testFile"
+  private def fileMsg(msg: String): String = s"$msg - file: $testFileName"
   private def fileMsg(msg: String, row: Int): String =
     s"${fileMsg(msg)}, row: $row"
 
@@ -234,7 +233,7 @@ class ColumnFileTest extends FileTest {
     domainException(f, s"${fileMsg(msg, row)}, column: '$c', value: '$s'")
 
   private def writeTestFile(lines: Seq[String]) = {
-    val path = Files.createFile(tempDir.resolve(testFile))
+    val path = Files.createFile(tempDir.resolve(testFileName))
     Files.write(path, lines.asJava)
     path
   }

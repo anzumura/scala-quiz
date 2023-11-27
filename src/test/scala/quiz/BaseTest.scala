@@ -19,9 +19,11 @@ trait BaseTest extends AnyFreeSpec {
 }
 
 trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
-  val testFile: String = "test.txt"
+  val testFileBaseName: String = "test"
+  val testFileName: String = testFileBaseName + ".txt"
   // on Windows tempDir is created in ~/AppData/Local/Temp
   val tempDir: Path = Files.createTempDirectory("tempDir")
+  val testFile: Path = tempDir.resolve(testFileName)
 
   def clearDirectory(d: Path): Unit = {
     Files.walk(d).toScala(LazyList).foreach { f =>
