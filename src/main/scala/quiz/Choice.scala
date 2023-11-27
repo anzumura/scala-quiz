@@ -9,7 +9,8 @@ import scala.language.implicitConversions
 
 class Choice private (private var _quit: Option[Char] = None,
     var quitDescription: String = DefaultQuitDescription,
-    val is: InputStream = System.in, private val os: PrintStream = System.out) {
+    val is: InputStream = System.in, private val os: PrintStream = System.out)
+    extends ThrowsDomainException {
   // call setQuit to force validation upon construction
   _quit.foreach(setQuit)
   private val reader = new BufferedReader(new InputStreamReader(is))
@@ -132,7 +133,7 @@ object Choice {
   //   val c = Choice()
   //   Range('1', '6').get(c, "grade", Map('h' -> "high"))
   // results in a prompt of "grade (1-6, h=high): "
-  case class Range(start: Char, end: Char) {
+  case class Range(start: Char, end: Char) extends ThrowsDomainException {
     checkChoice(start, "range start")
     checkChoice(end, "range end")
     if (start > end) error(s"start '$start' is greater than end '$end'")
@@ -181,8 +182,7 @@ object Choice {
     new Choice(is = is, os = os)
 
   private def checkChoice(c: Char, msg: String): Unit = {
-    if (c < ' ' || c > '~') error(s"invalid $msg: '0x${c.toInt.toHexString}'")
+    if (c < ' ' || c > '~')
+      throw DomainException(s"invalid $msg: '0x${c.toInt.toHexString}'")
   }
-
-  private def error(msg: String) = throw DomainException(msg)
 }

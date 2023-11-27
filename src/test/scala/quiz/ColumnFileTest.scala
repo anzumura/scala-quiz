@@ -105,7 +105,7 @@ class ColumnFileTest
       Files.writeString(path, "col1\nA")
       Using.resource(new TestColumnFile(path, '\t', col1) {
         override def readRow(): String = throw new IOException("bad read")
-      })(f => fileError(f.nextRow(), "failed to read next row: bad read"))
+      })(f => fileError(f.nextRow(), "failed to read row: bad read"))
     }
 
     "failed close" in {
@@ -158,14 +158,14 @@ class ColumnFileTest
 
     "before nextRow fails" in {
       val f = create(Seq(col1), "col1", "Val")
-      fileError(f.get(col1), "'nextRow' must be called before calling 'get'")
+      fileError(f.get(col1), "'nextRow' must be called before 'get'")
     }
 
-    "column created after creating ColumnFile is 'unrecognized'" in {
+    "column created after creating ColumnFile is 'unknown'" in {
       val f = create(Seq(col1), "col1", "Val")
       assert(f.nextRow())
       val c = Column("Created After")
-      fileError(f.get(c), "unrecognized column 'Created After'", 1)
+      fileError(f.get(c), "unknown column 'Created After'", 1)
     }
 
     "column not included in ColumnFile is 'invalid'" in {

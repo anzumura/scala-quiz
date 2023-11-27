@@ -11,8 +11,9 @@ import scala.io.Source
  * class for loading data from a delimiter separated file with a header row
  * containing the column names
  */
-class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
-  if (cols.isEmpty) throw DomainException("must specify at least one column")
+class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
+    extends ThrowsDomainException {
+  if (cols.isEmpty) error("must specify at least one column")
 
   def numColumns: Int = rowValues.length
   def currentRow: Int = _currentRow
@@ -27,7 +28,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
    *                         number of columns
    */
   def nextRow(): Boolean = {
-    if (_closed) throw DomainException(s"file: '$fileName' has been closed")
+    if (_closed) error(s"file: '$fileName' has been closed")
     val hasNext = lines.hasNext
     if (hasNext) processNextRow()
     else
@@ -35,8 +36,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
         close()
         _closed = true
       } catch {
-        case e: IOException =>
-          throw DomainException("failed to close: " + e.getMessage)
+        case e: IOException => error("failed to close: " + e.getMessage)
       }
     hasNext
   }
@@ -48,10 +48,10 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
    *                         column isn't part of this file
    */
   def get(col: Column): String = {
-    if (_currentRow == 0) error("'nextRow' must be called before calling 'get'")
-    if (col.number >= columnToPos.length) error(s"unrecognized column '$col'")
+    if (_currentRow == 0) fileError("'nextRow' must be called before 'get'")
+    if (col.number >= columnToPos.length) fileError(s"unknown column '$col'")
     val pos = columnToPos(col.number)
-    if (pos == ColumnNotFound) error(s"invalid column '$col'")
+    if (pos == ColumnNotFound) fileError(s"invalid column '$col'")
     rowValues(pos)
   }
 
@@ -73,16 +73,16 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
   def getBool(col: Column): Boolean = get(col) match {
     case "Y" | "T" => true
     case "N" | "F" | "" => false
-    case s => error("convert to bool failed", col, s)
+    case s => fileError("convert to bool failed", col, s)
   }
 
   // methods to help support testing
   protected def readRow(): String = lines.next()
   protected def close(): Unit = source.close()
 
-  private def error(msg: String) = throw DomainException(errorMsg(msg))
-  private def error(msg: String, column: Column, s: String) =
-    throw DomainException(errorMsg(msg) + s", column: '$column', value: '$s'")
+  private def fileError(msg: String) = error(errorMsg(msg))
+  private def fileError(msg: String, column: Column, s: String) =
+    error(errorMsg(msg) + s", column: '$column', value: '$s'")
 
   private def errorMsg(msg: String) = {
     val result = s"$msg - file: $fileName"
@@ -93,19 +93,19 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
       colsIn: mutable.Map[String, Column]) =
     try {
       val lines = source.getLines()
-      if (!lines.hasNext) error("missing header row")
+      if (!lines.hasNext) fileError("missing header row")
       val colsFound = mutable.Set.empty[String]
       lines.next().split(sep).zipWithIndex.foreach { case (s, pos) =>
-        if (!colsFound.add(s)) error(s"duplicate header '$s'")
+        if (!colsFound.add(s)) fileError(s"duplicate header '$s'")
         colsIn.remove(s) match {
           case Some(c) => columnToPos(c.number) = pos
-          case _ => error(s"unrecognized header '$s'")
+          case _ => fileError(s"unrecognized header '$s'")
         }
       }
       colsIn.size match {
         case 0 => (source, lines)
-        case 1 => error(s"column '${colsIn.keys.mkString}' not found")
-        case s => error(colsIn.keys.toIndexedSeq.sorted.mkString(
+        case 1 => fileError(s"column '${colsIn.keys.mkString}' not found")
+        case s => fileError(colsIn.keys.toIndexedSeq.sorted.mkString(
               s"$s columns not found: '", "', '", "'"))
       }
     } catch {
@@ -119,20 +119,21 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
       val vals = readRow().split(splitRegex, -1)
       _currentRow += 1
       vals.length match {
-        case l if l < numColumns => error("not enough columns")
-        case l if l > numColumns => error("too many columns")
+        case l if l < numColumns => fileError("not enough columns")
+        case l if l > numColumns => fileError("too many columns")
         case _ => vals.zipWithIndex.foreach { case (s, i) => rowValues(i) = s }
       }
     } catch {
-      case e: IOException => error("failed to read next row: " + e.getMessage)
+      case e: IOException => fileError(s"failed to read row: ${e.getMessage}")
     }
 
   private def processUInt(s: String, col: Column, max: Int) = (try {
     Integer.parseUnsignedInt(s)
   } catch {
-    case _: Throwable => error("convert to UInt failed", col, s)
+    case _: Throwable => fileError("convert to UInt failed", col, s)
   }) match {
-    case x if max >= 0 && max < x => error(s"exceeded max value $max", col, s)
+    case x if max >= 0 && max < x =>
+      fileError(s"exceeded max value $max", col, s)
     case x => x
   }
 
@@ -146,14 +147,12 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column]) {
   private val (source, lines) = {
     val colsIn = mutable.Map.empty[String, Column]
     cols.foreach(c =>
-      if (colsIn.put(c.name, c).nonEmpty)
-        throw DomainException(s"duplicate column '$c'")
+      if (colsIn.put(c.name, c).nonEmpty) error(s"duplicate column '$c'")
     )
     try {
       processHeaderRow(Source.fromFile(path.toFile), colsIn)
     } catch {
-      case e: IOException =>
-        throw DomainException("failed to read header row: " + e.getMessage)
+      case e: IOException => error("failed to read header row: " + e.getMessage)
     }
   }
 }
