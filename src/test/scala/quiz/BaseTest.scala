@@ -42,7 +42,7 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
    * @param lines lines to write to testFile
    * @return testFile
    */
-  def writeTestFile(lines: Seq[String]): Path = {
+  def writeTestFile(lines: Seq[String] = Seq.empty[String]): Path = {
     lines.headOption.map(line => writeTestFile(line, lines.tail: _*)).getOrElse(
       Files.createFile(testFile)
     )
