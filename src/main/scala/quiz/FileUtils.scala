@@ -6,7 +6,31 @@ import scala.annotation.tailrec
 object FileUtils extends ThrowsDomainException {
   val TextFileExtension = ".txt"
 
+  // return string name of last component of path
   def fileName(path: Path): String = path.getFileName.toString
+
+  /**
+   * this function removes everything after first '.' that follows a non-dot
+   * character. The following table shows return values for sample file names:
+   * <table>
+   *   <tr><th>File Name</th> <th>Result</th></tr>
+   *   <tr><td>abc.x.y</td> <td>abc</td></tr>
+   *   <tr><td>def.</td> <td>def</td></tr>
+   *   <tr><td>abc</td> <td>abc</td></tr>
+   *   <tr><td>.</td> <td>.</td></tr>
+   *   <tr><td>..</td> <td>..</td></tr>
+   *   <tr><td>..a.b</td> <td>..a</td></tr>
+   * </table>
+   * @param path to remove extension from
+   * @return string name of last component of path with no extension. Removes
+   */
+  def fileNameStem(path: Path): String = {
+    val name = fileName(path)
+    name.indexOf(".", name.takeWhile(_ == '.').length) match {
+      case -1 => name
+      case i => name.substring(0, i)
+    }
+  }
 
   /**
    * @param path path to check for an extension
@@ -31,7 +55,8 @@ object FileUtils extends ThrowsDomainException {
   def checkExists(path: Path, extension: Option[String] = None): Path = {
     if (Files.exists(path)) path
     else extension match {
-      case Some(ext) if !hasExtension(path) => checkExists(addExtension(path, ext))
+      case Some(ext) if !hasExtension(path) =>
+        checkExists(addExtension(path, ext))
       case _ => error(s"'$path' not found")
     }
   }
