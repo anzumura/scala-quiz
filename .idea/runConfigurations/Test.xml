@@ -12,6 +12,7 @@
         <option value="quiz.KanjiTest" />
         <option value="quiz.ChoiceTest" />
         <option value="quiz.ListFileTest" />
+        <option value="quiz.FileUtilsTest" />
         <option value="quiz.KanjiTypeTest" />
         <option value="quiz.ColumnFileTest" />
         <option value="quiz.ColumnTest" />
