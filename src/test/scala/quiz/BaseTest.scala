@@ -1,9 +1,10 @@
 package quiz
 
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import java.nio.file.{Files, Path}
+import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
 
 trait BaseTest extends AnyFreeSpec {
@@ -29,6 +30,22 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
     Files.walk(d).toScala(LazyList).foreach { f =>
       if (Files.isRegularFile(f)) Files.delete(f)
     }
+  }
+
+  def writeTestFile(line: String, lines: String*): Path = {
+    val allLines = line +: lines
+    Files.write(testFile, allLines.asJava)
+  }
+
+  /**
+   * write lines to testFile or create empty testFile if lines is empty
+   * @param lines lines to write to testFile
+   * @return testFile
+   */
+  def writeTestFile(lines: Seq[String]): Path = {
+    lines.headOption.map(line => writeTestFile(line, lines.tail: _*)).getOrElse(
+      Files.createFile(testFile)
+    )
   }
 
   // delete all files from 'tempDir' after each test

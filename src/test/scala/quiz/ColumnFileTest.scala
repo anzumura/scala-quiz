@@ -5,7 +5,6 @@ import quiz.ColumnFileTest._
 
 import java.io.IOException
 import java.nio.file.{Files, Path}
-import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.util.Using
 
 class ColumnFileTest extends FileTest {
@@ -105,7 +104,7 @@ class ColumnFileTest extends FileTest {
     }
 
     "failed close" in {
-      val path = Files.createFile(tempDir.resolve(testFileName))
+      val path = Files.createFile(testFile)
       Files.writeString(path, "col1")
       val f = new TestColumnFile(path, '\t', col1) {
         override def close(): Unit = {
@@ -231,12 +230,6 @@ class ColumnFileTest extends FileTest {
   private def fileError(
       f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainException(f, s"${fileMsg(msg, row)}, column: '$c', value: '$s'")
-
-  private def writeTestFile(lines: Seq[String]) = {
-    val path = Files.createFile(tempDir.resolve(testFileName))
-    Files.write(path, lines.asJava)
-    path
-  }
 
   private def create(sep: Char, cols: Seq[Column], lines: String*) = {
     testColumnFile.foreach(_.close())
