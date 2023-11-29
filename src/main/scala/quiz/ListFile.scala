@@ -4,6 +4,7 @@ import quiz.FileUtils.{fileName, fileNameStem}
 import quiz.ListFile.{FileType, OnePerLine}
 
 import java.nio.file.Path
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.util.Using
@@ -30,16 +31,20 @@ class ListFile private (path: Path, fileType: FileType,
    * list of all entries in the file
    */
   val entries: Vector[String] = {
-    def err(msg: String, lineNum: Int) =
-      error(s"$msg - line: ${lineNum + 1}, file: " + fileName(path))
-
     val result = ArrayBuffer.empty[String]
     Using(Source.fromFile(path.toFile)) { source =>
+      val uniqueEntries = mutable.Set.empty[String]
       source.getLines().zipWithIndex.foreach { case (line, i) =>
+        def err(msg: String) =
+          error(s"$msg - line: ${i + 1}, file: " + fileName(path))
+        def add(entry: String) = {
+          if (!uniqueEntries.add(entry)) err(s"duplicate entry '$entry'")
+          result += entry
+        }
         if (fileType == OnePerLine) {
-          if (line.contains(' ')) err("got multiple tokens", i)
-          result += line
-        } else line.split(' ').foreach(result += _)
+          if (line.contains(' ')) err("line has multiple entries")
+          add(line)
+        } else line.split(' ').foreach(add)
       }
     }.failed.foreach(throw _)
     result.toVector

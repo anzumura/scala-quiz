@@ -52,8 +52,13 @@ class ListFileTest extends FileTest {
     assert(!ListFile(writeTestFile("赤\n青\n黄")).exists("白"))
   }
 
-  "error for multiple tokens per line" in {
+  "error for multiple entries per line" in {
     domainException(ListFile(writeTestFile("北 東 南 西")),
-      "got multiple tokens - line: 1, file: test.txt")
+      "line has multiple entries - line: 1, file: test.txt")
+  }
+
+  "error for duplicate entry" in {
+    domainException(ListFile(writeTestFile("北\n東\n北\n西")),
+      "duplicate entry '北' - line: 3, file: test.txt")
   }
 }
