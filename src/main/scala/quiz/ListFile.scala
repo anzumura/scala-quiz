@@ -6,7 +6,7 @@ import quiz.ListFile.{FileType, OnePerLine}
 import java.nio.file.Path
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
-import scala.util.{Failure, Using}
+import scala.util.Using
 
 /**
  * holds data loaded from a file with Kanji string entries
