@@ -16,6 +16,7 @@
         <option value="quiz.KanjiTypeTest" />
         <option value="quiz.ColumnFileTest" />
         <option value="quiz.ColumnTest" />
+        <option value="quiz.UnicodeUtilsTest" />
       </list>
     </option>
     <option name="shortenClasspath" value="NONE" />
