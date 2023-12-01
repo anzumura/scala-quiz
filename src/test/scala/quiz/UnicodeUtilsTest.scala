@@ -3,14 +3,29 @@ package quiz
 import UnicodeUtils._
 
 class UnicodeUtilsTest extends BaseTest {
+  private val dog = Code(0x72ac) // Kanji in the Basic Multilingual Plane
+  private val scold = Code(0x20b9f) // Kanji in a Supplementary Plane
+
   "code" - {
-    "toString" in {
+    "toString returns the standard Unicode representation" in {
       assert(Code().toString == "U+0000")
       assert(Code(62).toString == "U+003E")
       assert(Code(0xfff).toString == "U+0FFF")
       assert(Code(0xffff).toString == "U+FFFF")
       assert(Code(0x10000).toString == "U+10000")
       assert(Code(UnicodeMax).toString == "U+10FFFF")
+    }
+
+    "toUTF16 returns the code point as a standard Java (UTF-16) String" in {
+      val result = dog.toUTF16
+      assert(result == "犬")
+      assert(result.length == 1)
+    }
+
+    "toUTF16 works for codes outside of BMP (Basic Multilingual Plane)" in {
+      val result = scold.toUTF16
+      assert(result == "𠮟")
+      assert(result.length == 2)
     }
 
     "can't be negative" in {
@@ -24,7 +39,8 @@ class UnicodeUtilsTest extends BaseTest {
     }
 
     "create from string value" in {
-      assert(Code("犬").value == 0x72ac)
+      assert(Code("犬").value == dog.value)
+      assert(Code("𠮟").value == scold.value)
     }
 
     "create from longer string value" in {
@@ -57,7 +73,8 @@ class UnicodeUtilsTest extends BaseTest {
       "end U+0013 is less than start U+0014")
   }
 
-  private val nonKanjiCodes = Seq("a", "ā", "あ", "ア").map(Code(_))
+  private val nonKanjiStrings = Seq("a", "ā", "あ", "ア")
+  private val nonKanjiCodes = nonKanjiStrings.map(Code(_))
 
   // common Kanji from Unified block, Compatibility block and Extension B
   private val commonCodes = Seq("厭", "琢", "𠮟").map(Code(_))
@@ -81,5 +98,12 @@ class UnicodeUtilsTest extends BaseTest {
     commonCodes.foreach(c => assert(isKanji(c)))
     assert(isKanji(rareCode))
     nonKanjiCodes.foreach(c => assert(!isKanji(c)))
+  }
+
+  "isKanji helper method taking a string" in {
+    assert(isKanji(dog.toUTF16))
+    assert(isKanji(scold.toUTF16))
+    assert(isKanji(scold.toUTF16 + dog.toUTF16, sizeOne = false))
+    nonKanjiStrings.foreach(c => assert(!isKanji(c)))
   }
 }

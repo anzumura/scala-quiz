@@ -5,8 +5,17 @@ object UnicodeUtils extends ThrowsDomainException {
 
   final class Code private (val value: Int) extends AnyVal with Ordered[Code] {
     override def compare(rhs: Code): Int = value - rhs.value
+
+    /**
+     * @return standard Unicode code point representation, i.e., U+'hex value'
+     */
     override def toString: String =
       (if (value <= 0xfff) "U+%04X" else "U+%X").format(value)
+
+    /**
+     * @return standard Java (UTF-16) String for this code point
+     */
+    def toUTF16: String = Character.toString(value)
   }
 
   object Code {
@@ -73,6 +82,13 @@ object UnicodeUtils extends ThrowsDomainException {
    * @return true if `x` is in any Kanji block
    */
   def isKanji(x: Code): Boolean = isCommonKanji(x) || isRareKanji(x)
+
+  /**
+   * convenience method for checking if a string is a Kanji
+   * @see Code.apply(String,Boolean)
+   */
+  def isKanji(x: String, sizeOne: Boolean = true): Boolean =
+    isKanji(Code(x, sizeOne))
 
   private def exists(x: Code, blocks: Array[Block]) = {
     blocks.exists(_(x))
