@@ -52,7 +52,7 @@ class UnicodeUtilsTest extends BaseTest {
     }
 
     "can't create from longer string is sizeOne is true (the default)" in {
-      domainException(Code("犬猫"), "value has more than one Unicode letter")
+      domainException(Code("犬猫"), "'犬猫' has more than one Unicode letter")
     }
   }
 

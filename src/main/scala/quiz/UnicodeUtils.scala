@@ -31,7 +31,7 @@ object UnicodeUtils extends ThrowsDomainException {
       if (value.isEmpty) error("cannot create Unicode Code from empty string")
       val x = value.codePointAt(0)
       if (sizeOne && Character.charCount(x) < value.length)
-        error("value has more than one Unicode letter")
+        error(s"'$value' has more than one Unicode letter")
       new Code(x)
     }
 
