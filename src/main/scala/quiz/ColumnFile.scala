@@ -86,7 +86,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
 
   private def errorMsg(msg: String) = {
     val result = s"$msg - file: $fileName"
-    if (currentRow > 0) s"$result, row: $currentRow" else result
+    if (currentRow > 0) s"$result, line: $currentRow" else result
   }
 
   private def processHeaderRow(source: Source,

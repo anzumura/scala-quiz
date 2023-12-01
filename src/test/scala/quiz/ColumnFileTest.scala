@@ -219,14 +219,6 @@ class ColumnFileTest extends FileTest {
     super.afterEach()
   }
 
-  private def fileMsg(msg: String): String = s"$msg - file: $testFileName"
-  private def fileMsg(msg: String, row: Int): String =
-    s"${fileMsg(msg)}, row: $row"
-
-  private def fileError(f: => Any, msg: String): Unit =
-    domainException(f, fileMsg(msg))
-  private def fileError(f: => Any, msg: String, row: Int): Unit =
-    domainException(f, fileMsg(msg, row))
   private def fileError(
       f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainException(f, s"${fileMsg(msg, row)}, column: '$c', value: '$s'")

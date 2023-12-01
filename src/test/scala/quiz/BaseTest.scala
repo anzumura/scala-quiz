@@ -57,4 +57,13 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
   override protected def afterAll(): Unit = {
     Files.deleteIfExists(tempDir)
   }
+
+  protected def fileMsg(msg: String): String = s"$msg - file: $testFileName"
+  protected def fileMsg(msg: String, line: Int): String =
+    s"${fileMsg(msg)}, line: $line"
+
+  protected def fileError(f: => Any, msg: String): Unit =
+    domainException(f, fileMsg(msg))
+  protected def fileError(f: => Any, msg: String, line: Int): Unit =
+    domainException(f, fileMsg(msg, line))
 }
