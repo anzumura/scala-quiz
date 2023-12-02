@@ -7,9 +7,8 @@ import java.nio.file.Path
 import scala.collection.mutable
 import scala.io.Source
 
-/**
- * class for loading data from a delimiter separated file with a header row
- * containing the column names
+/** class for loading data from a delimiter separated file with a header row
+ *  containing the column names
  */
 class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
     extends ThrowsDomainException {
@@ -18,14 +17,13 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
   def numColumns: Int = rowValues.length
   def currentRow: Int = _currentRow
 
-  /**
-   * read next row, this method must be called before calling get methods. If
-   * there's no more rows then false is returned and the file is closed - thus
-   * calling nextRow again after the file is closed raises an exception.
+  /** read next row, this method must be called before calling get methods. If
+   *  there's no more rows then false is returned and the file is closed - thus
+   *  calling nextRow again after the file is closed raises an exception.
    *
-   * @return true if a row was read or false if there is no more data
-   * @throws DomainException if reading the next row fails or has incorrect
-   *                         number of columns
+   *  @return true if a row was read or false if there is no more data
+   *  @throws DomainException if reading the next row fails or has incorrect
+   *                          number of columns
    */
   def nextRow(): Boolean = {
     if (_closed) error(s"file: '$fileName' has been closed")
@@ -41,11 +39,10 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
     hasNext
   }
 
-  /**
-   * @param col column contained in this file
-   * @return string value for the given column in current row
-   * @throws DomainException if `nextRow` hasn't been called yet or the given
-   *                         column isn't part of this file
+  /** @param col column contained in this file
+   *  @return string value for the given column in current row
+   *  @throws DomainException if `nextRow` hasn't been called yet or the given
+   *                          column isn't part of this file
    */
   def get(col: Column): String = {
     if (_currentRow == 0) fileError("'nextRow' must be called before 'get'")
@@ -55,20 +52,18 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
     rowValues(pos)
   }
 
-  /**
-   * @param col column contained in this file
-   * @param max max value allowed (check is only applied if max is non-negative)
-   * @return unsigned int value for the given column in current row
-   * @throws DomainException if `get` fails or value can't be converted to an
-   *                         unsigned int less than or equal to max
+  /** @param col column contained in this file
+   *  @param max max value allowed (only checks if max is non-negative)
+   *  @return unsigned int value for the given column in current row
+   *  @throws DomainException if `get` fails or value can't be converted to an
+   *                          unsigned int less than or equal to max
    */
   def getUInt(col: Column, max: Int = NoMaxValue): Int =
     processUInt(get(col), col, max)
 
-  /**
-   * @param col column contained in this file
-   * @return true for "Y" or "T", false for "N", "F" or ""
-   * @throws DomainException if `get` fails or value is unrecognized
+  /** @param col column contained in this file
+   *  @return true for "Y" or "T", false for "N", "F" or ""
+   *  @throws DomainException if `get` fails or value is unrecognized
    */
   def getBool(col: Column): Boolean = get(col) match {
     case "Y" | "T" => true
@@ -168,10 +163,9 @@ object ColumnFile {
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1
 
-  /**
-   * represents a column in a `ColumnFile`. Instances are used to get
-   * values from each row and the same Column instance can be used in multiple
-   * ColumnFiles.
+  /** represents a column in a `ColumnFile`. Instances are used to get
+   *  values from each row and the same Column instance can be used in multiple
+   *  ColumnFiles.
    */
   final class Column private (val name: String) {
     val number: Int = allColumns.getOrElseUpdate(name, allColumns.size)

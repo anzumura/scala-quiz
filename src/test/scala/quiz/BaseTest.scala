@@ -37,10 +37,9 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
     Files.write(testFile, allLines.asJava)
   }
 
-  /**
-   * write lines to testFile or create empty testFile if lines is empty
-   * @param lines lines to write to testFile
-   * @return testFile
+  /** write lines to testFile or create empty testFile if lines is empty
+   *  @param lines lines to write to testFile
+   *  @return testFile
    */
   def writeTestFile(lines: Seq[String] = Seq.empty[String]): Path = {
     lines.headOption.map(line => writeTestFile(line, lines.tail: _*)).getOrElse(

@@ -39,11 +39,10 @@ object Kanji {
 
   // abstract subclasses of Kanji
 
-  /**
-   * base class for the officially recognized variants stored in 'jouyou.txt'
-   * and 'jinmei.txt'. Some of these Kanji are in the top 2,501 frequency list
-   * and almost all of them are in Kentei KJ1 or K1. However, none of them have
-   * a JLPT level.
+  /** base class for the officially recognized variants stored in 'jouyou.txt'
+   *  and 'jinmei.txt'. Some of these Kanji are in the top 2,501 frequency list
+   *  and almost all of them are in Kentei KJ1 or K1. However, none of them have
+   *  a JLPT level.
    */
   sealed abstract class Linked protected (f: Fields,
       private val lf: LinkedFields)
@@ -57,9 +56,7 @@ object Kanji {
     override def newName: Option[String] = link.map(_.name)
   }
 
-  /**
-   * contains 'meaning' and 'reading' fields loaded from files
-   */
+  /** contains 'meaning' and 'reading' fields loaded from files */
   sealed abstract class Loaded protected (f: Fields,
       private val lf: LoadedFields)
       extends Kanji(f) {
@@ -208,14 +205,13 @@ object KenteiKanji {
 
 // concrete subclasses of Kanji.Linked
 
-/**
- * official set of 230 Jinmeiyō Kanji that are old or alternative forms of
- * JouyouKanji or JinmeiKanji. There are 230 of these Kanji:
- * <ul>
- * <li>204 are part of the 365 JouyouKanji 'old names' set
- * <li>8 are different alternate forms of JouyouKanji (薗 駈 嶋 盃 冨 峯 埜 凉)
- * <li> 18 are alternate forms of standard JinmeiKanji
- * </ul>
+/** official set of 230 Jinmeiyō Kanji that are old or alternative forms of
+ *  JouyouKanji or JinmeiKanji. There are 230 of these Kanji:
+ *  <ul>
+ *  <li>204 are part of the 365 JouyouKanji 'old names' set
+ *  <li>8 are different alternate forms of JouyouKanji (薗 駈 嶋 盃 冨 峯 埜 凉)
+ *  <li>18 are alternate forms of standard JinmeiKanji
+ *  </ul>
  */
 final class LinkedJinmeiKanji(f: Fields, lf: LinkedFields)
     extends Linked(f, lf) {
@@ -231,9 +227,8 @@ object LinkedJinmeiKanji {
       LinkedFields(link, frequency, kyu))
 }
 
-/**
- * 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants
- * that aren't already included in the 230 Jinmeiyō 'official variants'.
+/** 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants
+ *  that aren't already included in the 230 Jinmeiyō 'official variants'.
  */
 final class LinkedOldKanji(f: Fields, lf: LinkedFields) extends Linked(f, lf) {
   if (!lf.link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")

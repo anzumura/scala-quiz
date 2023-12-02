@@ -3,7 +3,7 @@ package quiz
 import UnicodeUtils._
 
 class UnicodeUtilsTest extends BaseTest {
-  private val dog = Code(0x72ac) // Kanji in the Basic Multilingual Plane
+  private val dog = Code(0x72ac)    // Kanji in the Basic Multilingual Plane
   private val scold = Code(0x20b9f) // Kanji in a Supplementary Plane
 
   "code" - {

@@ -31,17 +31,16 @@ class Choice private (private var _quit: Option[Char] = None,
     quitDescription = d
   }
 
-  /**
-   * read in a choice from `is` provided in the ctor
-   * @param choices set of choices the user must choose from
-   * @param msg beginning part of prompt message written to `os` specified in
+  /** read in a choice from `is` provided in the ctor
+   *  @param choices set of choices the user must choose from
+   *  @param msg beginning part of prompt message written to `os` specified in
    *            the ctor, the rest of the prompt message shows the choices
-   * @param useQuit if 'QuitOff' then 'quit option' is not included in choices
-   * @param defaultChoice optional default choice (for just pressing return)
-   * @return one of the choices from `choices` or possibly the 'quit option'
-   * @throws DomainException if `def` is provided, but it's not in `choicesIn`
-   * @throws DomainException if 'quit option' is set and is also in `choices`
-   * @throws DomainException if any choice in `choices` is not printable Ascii
+   *  @param useQuit if 'QuitOff' then 'quit option' is not included in choices
+   *  @param defaultChoice optional default choice (for just pressing return)
+   *  @return one of the choices from `choices` or possibly the 'quit option'
+   *  @throws DomainException if `def` is provided, but it's not in `choicesIn`
+   *  @throws DomainException if 'quit option' is set and is also in `choices`
+   *  @throws DomainException if any choice in `choices` is not printable Ascii
    */
   def get(choices: Choices, msg: String = "", useQuit: UseQuit = QuitOn,
       defaultChoice: Option[Char] = None): Char = {
