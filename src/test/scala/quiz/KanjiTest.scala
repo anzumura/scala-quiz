@@ -106,9 +106,9 @@ class KanjiTest extends BaseTest {
 
   "Other Kanji" - {
     "create Frequency Kanji" in {
-      Seq(HasLinkedReadings, NoLinkedReadings).foreach { linkedReadings =>
+      LinkedReadings.values.foreach { linkedReadings =>
         val k = FrequencyKanji(name, radical, strokes, meaning, reading,
-          NoOldLinks, Nil, linkedReadings, kyu, frequency)
+          OldLinks.No, Nil, linkedReadings, kyu, frequency)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Frequency)
         assert(k.oldNames.isEmpty)
@@ -122,15 +122,15 @@ class KanjiTest extends BaseTest {
     "error for Frequency Kanji with no frequency" in {
       Seq(-1, 0).foreach(f =>
         domainException(FrequencyKanji(name, radical, strokes, meaning, reading,
-            NoOldLinks, Nil, NoLinkedReadings, kyu, f),
+            OldLinks.No, Nil, LinkedReadings.No, kyu, f),
           "FrequencyKanji: frequency must be greater than zero")
       )
     }
 
     "create Kentei Kanji" in {
-      Seq(HasLinkedReadings, NoLinkedReadings).foreach { linkedReadings =>
+      LinkedReadings.values.foreach { linkedReadings =>
         val k = KenteiKanji(name, radical, strokes, meaning, reading,
-          NoOldLinks, Nil, linkedReadings, kyu)
+          OldLinks.No, Nil, linkedReadings, kyu)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Kentei)
         assert(k.oldNames.isEmpty)
@@ -143,13 +143,13 @@ class KanjiTest extends BaseTest {
 
     "error for Kentei Kanji with no kyu" in {
       domainException(KenteiKanji(name, radical, strokes, meaning, reading,
-          NoOldLinks, Nil, NoLinkedReadings, Kyu.None),
+          OldLinks.No, Nil, LinkedReadings.No, Kyu.None),
         "KenteiKanji: must have a valid kyu")
     }
 
     "create Ucd Kanji" in {
-      Seq(HasLinkedReadings, NoLinkedReadings).foreach { linkedReadings =>
-        val k = UcdKanji(name, radical, strokes, meaning, reading, NoOldLinks,
+      LinkedReadings.values.foreach { linkedReadings =>
+        val k = UcdKanji(name, radical, strokes, meaning, reading, OldLinks.No,
           Nil, linkedReadings)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Ucd)
@@ -163,8 +163,8 @@ class KanjiTest extends BaseTest {
 
     "create Ucd Kanji with old names" in {
       val oldNames = List("辨", "瓣", "辯")
-      val k = UcdKanji(name, radical, strokes, meaning, reading, HasOldLinks,
-        oldNames, NoLinkedReadings)
+      val k = UcdKanji(name, radical, strokes, meaning, reading, OldLinks.Yes,
+        oldNames, LinkedReadings.No)
       checkLoadedFields(k)
       assert(k.oldNames == oldNames)
       assert(k.newName.isEmpty)
@@ -172,8 +172,8 @@ class KanjiTest extends BaseTest {
 
     "create Ucd Kanji with new name" in {
       val newName = "弁"
-      val k = UcdKanji(name, radical, strokes, meaning, reading, NoOldLinks,
-        List(newName), NoLinkedReadings)
+      val k = UcdKanji(name, radical, strokes, meaning, reading, OldLinks.No,
+        List(newName), LinkedReadings.No)
       checkLoadedFields(k)
       assert(k.oldNames.isEmpty)
       assert(k.newName.contains(newName))

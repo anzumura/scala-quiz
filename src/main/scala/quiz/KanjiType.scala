@@ -18,14 +18,12 @@ import scala.language.implicitConversions
  *  </ul>
  */
 object KanjiType extends Enumeration {
-  type KanjiType = Value
   val Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd =
     Value
 }
 
 /** represents the official school grade for all Jouyou Kanji */
 object Grade extends Enumeration {
-  type Grade = Value
   val G1, G2, G3, G4, G5, G6, S, None = Value
 }
 
@@ -33,7 +31,6 @@ object Grade extends Enumeration {
  *  (including 1,971 Jouyou and 251 Jinmei)
  */
 object Level extends Enumeration {
-  type Level = Value
   val N5, N4, N3, N2, N1, None = Value
 }
 
@@ -42,7 +39,6 @@ object Level extends Enumeration {
  *  @see <a href="https://en.wikipedia.org/wiki/Kanji_Kentei"></a>
  */
 object Kyu extends Enumeration {
-  type Kyu = Value
   val K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None = Value
 }
 
@@ -58,20 +54,23 @@ object Kyu extends Enumeration {
  *  </ul>
  */
 object JinmeiReason extends Enumeration {
-  type JinmeiReason = Value
   val Names, Print, Variant, Moved, Simple, Other, None = Value
 }
 
 sealed trait LinkedReadings
-case object HasLinkedReadings extends LinkedReadings
-case object NoLinkedReadings extends LinkedReadings
 object LinkedReadings {
-  implicit def toBoolean(x: LinkedReadings): Boolean = x eq HasLinkedReadings
+  case object Yes extends LinkedReadings
+  case object No extends LinkedReadings
+  val values: Seq[LinkedReadings] = Seq(Yes, No)
+
+  implicit def toBoolean(x: LinkedReadings): Boolean = x eq Yes
 }
 
 sealed trait OldLinks
-case object HasOldLinks extends OldLinks
-case object NoOldLinks extends OldLinks
 object OldLinks {
-  implicit def toBoolean(x: OldLinks): Boolean = x eq HasOldLinks
+  case object Yes extends OldLinks
+  case object No extends OldLinks
+  val values: Seq[OldLinks] = Seq(Yes, No)
+
+  implicit def toBoolean(x: OldLinks): Boolean = x eq Yes
 }

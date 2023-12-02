@@ -15,7 +15,7 @@ sealed abstract class Kanji protected (private val f: Fields) {
   def frequency: Int = 0
   def kyu: Kyu.Value = Kyu.None
   def year: Int = 0
-  def linkedReadings: LinkedReadings = NoLinkedReadings
+  def linkedReadings: LinkedReadings = LinkedReadings.No
   def oldNames: List[String] = Nil
   def newName: Option[String] = None
   def grade: Grade.Value = Grade.None
@@ -52,7 +52,7 @@ object Kanji {
     override def kyu: Kyu.Value = lf.kyu
     override def meaning: String = lf.link.meaning
     override def reading: String = lf.link.reading
-    override def linkedReadings: LinkedReadings = HasLinkedReadings
+    override def linkedReadings: LinkedReadings = LinkedReadings.Yes
     override def newName: Option[String] = link.map(_.name)
   }
 
