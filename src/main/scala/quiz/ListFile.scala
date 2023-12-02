@@ -1,13 +1,14 @@
 package quiz
 
-import quiz.FileUtils.{fileName, fileNameStem}
-import quiz.ListFile.{FileType, OnePerLine}
+import quiz.FileUtils._
+import quiz.ListFile._
 import quiz.UnicodeUtils.isKanji
 
 import java.nio.file.Path
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
+import scala.reflect.ClassTag
 import scala.util.{Try, Using}
 
 /**
@@ -109,4 +110,45 @@ object KanjiListFile {
   def apply(path: Path, fileType: FileType) = new KanjiListFile(path, fileType)
   def apply(path: Path, name: String, fileType: FileType = OnePerLine) =
     new KanjiListFile(path, fileType, Option(name))
+}
+
+/**
+ * derived class of KanjiList file that ensures each entry is unique across
+ * all files for the same 'Enumeration' type, i.e., an entry can't be in more
+ * than one JLPT 'Level' file
+ */
+final class EnumListFile[T <: Enumeration: ClassTag] private (dir: Path,
+    val value: T#Value)
+    extends KanjiListFile(dir.resolve(value.toString + TextFileExtension),
+      MultiplePerLine) {
+
+  /**
+   * the name of the enum type without the trailing '$' so if this class was
+   * created with value `Kyu.K10` enumName would be "Kyu"
+   */
+  val enumName: String =
+    implicitly[ClassTag[T]].runtimeClass.getSimpleName.dropRight(1)
+
+  private val enumEntries =
+    EnumListFile.entries.getOrElseUpdate(enumName, mutable.Set[String]())
+
+  override protected def validate(
+      entry: String): Boolean = super.validate(entry) && enumEntries.add(
+    entry) || error(s"'$entry' already in another $enumName")
+}
+
+object EnumListFile {
+  /**
+   * @param dir the directory containing the enum file
+   * @param value enum value, i.e., Level.N3
+   * @return EnumListFile (file name is `value` plus ".txt", e.g., "N3.txt")
+   */
+  def apply[T <: Enumeration: ClassTag](
+      dir: Path, value: T#Value): EnumListFile[T] = new EnumListFile(dir, value)
+
+  /**
+   * `entries` is used to ensure file entries are unique per enum type. It is a
+   * map of 'enum name' (like "Level" or "Kyu") to a set entries
+   */
+  private val entries = mutable.Map[String, mutable.Set[String]]()
 }

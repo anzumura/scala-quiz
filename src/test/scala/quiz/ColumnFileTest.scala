@@ -221,7 +221,7 @@ class ColumnFileTest extends FileTest {
 
   private def fileError(
       f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
-    domainException(f, s"${fileMsg(msg, row)}, column: '$c', value: '$s'")
+    domainException(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
   private def create(sep: Char, cols: Seq[Column], lines: String*) = {
     testColumnFile.foreach(_.close())

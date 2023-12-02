@@ -2,6 +2,8 @@ package quiz
 
 import quiz.ListFile.MultiplePerLine
 
+import java.nio.file.Files
+
 class ListFileTest extends FileTest {
   "ListFile" - {
     "name is capitalized file name stem by default" in {
@@ -89,6 +91,42 @@ class ListFileTest extends FileTest {
     "error for entry with more than one Kanji" in {
       fileError(KanjiListFile(writeTestFile("北\n東\n南乾\n西")).entries,
         "'南乾' has more than one Unicode letter", 3)
+    }
+  }
+
+  "EnumListFile" - {
+    "read entries for a JLPT Level" in {
+      Files.writeString(tempDir.resolve("N5.txt"), "一 二 三\n四 五 六")
+      val f = EnumListFile(tempDir, Level.N5)
+      assert(f.size == 6)
+      assert(f.enumName == "Level")
+      assert(f.value == Level.N5)
+    }
+
+    "the same entries can exist in files for different enum types" in {
+      Files.writeString(tempDir.resolve("K10.txt"), "七 八\n九 十")
+      val kyuFile = EnumListFile(tempDir, Kyu.K10)
+      assert(kyuFile.size == 4)
+      Files.writeString(tempDir.resolve("G1.txt"), "七 八\n九 十")
+      val gradeFile = EnumListFile(tempDir, Grade.G1)
+      assert(gradeFile.size == 4)
+    }
+
+    "entries must be recognized Kanji" in {
+      val fileName = "G2.txt"
+      Files.writeString(tempDir.resolve(fileName), "北 東 S 西")
+      fileError(EnumListFile(tempDir, Grade.G2).entries,
+        "'S' is not a recognized Kanji", 1, fileName)
+    }
+
+    "entries must be unique across all files for the same enum" in {
+      Files.writeString(tempDir.resolve("N4.txt"), "七 八\n九 十")
+      val f = EnumListFile(tempDir, Level.N4)
+      assert(f.size == 4)
+      val fileName = "N3.txt"
+      Files.writeString(tempDir.resolve(fileName), "百 千\n万 八")
+      fileError(EnumListFile(tempDir, Level.N3).size,
+        s"'八' already in another Level", 2, fileName)
     }
   }
 }
