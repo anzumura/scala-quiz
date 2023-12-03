@@ -8,7 +8,7 @@ class KanjiDataTest extends FileTest {
     super.afterEach()
   }
 
-  "lookup Kanji JLPT level" in {
+  "get JLPT level" in {
     val p = tempDir.resolve("Level")
     Files.createDirectory(p)
     Files.writeString(p.resolve("N5.txt"), "一 二 三\n四 五 六")
@@ -27,7 +27,7 @@ class KanjiDataTest extends FileTest {
     assert(data.level("百") == Level.None)
   }
 
-  "lookup Kanji Kentei kyu" in {
+  "get Kentei kyu" in {
     val sampleKanji = "一二三四五六七八九十百千"
     val p = tempDir.resolve("Kyu")
     Files.createDirectory(p)
@@ -38,5 +38,14 @@ class KanjiDataTest extends FileTest {
     assert(data.kyu("一") == Kyu.K10)
     assert(data.kyu("千") == Kyu.K1)
     assert(data.kyu("万") == Kyu.None)
+  }
+
+  "get frequency starting at 1 or 0 if no frequency" in {
+    Files.writeString(tempDir.resolve("frequency.txt"), "一\n二\n三")
+    val data = KanjiData(tempDir)
+    assert(data.frequency("一") == 1)
+    assert(data.frequency("二") == 2)
+    assert(data.frequency("三") == 3)
+    assert(data.frequency("四") == 0)
   }
 }
