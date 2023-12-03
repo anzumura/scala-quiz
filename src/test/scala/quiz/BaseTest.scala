@@ -6,6 +6,7 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
+import scala.util.Try
 
 trait BaseTest extends AnyFreeSpec {
   protected def domainException(f: => Any, msg: String): Unit = {
@@ -26,10 +27,22 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
   val tempDir: Path = Files.createTempDirectory("tempDir")
   val testFile: Path = tempDir.resolve(testFileName)
 
-  def clearDirectory(d: Path): Unit = {
-    Files.walk(d).toScala(LazyList).foreach { f =>
-      if (Files.isRegularFile(f)) Files.delete(f)
+  def delete(p: Path): Unit = {
+    Try(Files.delete(p)).failed.foreach { e =>
+      println(s"DELETE FAILED: $e")
+      System.exit(1)
     }
+  }
+
+  def deleteIfExists(p: Path): Unit = {
+    Try(Files.deleteIfExists(p)).failed.foreach { e =>
+      println(s"DELETE FAILED: $e")
+      System.exit(1)
+    }
+  }
+
+  def clearDirectory(d: Path): Unit = {
+    Files.walk(d).toScala(LazyList).reverse.filter(_ != d).foreach(delete)
   }
 
   def writeTestFile(line: String, lines: String*): Path = {
@@ -54,7 +67,7 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
 
   // delete 'tempDir' after all tests
   override protected def afterAll(): Unit = {
-    Files.deleteIfExists(tempDir)
+    deleteIfExists(tempDir)
   }
 
   protected def fileMsg(msg: String, file: Option[String]): String =
