@@ -96,6 +96,7 @@ class KanjiListFileTest extends FileTest {
 class EnumListFileTest extends FileTest {
   override protected def afterEach(): Unit = {
     EnumListFile.clearEntryData()
+    super.afterEach()
   }
 
   "read entries for a JLPT Level" in {
