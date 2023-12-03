@@ -132,6 +132,13 @@ object EnumListFile {
   def apply[T <: Enumeration: ClassTag](
       dir: Path, value: T#Value): EnumListFile[T] = new EnumListFile(dir, value)
 
+  /** clear all entry data used to ensure uniqueness per enum */
+  def clearEntryData(): Unit = {
+    entries.clear()
+  }
+
+  def hasEntryData: Boolean = entries.nonEmpty
+
   /** `entries` is used to ensure file entries are unique per enum type. It is a
    *  map of 'enum name' (like "Level" or "Kyu") to a set entries
    */
