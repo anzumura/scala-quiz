@@ -50,7 +50,7 @@ class ListFile protected (path: Path, fileType: FileType,
     result.toVector
   }
 
-  lazy val indices = entries.zipWithIndex.toMap
+  lazy val indices: Map[String, Int] = entries.zipWithIndex.toMap
 
   /** @return number of entries loaded */
   def size: Int = entries.size
