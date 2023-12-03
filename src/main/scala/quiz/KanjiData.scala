@@ -37,6 +37,7 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
       // add validation
       val name = f.get(nameCol)
       val grade = f.get(gradeCol)
+      val oldNames = f.get(oldNamesCol)
       result += JouyouKanji(
         name,
         f.get(radicalCol),
@@ -48,6 +49,7 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
         level(name),
         frequency(name),
         f.getUIntDefault(yearCol, 0),
+        if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
         Grade.withName(if (grade != "S") s"G$grade" else grade)
       )
     }

@@ -66,16 +66,19 @@ class KanjiDataTest extends FileTest {
     assert(k.name == "亜")
     assert(k.radical == "二")
     assert(k.strokes == 7)
-    assert(k.oldNames.isEmpty)
+    assert(k.oldNames == List("亞"))
     assert(k.year == 0)
     assert(k.grade == Grade.S)
     assert(k.meaning == "sub-")
     assert(k.reading == "ア")
     assert(k.newName.isEmpty)
-    // the following values should be defaults populated by TestKanjiData class
+    // the following values are defaults populated by TestKanjiData class
     assert(k.level == Level.None)
     assert(k.kyu == Kyu.None)
     assert(k.frequency == 0)
+    // check year and grade on different Kanji
+    assert(result(2).year == 2010)
+    assert(result(3).grade == Grade.G4)
   }
 }
 
