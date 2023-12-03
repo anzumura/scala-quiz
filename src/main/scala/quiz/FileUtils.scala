@@ -75,6 +75,7 @@ object FileUtils extends ThrowsDomainException {
     result
   }
 
-  def textFile(dir: Path, file: Path): Path =
-    resolve(dir, file, Option(TextFileExtension))
+  /** helper calls [[resolve]] with a string file name and TextFileExtension */
+  def textFile(dir: Path, file: String): Path =
+    resolve(dir, Path.of(file), Option(TextFileExtension))
 }

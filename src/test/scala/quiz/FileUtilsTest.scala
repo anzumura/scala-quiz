@@ -107,7 +107,7 @@ class FileUtilsTest extends FileTest {
 
   "textFile calls 'resolve' with '.txt' extension" in {
     Files.createFile(testFile)
-    assert(textFile(tempDir, Path.of(testFileBaseName)) == testFile)
+    assert(textFile(tempDir, testFileBaseName) == testFile)
   }
 }
 
