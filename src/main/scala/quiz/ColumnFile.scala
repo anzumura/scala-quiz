@@ -61,6 +61,14 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
   def getUInt(col: Column, max: Int = NoMaxValue): Int =
     processUInt(get(col), col, max)
 
+  /** similar to getUInt, but if the value stored at `col` is empty then return
+   *  `default`, note, max check is not performed when `default` is used
+   */
+  def getUIntDefault(col: Column, default: Int, max: Int = NoMaxValue): Int = {
+    val s = get(col)
+    if (s.isEmpty) default else processUInt(s, col, max)
+  }
+
   /** @param col column contained in this file
    *  @return true for "Y" or "T", false for "N", "F" or ""
    *  @throws DomainException if `get` fails or value is unrecognized

@@ -204,6 +204,15 @@ class ColumnFileTest extends FileTest {
       }
     }
 
+    "unsigned int from empty column returns default" in {
+      val f = create(cols.take(2), "col1\tcol2", "\t123")
+      f.nextRow()
+      assert(f.getUIntDefault(col1, 7) == 7)
+      assert(f.getUIntDefault(col2, 8) == 123)
+      // max check is not performed when returning default
+      assert(f.getUIntDefault(col1, 7, max = 5) == 7)
+    }
+
     "bool values" in {
       val f = create(cols, "col1\tcol2\tcol3", "Y\tT\tx", "N\tF\t")
       f.nextRow()
