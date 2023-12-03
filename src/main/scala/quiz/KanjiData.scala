@@ -7,7 +7,10 @@ class KanjiData protected (val path: Path) {
   private lazy val levels = load(Level)
   private lazy val kyus = load(Kyu)
 
+  /** return JLPT level for given `s` or "None" if it doesn't have a level */
   def level(s: String): Level.Value = levels.getOrElse(s, Level.None)
+
+  /** return Kentei kyu for given `s` or "None" if it doesn't have a kyu */
   def kyu(s: String): Kyu.Value = kyus.getOrElse(s, Kyu.None)
 
   private def load[T <: EnumWithNone: ClassTag](e: T): Map[String, T#Value] = {
