@@ -119,7 +119,7 @@ object ExtraKanji {
 // concrete subclasses of Kanji.Official
 
 final class JinmeiKanji private (f: Fields, lf: LoadedFields,
-    nf: NumberedFields, of: OfficialFields,
+    nf: NumberedFields, of: OfficialFields, override val oldNames: List[String],
     override val reason: JinmeiReason.Value)
     extends Official(f, lf, nf, of) {
   // Jinmei Kanji have year values starting at 1951, but for now just ensure
@@ -132,14 +132,16 @@ final class JinmeiKanji private (f: Fields, lf: LoadedFields,
 object JinmeiKanji {
   def apply(name: String, radical: String, strokes: Int, meaning: String,
       reading: String, kyu: Kyu.Value, number: Int, level: Level.Value,
-      frequency: Int, year: Int, reason: JinmeiReason.Value): JinmeiKanji =
+      frequency: Int, year: Int, oldNames: List[String],
+      reason: JinmeiReason.Value): JinmeiKanji =
     new JinmeiKanji(Fields(name, radical, strokes),
       LoadedFields(meaning, reading), NumberedFields(kyu, number),
-      OfficialFields(level, frequency, year), reason)
+      OfficialFields(level, frequency, year), oldNames, reason)
 }
 
 final class JouyouKanji private (f: Fields, lf: LoadedFields,
-    nf: NumberedFields, of: OfficialFields, override val grade: Grade.Value)
+    nf: NumberedFields, of: OfficialFields, override val oldNames: List[String],
+    override val grade: Grade.Value)
     extends Official(f, lf, nf, of) {
   if (grade == Grade.None) error("must have a valid grade")
   override def kanjiType: KanjiType.Value = KanjiType.Jouyou
@@ -148,10 +150,10 @@ final class JouyouKanji private (f: Fields, lf: LoadedFields,
 object JouyouKanji {
   def apply(name: String, radical: String, strokes: Int, meaning: String,
       reading: String, kyu: Kyu.Value, number: Int, level: Level.Value,
-      frequency: Int, year: Int, grade: Grade.Value): JouyouKanji =
-    new JouyouKanji(Fields(name, radical, strokes),
-      LoadedFields(meaning, reading), NumberedFields(kyu, number),
-      OfficialFields(level, frequency, year), grade)
+      frequency: Int, year: Int, oldNames: List[String], grade: Grade.Value)
+      : JouyouKanji = new JouyouKanji(Fields(name, radical, strokes),
+    LoadedFields(meaning, reading), NumberedFields(kyu, number),
+    OfficialFields(level, frequency, year), oldNames, grade)
 }
 
 // concrete subclass of Kanji.Other

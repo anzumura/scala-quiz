@@ -7,26 +7,28 @@ class KanjiTest extends BaseTest {
     "create Jouyou Kanji with valid grade" in {
       Grade.values.filter(_ != Grade.None).foreach { grade =>
         val k = JouyouKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, year, grade)
+          number, level, frequency, year, oldNames, grade)
         checkOfficialFields(k)
         assert(k.kanjiType == KanjiType.Jouyou)
         assert(k.grade == grade)
         assert(k.reason == JinmeiReason.None)
+        assert(k.oldNames == oldNames)
       }
     }
 
     "error for Jouyou Kanji with no grade" in {
       domainException(JouyouKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, year, Grade.None),
+          number, level, frequency, year, oldNames, Grade.None),
         "JouyouKanji: must have a valid grade")
     }
 
     "create Jinmei Kanji with valid reason" in {
       JinmeiReason.values.filter(_ != JinmeiReason.None).foreach { reason =>
         val k = JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, year, reason)
+          number, level, frequency, year, oldNames, reason)
         checkOfficialFields(k)
         assert(k.kanjiType == KanjiType.Jinmei)
+        assert(k.oldNames == oldNames)
         assert(k.reason == reason)
         assert(k.grade == Grade.None)
       }
@@ -34,13 +36,13 @@ class KanjiTest extends BaseTest {
 
     "error for Jinmei Kanji with no reason" in {
       domainException(JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, year, JinmeiReason.None),
+          number, level, frequency, year, oldNames, JinmeiReason.None),
         "JinmeiKanji: must have a valid reason")
     }
 
     "error for Jinmei Kanji with no year" in {
       domainException(JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, 0, JinmeiReason.Names),
+          number, level, frequency, 0, oldNames, JinmeiReason.Names),
         "JinmeiKanji: must have a valid year")
     }
 
@@ -71,7 +73,7 @@ class KanjiTest extends BaseTest {
   "Linked Kanji" - {
     "create Linked Jinmei Kanji" in {
       val link = JouyouKanji(name, radical, strokes, meaning, reading, kyu,
-        number, level, frequency, year, Grade.G2)
+        number, level, frequency, year, oldNames, Grade.G2)
       val k = LinkedJinmeiKanji(name, radical, strokes, link,
         differentFrequency, differentKyu)
       checkLinkedFields(k, link)
@@ -80,7 +82,7 @@ class KanjiTest extends BaseTest {
 
     "create Linked Old Kanji" in {
       val link = JouyouKanji(name, radical, strokes, meaning, reading, kyu,
-        number, level, frequency, year, Grade.G2)
+        number, level, frequency, year, oldNames, Grade.G2)
       val k = LinkedOldKanji(name, radical, strokes, link, differentFrequency,
         differentKyu)
       checkLinkedFields(k, link)
@@ -234,6 +236,7 @@ object KanjiTest {
   private val strokes = 9
   private val meaning = "sea"
   private val reading = "カイ、うみ"
+  private val oldNames = List("亙")
   private val kyu = Kyu.K9
   private val differentKyu = Kyu.KJ1
   private val number = 182
