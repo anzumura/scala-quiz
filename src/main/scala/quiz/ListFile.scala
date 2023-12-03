@@ -50,18 +50,20 @@ class ListFile protected (path: Path, fileType: FileType,
     result.toVector
   }
 
+  lazy val indices = entries.zipWithIndex.toMap
+
   /** @return number of entries loaded */
   def size: Int = entries.size
 
   /** @param value the value to lookup
    *  @return index starting at 0 or None if `name` is not found
    */
-  def index(value: String): Option[Int] = entryIndex.get(value)
+  def index(value: String): Option[Int] = indices.get(value)
 
   /** @param value the value to check
    *  @return true if value is contained in this file
    */
-  def exists(value: String): Boolean = entryIndex.contains(value)
+  def exists(value: String): Boolean = indices.contains(value)
 
   /** derived classes override this method to add validation. A derived class
    *  can return true to allow adding the entry, false to silently skip it or
@@ -71,9 +73,8 @@ class ListFile protected (path: Path, fileType: FileType,
    *  @return true if the entry should be added
    */
   protected def validate(entry: String): Boolean = true
-
-  private lazy val entryIndex = entries.zipWithIndex.toMap
 }
+
 
 object ListFile {
   sealed trait FileType

@@ -14,14 +14,19 @@ class ListFileTest extends FileTest {
     assert(ListFile(writeTestFile(), expected).name == expected)
   }
 
-  "entries contains list of entries for OnePerLine file" in {
+  "entries is a list of entries for OnePerLine file" in {
     val f = ListFile(writeTestFile("North\nEast\nSouth\nWest"))
     assert(f.entries == Seq("North", "East", "South", "West"))
   }
 
-  "entries contains list of entries for MultiplePerLine file" in {
+  "entries is a list of entries for MultiplePerLine file" in {
     val f = ListFile(writeTestFile("North East South West"), MultiplePerLine)
     assert(f.entries == Seq("North", "East", "South", "West"))
+  }
+
+  "indices is a map of entry to index" in {
+    val f = ListFile(writeTestFile("North\nWest"))
+    assert(f.indices == Map("North" -> 0, "West" -> 1))
   }
 
   "file with multiple entries per line with overridden name" in {
