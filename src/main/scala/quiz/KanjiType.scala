@@ -22,15 +22,26 @@ object KanjiType extends Enumeration {
     Value
 }
 
+trait EnumWithNone extends Enumeration {
+  // Enumeration must have an entry called "None"
+  private lazy val noneId = values.filter(_.toString == "None").head.id
+
+  /** return all values except "None" */
+  lazy val defined: Seq[Value] = values.filter(_.id != noneId).toSeq
+
+  /** return true if given value is not "None" */
+  def isDefined(v: Value): Boolean = v.id != noneId
+}
+
 /** represents the official school grade for all Jouyou Kanji */
-object Grade extends Enumeration {
+object Grade extends Enumeration with EnumWithNone {
   val G1, G2, G3, G4, G5, G6, S, None = Value
 }
 
 /** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji
  *  (including 1,971 Jouyou and 251 Jinmei)
  */
-object Level extends Enumeration {
+object Level extends Enumeration with EnumWithNone {
   val N5, N4, N3, N2, N1, None = Value
 }
 
@@ -38,7 +49,7 @@ object Level extends Enumeration {
  *
  *  @see <a href="https://en.wikipedia.org/wiki/Kanji_Kentei"></a>
  */
-object Kyu extends Enumeration {
+object Kyu extends Enumeration with EnumWithNone {
   val K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None = Value
 }
 
@@ -53,7 +64,7 @@ object Kyu extends Enumeration {
  *  <li>None: not a Jinmei type Kanji
  *  </ul>
  */
-object JinmeiReason extends Enumeration {
+object JinmeiReason extends Enumeration with EnumWithNone {
   val Names, Print, Variant, Moved, Simple, Other, None = Value
 }
 
