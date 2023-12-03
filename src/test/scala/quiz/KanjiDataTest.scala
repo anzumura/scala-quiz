@@ -1,6 +1,6 @@
 package quiz
 
-import java.nio.file.Files
+import java.nio.file.{Files, Path}
 
 class KanjiDataTest extends FileTest {
   override protected def afterEach(): Unit = {
@@ -40,7 +40,7 @@ class KanjiDataTest extends FileTest {
     assert(data.kyu("万") == Kyu.None)
   }
 
-  "get frequency starting at 1 or 0 if no frequency" in {
+  "get frequency starting at 1, or 0 if no frequency" in {
     Files.writeString(tempDir.resolve("frequency.txt"), "一\n二\n三")
     val data = KanjiData(tempDir)
     assert(data.frequency("一") == 1)
@@ -48,4 +48,39 @@ class KanjiDataTest extends FileTest {
     assert(data.frequency("三") == 3)
     assert(data.frequency("四") == 0)
   }
+
+  "load jouyou Kanji" in {
+    Files.writeString(
+      tempDir.resolve("jouyou.txt"),
+      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
+        |1	亜	二	亞		7	S	sub-	ア
+        |2	哀	口			9	S	pathetic	アイ、あわ-れ、あわ-れむ
+        |3	挨	手		2010	10	S	push open	アイ
+        |4	愛	心			13	4	love	アイ
+        |""".stripMargin)
+    val data = new TestKanjiData(tempDir)
+    val result = data.getType(KanjiType.Jouyou)
+    assert(result.size == 4)
+    val k = result(0)
+    assert(k.number == 1)
+    assert(k.name == "亜")
+    assert(k.radical == "二")
+    assert(k.strokes == 7)
+    assert(k.oldNames.isEmpty)
+    assert(k.year == 0)
+    assert(k.grade == Grade.S)
+    assert(k.meaning == "sub-")
+    assert(k.reading == "ア")
+    assert(k.newName.isEmpty)
+    // the following values should be defaults populated by TestKanjiData class
+    assert(k.level == Level.None)
+    assert(k.kyu == Kyu.None)
+    assert(k.frequency == 0)
+  }
+}
+
+class TestKanjiData(path: Path) extends KanjiData(path) {
+  override def level(s: String): Level.Value = Level.None
+  override def kyu(s: String): Kyu.Value = Kyu.None
+  override def frequency(s: String): Int = 0
 }

@@ -1,18 +1,13 @@
 package quiz
 
 import quiz.FileUtils.textFile
+import quiz.ColumnFile.Column
 
 import java.nio.file.Path
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class KanjiData protected (val path: Path) {
-  private lazy val levels = load(Level)
-  private lazy val kyus = load(Kyu)
-  private lazy val frequencies =
-    KanjiListFile(textFile(path, "frequency")).indices.map { case (k, v) =>
-      (k, v + 1)
-    }
-
+class KanjiData protected (val path: Path) extends ThrowsDomainException {
   /** JLPT level of `s` or "None" if it doesn't have a level */
   def level(s: String): Level.Value = levels.getOrElse(s, Level.None)
 
@@ -22,11 +17,66 @@ class KanjiData protected (val path: Path) {
   /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
   def frequency(s: String): Int = frequencies.getOrElse(s, 0)
 
+  /** get all Kanji for type `t` */
+  def getType(t: KanjiType.Value): Vector[Kanji] =
+    types.getOrElse(t, error(s"no data for KanjiType: $t"))
+
+  private def loadKanji(): mutable.Map[KanjiType.Value, Vector[Kanji]] = {
+    val t = mutable.Map[KanjiType.Value, Vector[Kanji]]()
+    t += KanjiType.Jouyou -> loadJouyou()
+    // load remaining types
+    t
+  }
+
+  private def loadJouyou() = {
+    val gradeCol = Column("Grade")
+    val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol,
+      oldNamesCol, yearCol, strokesCol, gradeCol, meaningCol, readingCol)
+    val result = mutable.Buffer[Kanji]()
+    while (f.nextRow()) {
+      // add validation
+      val name = f.get(nameCol)
+      val grade = f.get(gradeCol)
+      result += JouyouKanji(
+        name,
+        f.get(radicalCol),
+        f.getUInt(strokesCol),
+        f.get(meaningCol),
+        f.get(readingCol),
+        kyu(name),
+        f.getUInt(numberCol),
+        level(name),
+        frequency(name),
+        f.getUIntDefault(yearCol, 0),
+        Grade.withName(if (grade != "S") s"G$grade" else grade)
+      )
+    }
+    result.toVector
+  }
+
   private def load[T <: EnumWithNone: ClassTag](e: T): Map[String, T#Value] = {
     e.defined.map(EnumListFile(path.resolve(e.toString), _)).flatMap(f =>
       f.entries.map(_ -> f.value)
     ).toMap
   }
+
+  private lazy val levels = load(Level)
+  private lazy val kyus = load(Kyu)
+  private lazy val frequencies =
+    KanjiListFile(textFile(path, "frequency")).indices.map { case (k, v) =>
+      (k, v + 1)
+    }
+  private lazy val types = loadKanji()
+
+  // common columns used for loading Kanji from text files
+  private val numberCol = Column("Number")
+  private val nameCol = Column("Name")
+  private val radicalCol = Column("Radical")
+  private val strokesCol = Column("Strokes")
+  private val readingCol = Column("Reading")
+  private val meaningCol = Column("Meaning")
+  private val yearCol = Column("Year")
+  private val oldNamesCol = Column("OldNames")
 }
 
 object KanjiData {
