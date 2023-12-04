@@ -1,7 +1,8 @@
 package quiz
 
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 import scala.annotation.tailrec
+import scala.jdk.StreamConverters.StreamHasToScala
 
 object FileUtils extends ThrowsDomainException {
   val TextFileExtension = ".txt"
@@ -78,4 +79,14 @@ object FileUtils extends ThrowsDomainException {
   /** helper calls [[resolve]] with a string file name and TextFileExtension */
   def textFile(dir: Path, file: String): Path =
     resolve(dir, Path.of(file), Option(TextFileExtension))
+
+  def cwd: Path = Paths.get("").toAbsolutePath
+
+  def getFiles(dir: Path): Seq[Path] = {
+    Files.list(dir).toScala(LazyList).filter(Files.isRegularFile(_))
+  }
+
+  def getDirectories(dir: Path): Seq[Path] = {
+    Files.list(dir).toScala(LazyList).filter(Files.isDirectory(_))
+  }
 }

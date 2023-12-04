@@ -109,6 +109,22 @@ class FileUtilsTest extends FileTest {
     Files.createFile(testFile)
     assert(textFile(tempDir, testFileBaseName) == testFile)
   }
+
+  "get current working directory" in {
+    assert(cwd.toString.nonEmpty)
+  }
+
+  "get all files in a directory" in {
+    Seq("aa", "bb").foreach(f => Files.createFile(tempDir.resolve(f)))
+    Seq("cc", "dd").foreach(f => Files.createDirectory(tempDir.resolve(f)))
+    assert(getFiles(tempDir).map(fileName) == Seq("aa", "bb"))
+  }
+
+  "get all directories in a directory" in {
+    Seq("aa", "bb").foreach(f => Files.createFile(tempDir.resolve(f)))
+    Seq("cc", "dd").foreach(f => Files.createDirectory(tempDir.resolve(f)))
+    assert(getDirectories(tempDir).map(fileName) == Seq("cc", "dd"))
+  }
 }
 
 object FileUtilsTest {
