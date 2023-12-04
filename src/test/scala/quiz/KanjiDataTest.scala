@@ -1,11 +1,24 @@
 package quiz
 
+import quiz.FileUtils._
+
+import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}
 
 class KanjiDataTest extends FileTest {
   override protected def afterEach(): Unit = {
     EnumListFile.clearEntryData()
     super.afterEach()
+  }
+
+  "dataDir returns a valid data directory" in {
+    val result = KanjiData.dataDir()
+    assert(isDirectory(result))
+    assert(fileName(result) == "data")
+    assert(getFiles(result).count(_.toString.endsWith(TextFileExtension)) >= 5)
+    val dirs = getDirectories(result).map(fileName).toSet
+    assert(dirs(Level.toString))
+    assert(dirs(Kyu.toString))
   }
 
   "get JLPT level" in {
@@ -57,7 +70,8 @@ class KanjiDataTest extends FileTest {
         |2	哀	口			9	S	pathetic	アイ、あわ-れ、あわ-れむ
         |3	挨	手		2010	10	S	push open	アイ
         |4	愛	心			13	4	love	アイ
-        |""".stripMargin)
+        |""".stripMargin
+    )
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.Jouyou)
     assert(result.size == 4)

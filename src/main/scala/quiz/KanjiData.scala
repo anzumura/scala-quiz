@@ -1,9 +1,11 @@
 package quiz
 
-import quiz.FileUtils.textFile
 import quiz.ColumnFile.Column
+import quiz.FileUtils._
 
+import java.nio.file.Files.isDirectory
 import java.nio.file.Path
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
@@ -19,7 +21,7 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
 
   /** get all Kanji for type `t` */
   def getType(t: KanjiType.Value): Vector[Kanji] =
-    types.getOrElse(t, error(s"no data for KanjiType: $t"))
+    types.getOrElse(t, Vector.empty[Kanji])
 
   private def loadKanji(): mutable.Map[KanjiType.Value, Vector[Kanji]] = {
     val t = mutable.Map[KanjiType.Value, Vector[Kanji]]()
@@ -83,4 +85,29 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
 
 object KanjiData {
   def apply(path: Path): KanjiData = new KanjiData(path)
+
+  private def hasDataFiles(dir: Path) = {
+    // make sure there are at least 5 ".txt" files
+    getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
+      val dirs = getDirectories(dir).map(fileName).toSet
+      // make sure dir contains "Level" and "Kyu" subdirectories
+      dirs(Level.toString) && dirs(Kyu.toString)
+    }
+  }
+
+  /** returns a path to a "data" directory if a suitable directory can be found
+   *  in current working directory or any of it's parent directories
+   *  @throws DomainException if a suitable directory isn't found
+   */
+  @tailrec
+  def dataDir(path: Path = cwd): Path = {
+    val dir = path.resolve("data")
+    if (isDirectory(dir) && fileName(dir) == "data" && hasDataFiles(dir)) dir
+    else {
+      val parent = path.getParent
+      if (parent == path.getRoot)
+        throw DomainException("couldn't find 'data' directory")
+      dataDir(path.getParent)
+    }
+  }
 }
