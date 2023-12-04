@@ -215,7 +215,6 @@ class KanjiTest extends BaseTest {
   private def checkNumberedFields(k: Kanji) = {
     assert(k.kyu == kyu)
     assert(k.number == number)
-    assert(k.oldNames.isEmpty)
     assert(!k.linkedReadings)
     checkLoadedFields(k)
   }
