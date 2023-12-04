@@ -6,11 +6,11 @@ object UnicodeUtils extends ThrowsDomainException {
   final class Code private (val value: Int) extends AnyVal with Ordered[Code] {
     override def compare(rhs: Code): Int = value - rhs.value
 
-    /** @return standard Unicode code point format, i.e., U+'hex value' */
+    /** returns standard Unicode code point format, i.e., U+'hex value' */
     override def toString: String =
       (if (value <= 0xfff) "U+%04X" else "U+%X").format(value)
 
-    /** @return standard Java (UTF-16) String for this code point */
+    /** returns standard Java (UTF-16) String for this code point */
     def toUTF16: String = Character.toString(value)
   }
 
@@ -30,7 +30,7 @@ object UnicodeUtils extends ThrowsDomainException {
       new Code(x)
     }
 
-    /** @return a Unicode Code instance with a value of 'zero' (NUL) */
+    /** returns a Unicode Code instance with a value of 'zero' (NUL) */
     def apply(): Code = new Code(0)
 
     /** @param value integer value to use to create Unicode Code instance

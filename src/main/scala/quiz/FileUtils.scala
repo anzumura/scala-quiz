@@ -10,8 +10,8 @@ object FileUtils extends ThrowsDomainException {
   // return string name of last component of path
   def fileName(path: Path): String = path.getFileName.toString
 
-  /** this function removes everything after first '.' that follows a non-dot
-   *  character. The following table shows return values for sample file names:
+  /** removes everything after first '.' that follows a non-dot character. The
+   *  following table shows return values for sample file names:
    *  <table>
    *   <tr><th>File Name</th> <th>Result</th></tr>
    *   <tr><td>abc.x.y</td> <td>abc</td></tr>

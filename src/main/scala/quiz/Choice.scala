@@ -11,17 +11,16 @@ class Choice private (private var _quit: Option[Char] = None,
     var quitDescription: String = DefaultQuitDescription,
     val is: InputStream = System.in, private val os: PrintStream = System.out)
     extends ThrowsDomainException {
-  // call setQuit to force validation upon construction
-  _quit.foreach(setQuit)
-  private val reader = new BufferedReader(new InputStreamReader(is))
-
+  /** returns the current `quit` option or None is no option has been set */
   def quit: Option[Char] = _quit
+
+  /** sets `quit` option */
   def quit_=(q: Option[Char]): Unit = {
     q.foreach(x => checkChoice(x, "quit option"))
     _quit = q
   }
 
-  // helper methods to avoid using Option
+  // helper methods to avoid using an Option[Char] in above quit methods
   def isQuit(q: Char): Boolean = quit.contains(q)
   def hasQuit: Boolean = quit.nonEmpty
   def clearQuit(): Unit = quit = None
@@ -31,7 +30,7 @@ class Choice private (private var _quit: Option[Char] = None,
     quitDescription = d
   }
 
-  /** read in a choice from `is` provided in the ctor
+  /** reads in a choice from `is` provided in the ctor
    *  @param choices set of choices the user must choose from
    *  @param msg beginning part of prompt message written to `os` specified in
    *            the ctor, the rest of the prompt message shows the choices
@@ -121,17 +120,24 @@ class Choice private (private var _quit: Option[Char] = None,
     }
     prompt.result()
   }
+
+  // call setQuit to force validation upon construction
+  _quit.foreach(setQuit)
+  private val reader = new BufferedReader(new InputStreamReader(is))
 }
 
 object Choice {
   type Choices = Map[Char, String]
   def Choices(xs: (Char, String)*): Choices = Map(xs: _*)
 
-  // inclusive range of choices with empty descriptions for 'Choice.get' method.
-  // For example:
-  //   val c = Choice()
-  //   Range('1', '6').get(c, "grade", Map('h' -> "high"))
-  // results in a prompt of "grade (1-6, h=high): "
+  /** inclusive range of choices with empty descriptions that can be used in
+   *  `Choice.get` methods. For example:
+   *  <pre>
+   *     val c = Choice()
+   *     Range('1', '6').get(c, "grade", Map('h' -> "high"))
+   *  </pre>
+   *  results in a prompt of "grade (1-6, h=high): "
+   */
   case class Range(start: Char, end: Char) extends ThrowsDomainException {
     checkChoice(start, "range start")
     checkChoice(end, "range end")

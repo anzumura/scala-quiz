@@ -14,10 +14,15 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
     extends ThrowsDomainException {
   if (cols.isEmpty) error("must specify at least one column")
 
+  /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
+
+  /** returns current row number starting at 1, or 0 if [[nextRow]] hasn't been
+   *  called yet
+   */
   def currentRow: Int = _currentRow
 
-  /** read next row, this method must be called before calling get methods. If
+  /** reads next row and must be called before calling ant [[get]] methods. If
    *  there's no more rows then false is returned and the file is closed - thus
    *  calling nextRow again after the file is closed raises an exception.
    *
@@ -41,7 +46,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
 
   /** @param col column contained in this file
    *  @return string value for the given column in current row
-   *  @throws DomainException if `nextRow` hasn't been called yet or the given
+   *  @throws DomainException if [[nextRow]] hasn't been called yet or the given
    *                          column isn't part of this file
    */
   def get(col: Column): String = {
@@ -55,13 +60,13 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
   /** @param col column contained in this file
    *  @param max max value allowed (only checks if max is non-negative)
    *  @return unsigned int value for the given column in current row
-   *  @throws DomainException if `get` fails or value can't be converted to an
+   *  @throws DomainException if [[get]] fails or value can't be converted to an
    *                          unsigned int less than or equal to max
    */
   def getUInt(col: Column, max: Int = NoMaxValue): Int =
     processUInt(get(col), col, max)
 
-  /** similar to getUInt, but if the value stored at `col` is empty then return
+  /** similar to [[getUInt]], but if value stored at `col` is empty then return
    *  `default`, note, max check is not performed when `default` is used
    */
   def getUIntDefault(col: Column, default: Int, max: Int = NoMaxValue): Int = {
@@ -71,7 +76,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
 
   /** @param col column contained in this file
    *  @return true for "Y" or "T", false for "N", "F" or ""
-   *  @throws DomainException if `get` fails or value is unrecognized
+   *  @throws DomainException if [[get]] fails or value is unrecognized
    */
   def getBool(col: Column): Boolean = get(col) match {
     case "Y" | "T" => true
@@ -171,7 +176,7 @@ object ColumnFile {
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1
 
-  /** represents a column in a `ColumnFile`. Instances are used to get
+  /** represents a column in a [[ColumnFile]]. Instances are used to get
    *  values from each row and the same Column instance can be used in multiple
    *  ColumnFiles.
    */
