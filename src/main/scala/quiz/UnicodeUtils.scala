@@ -12,6 +12,21 @@ object UnicodeUtils extends ThrowsDomainException {
 
     /** returns standard Java (UTF-16) String for this code point */
     def toUTF16: String = Character.toString(value)
+
+    /** returns true if this Code is in one of the common Kanji blocks
+     *  @see Code.commonKanjiBlocks (all blocks added by Unicode ver 3.1)
+     */
+    def isCommonKanji: Boolean = exists(commonKanjiBlocks)
+
+    /** returns true if this Code is in one of the rare Kanji blocks
+     *  @see Code.rareKanjiBlocks (blocks added in Unicode ver 3.0 and later)
+     */
+    def isRareKanji: Boolean = exists(rareKanjiBlocks)
+
+    /** returns true if this Code is in any Kanji block */
+    def isKanji: Boolean = isCommonKanji || isRareKanji
+
+    private def exists(blocks: Array[Block]) = blocks.exists(_(this))
   }
 
   object Code {
@@ -45,6 +60,12 @@ object UnicodeUtils extends ThrowsDomainException {
     }
   }
 
+  /** convenience method for checking if a string is a Kanji
+   *  @see Code.apply(String,Boolean)
+   */
+  def isKanji(x: String, sizeOne: Boolean = true): Boolean =
+    Code(x, sizeOne).isKanji
+
   case class Block(start: Code, end: Code) {
     if (end < start) error(s"end $end is less than start $start")
 
@@ -53,33 +74,6 @@ object UnicodeUtils extends ThrowsDomainException {
 
   object Block {
     def apply(start: Code): Block = new Block(start, start)
-  }
-
-  /** @param x the Unicode code to test
-   *  @return true if `x` is in one of the common Kanji blocks
-   *  @see commonKanjiBlocks below (all blocks added by Unicode ver 3.1)
-   */
-  def isCommonKanji(x: Code): Boolean = exists(x, commonKanjiBlocks)
-
-  /** @param x the Unicode code to test
-   *  @return true if `x` is in one of the rare Kanji blocks
-   *  @see rareKanjiBlocks below (blocks added in Unicode ver 3.0 and later)
-   */
-  def isRareKanji(x: Code): Boolean = exists(x, rareKanjiBlocks)
-
-  /** @param x the Unicode code to test
-   *  @return true if `x` is in any Kanji block
-   */
-  def isKanji(x: Code): Boolean = isCommonKanji(x) || isRareKanji(x)
-
-  /** convenience method for checking if a string is a Kanji
-   *  @see Code.apply(String,Boolean)
-   */
-  def isKanji(x: String, sizeOne: Boolean = true): Boolean =
-    isKanji(Code(x, sizeOne))
-
-  private def exists(x: Code, blocks: Array[Block]) = {
-    blocks.exists(_(x))
   }
 
   // used to create official Unicode Blocks (see below)

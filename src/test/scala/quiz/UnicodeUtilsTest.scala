@@ -83,21 +83,21 @@ class UnicodeUtilsTest extends BaseTest {
   private val rareCode = Code("⺠")
 
   "isCommonKanji tests if a Kanji is in one of the common blocks" in {
-    commonCodes.foreach(c => assert(isCommonKanji(c)))
-    assert(!isCommonKanji(rareCode))
-    nonKanjiCodes.foreach(c => assert(!isCommonKanji(c)))
+    commonCodes.foreach(c => assert(c.isCommonKanji))
+    assert(!rareCode.isCommonKanji)
+    nonKanjiCodes.foreach(c => assert(!c.isCommonKanji))
   }
 
   "isRareKanji tests if a Kanji is in one of the rare blocks" in {
-    commonCodes.foreach(c => assert(!isRareKanji(c)))
-    assert(isRareKanji(rareCode))
-    nonKanjiCodes.foreach(c => assert(!isCommonKanji(c)))
+    commonCodes.foreach(c => assert(!c.isRareKanji))
+    assert(rareCode.isRareKanji)
+    nonKanjiCodes.foreach(c => assert(!c.isCommonKanji))
   }
 
   "isKanji tests if a Kanji is in any Kanji block" in {
-    commonCodes.foreach(c => assert(isKanji(c)))
-    assert(isKanji(rareCode))
-    nonKanjiCodes.foreach(c => assert(!isKanji(c)))
+    commonCodes.foreach(c => assert(c.isKanji))
+    assert(rareCode.isKanji)
+    nonKanjiCodes.foreach(c => assert(!c.isKanji))
   }
 
   "isKanji helper method taking a string" in {
