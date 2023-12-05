@@ -75,7 +75,6 @@ class ListFile protected (path: Path, fileType: FileType,
   protected def validate(entry: String): Boolean = true
 }
 
-
 object ListFile {
   sealed trait FileType
   case object OnePerLine extends FileType
