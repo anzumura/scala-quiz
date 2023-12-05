@@ -34,7 +34,7 @@ class ListFile protected (path: Path, fileType: FileType,
       val uniqueEntries = mutable.Set.empty[String]
       source.getLines().zipWithIndex.foreach { case (line, i) =>
         def err(msg: String) =
-          error(s"$msg - file: ${fileName(path)}, line: ${i + 1}")
+          domainError(s"$msg - file: ${fileName(path)}, line: ${i + 1}")
         def add(entry: String): Unit = {
           if (!uniqueEntries.add(entry)) err(s"duplicate entry '$entry'")
           Try(if (validate(entry)) result += entry).failed.foreach(e =>

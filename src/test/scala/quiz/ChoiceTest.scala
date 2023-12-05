@@ -27,7 +27,7 @@ class ChoiceTest extends BaseTest {
   }
 
   "create with invalid quit option" in {
-    domainException(Choice(12: Char), "invalid quit option: '0xc'")
+    domainException(Choice(12: Char), "[Choice] quit is invalid: '0xc'")
   }
 
   "update quit value" in {
@@ -42,7 +42,7 @@ class ChoiceTest extends BaseTest {
 
   "update to invalid quit option" in {
     val c = Choice()
-    domainException(c.quit = Option(13), "invalid quit option: '0xd'")
+    domainException(c.quit = Option(13), "[Choice] quit is invalid: '0xd'")
   }
 
   "update quit and quit description" in {
@@ -150,26 +150,26 @@ class ChoiceTest extends BaseTest {
   "get errors" - {
     "no choices specified" in {
       val c = Choice()
-      domainException(c.get(Map()), "must specify at least one choice")
+      domainException(c.get(Map()), "[Choice] must specify at least one choice")
     }
 
     "invalid choice" in {
       val c = Choice()
       domainException(c.get(Map(('a', "A"), (14, "bad"))),
-        "invalid option: '0xe'")
+        "[Choice] option is invalid: '0xe'")
     }
 
     "default option not in choices" in {
       val c = Choice()
       domainException(c.get(Map(('a', "")), 'b'),
-        "default option 'b' not in choices")
+        "[Choice] default option 'b' not in choices")
     }
 
     "quit option in choices" in {
       val c = Choice()
       c.setQuit('a')
       domainException(c.get(Map(('a', ""))),
-        "quit option 'a' already in choices")
+        "[Choice] quit option 'a' already in choices")
     }
   }
 
@@ -258,22 +258,22 @@ class ChoiceTest extends BaseTest {
 
   "get range errors" - {
     "invalid range start" in {
-      domainException(Range(15, 'c'), "invalid range start: '0xf'")
+      domainException(Range(15, 'c'), "[Range] start is invalid: '0xf'")
     }
 
     "invalid range end" in {
-      domainException(Range('c', 10), "invalid range end: '0xa'")
+      domainException(Range('c', 10), "[Range] end is invalid: '0xa'")
     }
 
     "start greater than end" in {
-      domainException(Range('c', 'b'), "start 'c' is greater than end 'b'")
+      domainException(Range('c', 'b'), "[Range] start 'c' greater than end 'b'")
     }
 
     "range overlaps with Choices" in {
       val c = Choice()
       val overlap = 'd'
       domainException(Range('a', 'f').get(c, Map(overlap -> "")),
-        s"range option '$overlap' already in choices")
+        s"[Range] option '$overlap' already in choices")
     }
   }
 

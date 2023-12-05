@@ -9,6 +9,9 @@ import scala.jdk.StreamConverters.StreamHasToScala
 import scala.util.Try
 
 trait BaseTest extends AnyFreeSpec {
+  /** attempts to return main class name by removing "Test" from this class */
+  def mainClassName: String = getClass.getSimpleName.replaceAll("Test", "")
+
   protected def domainException(f: => Any, msg: String): Unit = {
     val e = intercept[DomainException] { f }
     assert(e.getMessage == msg)
@@ -71,7 +74,7 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   protected def fileMsg(msg: String, file: Option[String]): String =
-    s"$msg - file: ${file.getOrElse(testFileName)}"
+    s"[$mainClassName] $msg - file: ${file.getOrElse(testFileName)}"
   protected def fileMsg(msg: String, line: Int, file: Option[String]): String =
     s"${fileMsg(msg, file)}, line: $line"
 

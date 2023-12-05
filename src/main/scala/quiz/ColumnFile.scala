@@ -12,7 +12,7 @@ import scala.io.Source
  */
 class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
     extends ThrowsDomainException {
-  if (cols.isEmpty) error("must specify at least one column")
+  if (cols.isEmpty) domainError("must specify at least one column")
 
   /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
@@ -31,7 +31,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
    *                          number of columns
    */
   def nextRow(): Boolean = {
-    if (_closed) error(s"file: '$fileName' has been closed")
+    if (_closed) domainError(s"file: '$fileName' has been closed")
     val hasNext = lines.hasNext
     if (hasNext) processNextRow()
     else
@@ -39,7 +39,7 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
         close()
         _closed = true
       } catch {
-        case e: IOException => error("failed to close: " + e.getMessage)
+        case e: IOException => domainError("failed to close: " + e.getMessage)
       }
     hasNext
   }
@@ -88,9 +88,9 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
   protected def readRow(): String = lines.next()
   protected def close(): Unit = source.close()
 
-  private def fileError(msg: String) = error(errorMsg(msg))
+  private def fileError(msg: String) = domainError(errorMsg(msg))
   private def fileError(msg: String, column: Column, s: String) =
-    error(errorMsg(msg) + s", column: '$column', value: '$s'")
+    domainError(errorMsg(msg) + s", column: '$column', value: '$s'")
 
   private def errorMsg(msg: String) = {
     val result = s"$msg - file: $fileName"
@@ -155,12 +155,13 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
   private val (source, lines) = {
     val colsIn = mutable.Map.empty[String, Column]
     cols.foreach(c =>
-      if (colsIn.put(c.name, c).nonEmpty) error(s"duplicate column '$c'")
+      if (colsIn.put(c.name, c).nonEmpty) domainError(s"duplicate column '$c'")
     )
     try {
       processHeaderRow(Source.fromFile(path.toFile), colsIn)
     } catch {
-      case e: IOException => error("failed to read header row: " + e.getMessage)
+      case e: IOException =>
+        domainError("failed to read header row: " + e.getMessage)
     }
   }
 }

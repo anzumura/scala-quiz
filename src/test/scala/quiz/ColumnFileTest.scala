@@ -8,6 +8,9 @@ import java.nio.file.{Files, Path}
 import scala.util.Using
 
 class ColumnFileTest extends FileTest {
+  // tests below use a derived instance of ColumnFile for testing
+  override val mainClassName: String = "TestColumnFile"
+
   "create" - {
     "one column" in {
       assert(create(Seq(col1), "col1").numColumns == 1)
@@ -29,17 +32,17 @@ class ColumnFileTest extends FileTest {
   "create errors" - {
     "empty columns" in {
       domainException(ColumnFile(Path.of("")),
-        "must specify at least one column")
+        "[ColumnFile] must specify at least one column")
     }
 
     "duplicate columns" in {
       domainException(ColumnFile(Path.of(""), col1, col1),
-        s"duplicate column '$col1'")
+        s"[ColumnFile] duplicate column '$col1'")
     }
 
     "missing file" in {
       domainException(ColumnFile(Path.of("x"), col1),
-        _.startsWith(s"failed to read header row: x"))
+        _.startsWith(s"[ColumnFile] failed to read header row: x"))
     }
 
     "missing header row" in {
@@ -67,7 +70,8 @@ class ColumnFileTest extends FileTest {
     "called after close" in {
       val f = create(Seq(col1), "col1")
       assert(!f.nextRow())
-      domainException(f.nextRow(), s"file: '$testFileName' has been closed")
+      domainException(f.nextRow(),
+        s"[$mainClassName] file: '$testFileName' has been closed")
     }
 
     "too many columns" in {
@@ -98,21 +102,19 @@ class ColumnFileTest extends FileTest {
     "failed read" in {
       val path = Files.createFile(testFile)
       Files.writeString(path, "col1\nA")
-      Using.resource(new TestColumnFile(path, '\t', col1) {
-        override def readRow(): String = throw new IOException("bad read")
-      })(f => fileError(f.nextRow(), "failed to read row: bad read"))
+      Using.resource(new TestColumnFile(path, '\t', col1)) { f =>
+        f.readFailure = true
+        fileError(f.nextRow(), "failed to read row: bad read")
+      }
     }
 
     "failed close" in {
       val path = Files.createFile(testFile)
       Files.writeString(path, "col1")
-      val f = new TestColumnFile(path, '\t', col1) {
-        override def close(): Unit = {
-          super.close()
-          throw new IOException("bad close")
-        }
-      }
-      domainException(f.nextRow(), "failed to close: bad close")
+      val f = new TestColumnFile(path, '\t', col1)
+      f.closeFailure = true
+      domainException(f.nextRow(),
+        s"[$mainClassName] failed to close: bad close")
     }
   }
 
@@ -283,7 +285,19 @@ object ColumnFileTest {
 
   private class TestColumnFile(path: Path, sep: Char, cols: Column*)
       extends ColumnFile(path, sep, cols) with AutoCloseable {
+    // allow tests to force close or read to fail
+    var closeFailure: Boolean = false
+    var readFailure: Boolean = false
+
     // make close public so tests can force closing the underlying file
-    override def close(): Unit = { super.close() }
+    override def close(): Unit = {
+      super.close() // still want to close the real underlying file
+      if (closeFailure) throw new IOException("bad close")
+    }
+
+    override protected def readRow(): String = {
+      if (readFailure) throw new IOException("bad read")
+      super.readRow()
+    }
   }
 }

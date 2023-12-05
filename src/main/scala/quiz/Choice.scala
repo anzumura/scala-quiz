@@ -16,7 +16,7 @@ class Choice private (private var _quit: Option[Char] = None,
 
   /** sets `quit` option */
   def quit_=(q: Option[Char]): Unit = {
-    q.foreach(x => checkChoice(x, "quit option"))
+    q.foreach(x => checkChoice(x, "[Choice] quit"))
     _quit = q
   }
 
@@ -45,11 +45,12 @@ class Choice private (private var _quit: Option[Char] = None,
       defaultChoice: Option[Char] = None): Char = {
     val c = quit.map(q =>
       if (useQuit) {
-        if (choices.contains(q)) error(s"quit option '$q' already in choices")
+        if (choices.contains(q))
+          domainError(s"quit option '$q' already in choices")
         choices.updated(q, quitDescription)
       } else choices
     ).getOrElse(choices)
-    if (c.isEmpty) error("must specify at least one choice")
+    if (c.isEmpty) domainError("must specify at least one choice")
     getChoice(getPrompt(msg, c, defaultChoice), c, defaultChoice)
   }
 
@@ -90,7 +91,7 @@ class Choice private (private var _quit: Option[Char] = None,
       rangeStart.foreach(c => if (c != prevChoice) prompt ++= s"-$prevChoice")
     // use TreeMap to traverse entries in alphabetical order
     (choices to TreeMap).foreach { case (choice, description) =>
-      checkChoice(choice, "option")
+      checkChoice(choice, "[Choice] option")
       if (description.isEmpty) {
         if (rangeStart.isEmpty) {
           if (prevChoice > 0) prompt ++= ", "
@@ -114,7 +115,8 @@ class Choice private (private var _quit: Option[Char] = None,
     completeRange()
     d match {
       case Some(s) =>
-        if (!choices.contains(s)) error(s"default option '$s' not in choices")
+        if (!choices.contains(s))
+          domainError(s"default option '$s' not in choices")
         prompt ++= s") def '$s': "
       case _ => prompt ++= "): "
     }
@@ -139,9 +141,9 @@ object Choice {
    *  results in a prompt of "grade (1-6, h=high): "
    */
   case class Range(start: Char, end: Char) extends ThrowsDomainException {
-    checkChoice(start, "range start")
-    checkChoice(end, "range end")
-    if (start > end) error(s"start '$start' is greater than end '$end'")
+    checkChoice(start, "[Range] start")
+    checkChoice(end, "[Range] end")
+    if (start > end) domainError(s"start '$start' greater than end '$end'")
 
     // call 'Choice.get' methods with this range merged into 'Choices'
     def get(o: Choice, c: Choices, m: String = "", u: UseQuit = QuitOn): Char =
@@ -160,7 +162,7 @@ object Choice {
       (start to end).foreach(c =>
         result = result.updatedWith(c) {
           case None => Option("")
-          case _ => error(s"range option '$c' already in choices")
+          case _ => domainError(s"option '$c' already in choices")
         }
       )
       result
@@ -188,6 +190,6 @@ object Choice {
 
   private def checkChoice(c: Char, msg: String): Unit = {
     if (c < ' ' || c > '~')
-      throw DomainException(s"invalid $msg: '0x${c.toInt.toHexString}'")
+      throw DomainException(s"$msg is invalid: '0x${c.toInt.toHexString}'")
   }
 }
