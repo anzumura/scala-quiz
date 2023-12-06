@@ -1,6 +1,8 @@
-package quiz
+package quiz.kanji
 
-import quiz.Kanji._
+import quiz._
+import quiz.kanji.Kanji._
+import quiz.utils.DomainException
 
 sealed abstract class Kanji protected (private val f: Fields) {
   def name: String = f.name

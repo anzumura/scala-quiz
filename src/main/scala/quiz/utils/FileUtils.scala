@@ -1,4 +1,4 @@
-package quiz
+package quiz.utils
 
 import java.nio.file.{Files, Path, Paths}
 import scala.annotation.tailrec

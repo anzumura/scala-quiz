@@ -9,17 +9,17 @@
     <option name="testKind" value="All in package" />
     <option name="classBuf">
       <list>
-        <option value="quiz.KanjiTest" />
-        <option value="quiz.ChoiceTest" />
-        <option value="quiz.ListFileTest" />
-        <option value="quiz.KanjiListFileTest" />
-        <option value="quiz.EnumListFileTest" />
-        <option value="quiz.FileUtilsTest" />
-        <option value="quiz.KanjiDataTest" />
-        <option value="quiz.KanjiTypeTest" />
-        <option value="quiz.ColumnFileTest" />
-        <option value="quiz.ColumnTest" />
-        <option value="quiz.UnicodeUtilsTest" />
+        <option value="quiz.utils.ChoiceTest" />
+        <option value="quiz.utils.ListFileTest" />
+        <option value="quiz.utils.KanjiListFileTest" />
+        <option value="quiz.utils.EnumListFileTest" />
+        <option value="quiz.utils.FileUtilsTest" />
+        <option value="quiz.utils.ColumnFileTest" />
+        <option value="quiz.utils.ColumnTest" />
+        <option value="quiz.utils.UnicodeUtilsTest" />
+        <option value="quiz.kanji.KanjiTest" />
+        <option value="quiz.kanji.KanjiDataTest" />
+        <option value="quiz.kanji.KanjiTypeTest" />
       </list>
     </option>
     <option name="shortenClasspath" value="NONE" />

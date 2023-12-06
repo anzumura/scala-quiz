@@ -1,6 +1,7 @@
-package quiz
+package quiz.kanji
 
-import quiz.FileUtils._
+import quiz.utils.{EnumListFile, FileTest}
+import quiz.utils.FileUtils._
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}

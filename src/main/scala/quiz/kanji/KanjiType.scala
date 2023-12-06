@@ -1,4 +1,4 @@
-package quiz
+package quiz.kanji
 
 import scala.language.implicitConversions
 

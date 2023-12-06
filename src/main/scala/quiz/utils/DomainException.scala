@@ -1,4 +1,4 @@
-package quiz
+package quiz.utils
 
 class DomainException(msg: String) extends Exception(msg) {}
 

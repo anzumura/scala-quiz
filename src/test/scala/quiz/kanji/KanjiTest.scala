@@ -1,4 +1,6 @@
-package quiz
+package quiz.kanji
+
+import quiz.utils.BaseTest
 
 class KanjiTest extends BaseTest {
   import KanjiTest._
@@ -35,15 +37,19 @@ class KanjiTest extends BaseTest {
     }
 
     "error for Jinmei Kanji with no reason" in {
-      domainException(JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, year, oldNames, JinmeiReason.None),
-        "JinmeiKanji: must have a valid reason")
+      domainException(
+        JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+          level, frequency, year, oldNames, JinmeiReason.None),
+        "JinmeiKanji: must have a valid reason"
+      )
     }
 
     "error for Jinmei Kanji with no year" in {
-      domainException(JinmeiKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, 0, oldNames, JinmeiReason.Names),
-        "JinmeiKanji: must have a valid year")
+      domainException(
+        JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+          level, frequency, 0, oldNames, JinmeiReason.Names),
+        "JinmeiKanji: must have a valid year"
+      )
     }
 
     "create Extra Kanji with no new name" in {
@@ -123,9 +129,11 @@ class KanjiTest extends BaseTest {
 
     "error for Frequency Kanji with no frequency" in {
       Seq(-1, 0).foreach(f =>
-        domainException(FrequencyKanji(name, radical, strokes, meaning, reading,
-            OldLinks.No, Nil, LinkedReadings.No, kyu, f),
-          "FrequencyKanji: frequency must be greater than zero")
+        domainException(
+          FrequencyKanji(name, radical, strokes, meaning, reading, OldLinks.No,
+            Nil, LinkedReadings.No, kyu, f),
+          "FrequencyKanji: frequency must be greater than zero"
+        )
       )
     }
 

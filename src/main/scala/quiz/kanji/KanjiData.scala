@@ -1,7 +1,9 @@
-package quiz
+package quiz.kanji
 
-import quiz.ColumnFile.Column
-import quiz.FileUtils._
+import quiz._
+import quiz.utils.ColumnFile.Column
+import quiz.utils.FileUtils._
+import quiz.utils._
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.Path

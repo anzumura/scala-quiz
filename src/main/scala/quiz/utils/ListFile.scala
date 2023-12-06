@@ -1,8 +1,8 @@
-package quiz
+package quiz.utils
 
-import quiz.FileUtils._
-import quiz.ListFile._
-import quiz.UnicodeUtils.isKanji
+import quiz.utils.FileUtils._
+import quiz.utils.ListFile._
+import quiz.utils.UnicodeUtils.isKanji
 
 import java.nio.file.Path
 import scala.collection.mutable

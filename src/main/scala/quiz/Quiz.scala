@@ -1,5 +1,7 @@
 package quiz
 
+import quiz.kanji.{KanjiData, KanjiType}
+
 import scala.util.Try
 
 object Quiz extends App {

@@ -1,4 +1,4 @@
-package quiz
+package quiz.utils
 
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}

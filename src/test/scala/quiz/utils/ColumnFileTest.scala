@@ -1,7 +1,7 @@
-package quiz
+package quiz.utils
 
-import quiz.ColumnFile._
-import quiz.ColumnFileTest._
+import quiz.utils.ColumnFile._
+import quiz.utils.ColumnFileTest._
 
 import java.io.IOException
 import java.nio.file.{Files, Path}

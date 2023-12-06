@@ -1,6 +1,6 @@
-package quiz
+package quiz.utils
 
-import quiz.Choice._
+import quiz.utils.Choice._
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 

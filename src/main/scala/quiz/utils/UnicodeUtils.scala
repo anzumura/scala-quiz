@@ -1,4 +1,4 @@
-package quiz
+package quiz.utils
 
 object UnicodeUtils extends ThrowsDomainException {
   val UnicodeMax: Int = 0x10ffff
