@@ -1,12 +1,12 @@
 package quiz.utils
 
 import quiz.utils.FileUtils._
+import quiz.utils.ListFile.EntriesPerLine._
 import quiz.utils.ListFile._
 import quiz.utils.UnicodeUtils.isKanji
 
 import java.nio.file.Path
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.reflect.ClassTag
 import scala.util.{Try, Using}
@@ -18,7 +18,7 @@ import scala.util.{Try, Using}
  *  in order in a list. There are derived classes for specific data types, i.e.,
  *  where all entries are for a 'JLPT Level' or a 'Kentei Kyu'.
  */
-class ListFile protected (path: Path, fileType: FileType,
+class ListFile protected (path: Path, fileType: EntriesPerLine,
     nameIn: Option[String] = None)
     extends ThrowsDomainException {
 
@@ -29,7 +29,7 @@ class ListFile protected (path: Path, fileType: FileType,
 
   /** list of all entries in the file */
   lazy val entries: Vector[String] = {
-    val result = ArrayBuffer.empty[String]
+    val result = mutable.ArrayBuffer.empty[String]
     Using(Source.fromFile(path.toFile)) { source =>
       val uniqueEntries = mutable.Set.empty[String]
       source.getLines().zipWithIndex.foreach { case (line, i) =>
@@ -41,7 +41,7 @@ class ListFile protected (path: Path, fileType: FileType,
             err(e.getMessage)
           )
         }
-        if (fileType == OnePerLine) {
+        if (fileType == Single) {
           if (line.contains(' ')) err("line has multiple entries")
           add(line)
         } else line.split(' ').foreach(add)
@@ -76,18 +76,20 @@ class ListFile protected (path: Path, fileType: FileType,
 }
 
 object ListFile {
-  sealed trait FileType
-  case object OnePerLine extends FileType
-  case object MultiplePerLine extends FileType
+  sealed trait EntriesPerLine
+  object EntriesPerLine {
+    case object Single extends EntriesPerLine
+    case object Multiple extends EntriesPerLine
+  }
 
-  def apply(path: Path) = new ListFile(path, OnePerLine)
-  def apply(path: Path, fileType: FileType) = new ListFile(path, fileType)
-  def apply(path: Path, name: String, fileType: FileType = OnePerLine) =
+  def apply(path: Path) = new ListFile(path, Single)
+  def apply(path: Path, fileType: EntriesPerLine) = new ListFile(path, fileType)
+  def apply(path: Path, name: String, fileType: EntriesPerLine = Single) =
     new ListFile(path, fileType, Option(name))
 }
 
 /** derived class of ListFile that ensures each entry is a recognized Kanji */
-class KanjiListFile protected (path: Path, fileType: FileType,
+class KanjiListFile protected (path: Path, fileType: EntriesPerLine,
     nameIn: Option[String] = None)
     extends ListFile(path, fileType, nameIn) {
   override protected def validate(entry: String): Boolean =
@@ -95,9 +97,10 @@ class KanjiListFile protected (path: Path, fileType: FileType,
 }
 
 object KanjiListFile {
-  def apply(path: Path) = new KanjiListFile(path, OnePerLine)
-  def apply(path: Path, fileType: FileType) = new KanjiListFile(path, fileType)
-  def apply(path: Path, name: String, fileType: FileType = OnePerLine) =
+  def apply(path: Path) = new KanjiListFile(path, Single)
+  def apply(path: Path, fileType: EntriesPerLine) =
+    new KanjiListFile(path, fileType)
+  def apply(path: Path, name: String, fileType: EntriesPerLine = Single) =
     new KanjiListFile(path, fileType, Option(name))
 }
 
@@ -108,7 +111,7 @@ object KanjiListFile {
 final class EnumListFile[T <: Enumeration: ClassTag] private (dir: Path,
     val value: T#Value)
     extends KanjiListFile(dir.resolve(value.toString + TextFileExtension),
-      MultiplePerLine) {
+      Multiple) {
 
   /** the name of the enum type without the trailing '$' so if this class was
    *  created with value `Kyu.K10` enumName would be "Kyu"

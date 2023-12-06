@@ -1,6 +1,6 @@
 package quiz.utils
 
-import quiz.utils.ListFile.MultiplePerLine
+import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
 
@@ -23,7 +23,7 @@ class ListFileTest extends FileTest {
   }
 
   "entries is a list of entries for MultiplePerLine file" in {
-    val f = ListFile(writeTestFile("North East South West"), MultiplePerLine)
+    val f = ListFile(writeTestFile("North East South West"), Multiple)
     assert(f.entries == Seq("North", "East", "South", "West"))
   }
 
@@ -34,7 +34,7 @@ class ListFileTest extends FileTest {
 
   "file with multiple entries per line with overridden name" in {
     val expected = "def"
-    val f = ListFile(writeTestFile("North East"), expected, MultiplePerLine)
+    val f = ListFile(writeTestFile("North East"), expected, Multiple)
     assert(f.name == expected)
   }
 
@@ -80,13 +80,13 @@ class KanjiListFileTest extends FileTest {
   }
 
   "entries contains list of entries for MultiplePerLine file" in {
-    val f = KanjiListFile(writeTestFile("北 東 南 西"), MultiplePerLine)
+    val f = KanjiListFile(writeTestFile("北 東 南 西"), Multiple)
     assert(f.entries == Seq("北", "東", "南", "西"))
   }
 
   "file with multiple entries per line with overridden name" in {
     val expected = "def"
-    val f = KanjiListFile(writeTestFile("北 東 南 西"), expected, MultiplePerLine)
+    val f = KanjiListFile(writeTestFile("北 東 南 西"), expected, Multiple)
     assert(f.name == expected)
   }
 
