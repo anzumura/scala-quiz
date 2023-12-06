@@ -1,6 +1,5 @@
 package quiz.kanji
 
-import quiz._
 import quiz.utils.ColumnFile.Column
 import quiz.utils.FileUtils._
 import quiz.utils._

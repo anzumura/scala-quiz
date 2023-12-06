@@ -1,6 +1,5 @@
 package quiz.kanji
 
-import quiz._
 import quiz.kanji.Kanji._
 import quiz.utils.DomainException
 
