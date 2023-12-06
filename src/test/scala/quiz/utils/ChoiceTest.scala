@@ -4,7 +4,15 @@ import quiz.utils.Choice._
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 
-class ChoiceTest extends BaseTest {
+trait BaseChoiceTest extends BaseTest {
+  protected def create(input: String = ""): (Choice, ByteArrayOutputStream) = {
+    val is = new ByteArrayInputStream((input + '\n').getBytes())
+    val os = new ByteArrayOutputStream()
+    (Choice(is, new PrintStream(os)), os)
+  }
+}
+
+class ChoiceTest extends BaseChoiceTest {
   "create with default options" in {
     val c = Choice()
     assert(c.quit.isEmpty)
@@ -27,7 +35,7 @@ class ChoiceTest extends BaseTest {
   }
 
   "create with invalid quit option" in {
-    domainException(Choice(12: Char), "[Choice] quit is invalid: '0xc'")
+    domainError(Choice(12: Char), "quit is invalid: '0xc'")
   }
 
   "update quit value" in {
@@ -42,7 +50,7 @@ class ChoiceTest extends BaseTest {
 
   "update to invalid quit option" in {
     val c = Choice()
-    domainException(c.quit = Option(13), "[Choice] quit is invalid: '0xd'")
+    domainError(c.quit = Option(13), "quit is invalid: '0xd'")
   }
 
   "update quit and quit description" in {
@@ -150,30 +158,31 @@ class ChoiceTest extends BaseTest {
   "get errors" - {
     "no choices specified" in {
       val c = Choice()
-      domainException(c.get(Map()), "[Choice] must specify at least one choice")
+      domainError(c.get(Map()), "must specify at least one choice")
     }
 
     "invalid choice" in {
       val c = Choice()
-      domainException(c.get(Map(('a', "A"), (14, "bad"))),
-        "[Choice] option is invalid: '0xe'")
+      domainError(c.get(Map(('a', "A"), (14, "bad"))),
+        "option is invalid: '0xe'")
     }
 
     "default option not in choices" in {
       val c = Choice()
-      domainException(c.get(Map(('a', "")), 'b'),
-        "[Choice] default option 'b' not in choices")
+      domainError(c.get(Map(('a', "")), 'b'),
+        "default option 'b' not in choices")
     }
 
     "quit option in choices" in {
       val c = Choice()
       c.setQuit('a')
-      domainException(c.get(Map(('a', ""))),
-        "[Choice] quit option 'a' already in choices")
+      domainError(c.get(Map(('a', ""))), "quit option 'a' already in choices")
     }
   }
+}
 
-  "get range" - {
+class RangeTest extends BaseChoiceTest {
+  "get" - {
     val a2c = Range('a', 'c')
 
     "is inclusive" in {
@@ -256,30 +265,24 @@ class ChoiceTest extends BaseTest {
     }
   }
 
-  "get range errors" - {
+  "get errors" - {
     "invalid range start" in {
-      domainException(Range(15, 'c'), "[Range] start is invalid: '0xf'")
+      domainError(Range(15, 'c'), "start is invalid: '0xf'")
     }
 
     "invalid range end" in {
-      domainException(Range('c', 10), "[Range] end is invalid: '0xa'")
+      domainError(Range('c', 10), "end is invalid: '0xa'")
     }
 
     "start greater than end" in {
-      domainException(Range('c', 'b'), "[Range] start 'c' greater than end 'b'")
+      domainError(Range('c', 'b'), "start 'c' greater than end 'b'")
     }
 
     "range overlaps with Choices" in {
       val c = Choice()
       val overlap = 'd'
-      domainException(Range('a', 'f').get(c, Map(overlap -> "")),
-        s"[Range] option '$overlap' already in choices")
+      domainError(Range('a', 'f').get(c, Map(overlap -> "")),
+        s"option '$overlap' already in choices")
     }
-  }
-
-  private def create(input: String = "") = {
-    val is = new ByteArrayInputStream((input + '\n').getBytes())
-    val os = new ByteArrayOutputStream()
-    (Choice(is, new PrintStream(os)), os)
   }
 }

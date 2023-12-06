@@ -12,14 +12,21 @@ trait BaseTest extends AnyFreeSpec {
   /** attempts to return main class name by removing "Test" from this class */
   def mainClassName: String = getClass.getSimpleName.replaceAll("Test", "")
 
-  protected def domainException(f: => Any, msg: String): Unit = {
+  /** assert that `f` throws a DomainException with given `msg` */
+  protected def error(f: => Any, msg: String): Unit = {
     val e = intercept[DomainException] { f }
-    assert(e.getMessage == msg)
+    assert(e.getMessage == s"$msg")
   }
 
-  protected def domainException(f: => Any, t: String => Boolean): Unit = {
+  /** assert that `f` throws a DomainException and test the message using `t` */
+  protected def error(f: => Any, t: String => Boolean): Unit = {
     val e = intercept[DomainException] { f }
     assert(t(e.getMessage))
+  }
+
+  /** calls [[error]] with "[mainClassName]" prepended to `msg` */
+  protected def domainError(f: => Any, msg: String): Unit = {
+    error(f, s"[$mainClassName] $msg")
   }
 }
 
@@ -74,15 +81,15 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   protected def fileMsg(msg: String, file: Option[String]): String =
-    s"[$mainClassName] $msg - file: ${file.getOrElse(testFileName)}"
+    s"$msg - file: ${file.getOrElse(testFileName)}"
   protected def fileMsg(msg: String, line: Int, file: Option[String]): String =
     s"${fileMsg(msg, file)}, line: $line"
 
   protected def fileError(f: => Any, msg: String): Unit =
-    domainException(f, fileMsg(msg, None))
+    domainError(f, fileMsg(msg, None))
   protected def fileError(f: => Any, msg: String, line: Int): Unit =
-    domainException(f, fileMsg(msg, line, None))
+    domainError(f, fileMsg(msg, line, None))
   protected def fileError(
       f: => Any, msg: String, line: Int, file: String): Unit =
-    domainException(f, fileMsg(msg, line, Option(file)))
+    domainError(f, fileMsg(msg, line, Option(file)))
 }

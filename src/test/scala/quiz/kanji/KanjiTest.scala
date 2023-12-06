@@ -19,8 +19,8 @@ class KanjiTest extends BaseTest {
     }
 
     "error for Jouyou Kanji with no grade" in {
-      domainException(JouyouKanji(name, radical, strokes, meaning, reading, kyu,
-          number, level, frequency, year, oldNames, Grade.None),
+      error(JouyouKanji(name, radical, strokes, meaning, reading, kyu, number,
+          level, frequency, year, oldNames, Grade.None),
         "JouyouKanji: must have a valid grade")
     }
 
@@ -37,19 +37,15 @@ class KanjiTest extends BaseTest {
     }
 
     "error for Jinmei Kanji with no reason" in {
-      domainException(
-        JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+      error(JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
           level, frequency, year, oldNames, JinmeiReason.None),
-        "JinmeiKanji: must have a valid reason"
-      )
+        "JinmeiKanji: must have a valid reason")
     }
 
     "error for Jinmei Kanji with no year" in {
-      domainException(
-        JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
+      error(JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number,
           level, frequency, 0, oldNames, JinmeiReason.Names),
-        "JinmeiKanji: must have a valid year"
-      )
+        "JinmeiKanji: must have a valid year")
     }
 
     "create Extra Kanji with no new name" in {
@@ -70,8 +66,8 @@ class KanjiTest extends BaseTest {
 
     "error for Kanji with number <= 0" in {
       Seq(-1, 0).foreach(num =>
-        domainException(ExtraKanji(name, radical, strokes, meaning, reading,
-            kyu, num), "ExtraKanji: number must be greater than zero")
+        error(ExtraKanji(name, radical, strokes, meaning, reading, kyu, num),
+          "ExtraKanji: number must be greater than zero")
       )
     }
   }
@@ -98,17 +94,16 @@ class KanjiTest extends BaseTest {
     "error for Linked Jinmei Kanji with non-official link" in {
       val link =
         ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
-      domainException(LinkedJinmeiKanji(name, radical, strokes, link,
-          differentFrequency, differentKyu),
+      error(LinkedJinmeiKanji(name, radical, strokes, link, differentFrequency,
+          differentKyu),
         "LinkedJinmeiKanji: link must be JouyouKanji or JinmeiKanji")
     }
 
     "error for Linked Old Kanji with non-Jouyou link" in {
       val link =
         ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
-      domainException(LinkedOldKanji(name, radical, strokes, link,
-          differentFrequency, differentKyu),
-        "LinkedOldKanji: link must be JouyouKanji")
+      error(LinkedOldKanji(name, radical, strokes, link, differentFrequency,
+          differentKyu), "LinkedOldKanji: link must be JouyouKanji")
     }
   }
 
@@ -129,11 +124,9 @@ class KanjiTest extends BaseTest {
 
     "error for Frequency Kanji with no frequency" in {
       Seq(-1, 0).foreach(f =>
-        domainException(
-          FrequencyKanji(name, radical, strokes, meaning, reading, OldLinks.No,
-            Nil, LinkedReadings.No, kyu, f),
-          "FrequencyKanji: frequency must be greater than zero"
-        )
+        error(FrequencyKanji(name, radical, strokes, meaning, reading,
+            OldLinks.No, Nil, LinkedReadings.No, kyu, f),
+          "FrequencyKanji: frequency must be greater than zero")
       )
     }
 
@@ -152,8 +145,8 @@ class KanjiTest extends BaseTest {
     }
 
     "error for Kentei Kanji with no kyu" in {
-      domainException(KenteiKanji(name, radical, strokes, meaning, reading,
-          OldLinks.No, Nil, LinkedReadings.No, Kyu.None),
+      error(KenteiKanji(name, radical, strokes, meaning, reading, OldLinks.No,
+          Nil, LinkedReadings.No, Kyu.None),
         "KenteiKanji: must have a valid kyu")
     }
 

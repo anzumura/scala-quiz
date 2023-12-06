@@ -56,12 +56,12 @@ class FileUtilsTest extends FileTest {
     }
 
     "error thrown if path doesn't exist" in {
-      domainException(checkExists(testFile), s"'$testFile' not found")
+      error(checkExists(testFile), s"'$testFile' not found")
     }
 
     "error has path+extension if neither path nor path+extension exists" in {
       val fileWithExtension = tempDir.resolve(name + extension)
-      domainException(checkExists(tempDir.resolve(name), Option(extension)),
+      error(checkExists(tempDir.resolve(name), Option(extension)),
         s"'$fileWithExtension' not found")
     }
   }
@@ -80,27 +80,25 @@ class FileUtilsTest extends FileTest {
     }
 
     "dir must be a directory" in {
-      domainException(resolve(Path.of("bad_dir"), Path.of(testFileName)),
+      error(resolve(Path.of("bad_dir"), Path.of(testFileName)),
         "'bad_dir' is not a directory")
     }
 
     "file must not be an absolute path" in {
-      domainException(resolve(tempDir, testFile),
-        s"'$testFile' is an absolute path")
+      error(resolve(tempDir, testFile), s"'$testFile' is an absolute path")
     }
 
     "file not found" in {
-      domainException(resolve(tempDir, Path.of(testFileName)),
-        s"'$testFile' not found")
+      error(resolve(tempDir, Path.of(testFileName)), s"'$testFile' not found")
     }
 
     "file not found after adding extension" in {
-      domainException(resolve(tempDir, Path.of(name), Option(extension)),
+      error(resolve(tempDir, Path.of(name), Option(extension)),
         s"'${tempDir.resolve(name + extension)}' not found")
     }
 
     "file is not a regular file" in {
-      domainException(resolve(tempDir.getParent, tempDir.getFileName),
+      error(resolve(tempDir.getParent, tempDir.getFileName),
         s"'$tempDir' is not a regular file")
     }
   }

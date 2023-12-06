@@ -29,13 +29,12 @@ class UnicodeUtilsTest extends BaseTest {
     }
 
     "can't be negative" in {
-      domainException(Code(-1), "code can't be negative")
+      error(Code(-1), "code can't be negative")
     }
 
     "exceeds Unicode max U+10FFFF" in {
       val x = 0x110000
-      domainException(Code(x),
-        "code 0x%x exceeds Unicode max U+10FFFF".format(x))
+      error(Code(x), "code 0x%x exceeds Unicode max U+10FFFF".format(x))
     }
 
     "create from string value" in {
@@ -48,11 +47,11 @@ class UnicodeUtilsTest extends BaseTest {
     }
 
     "can't create from empty string" in {
-      domainException(Code(""), "cannot create Unicode Code from empty string")
+      error(Code(""), "cannot create Unicode Code from empty string")
     }
 
     "can't create from longer string is sizeOne is true (the default)" in {
-      domainException(Code("犬猫"), "'犬猫' has more than one Unicode letter")
+      error(Code("犬猫"), "'犬猫' has more than one Unicode letter")
     }
   }
 
@@ -69,8 +68,7 @@ class UnicodeUtilsTest extends BaseTest {
   }
 
   "block end cannot be less than start" in {
-    domainException(Block(Code(20), Code(19)),
-      "end U+0013 is less than start U+0014")
+    error(Block(Code(20), Code(19)), "end U+0013 is less than start U+0014")
   }
 
   private val nonKanjiStrings = Seq("a", "ā", "あ", "ア")

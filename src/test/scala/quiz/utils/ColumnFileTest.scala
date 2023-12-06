@@ -31,17 +31,17 @@ class ColumnFileTest extends FileTest {
 
   "create errors" - {
     "empty columns" in {
-      domainException(ColumnFile(Path.of("")),
+      error(ColumnFile(Path.of("")),
         "[ColumnFile] must specify at least one column")
     }
 
     "duplicate columns" in {
-      domainException(ColumnFile(Path.of(""), col1, col1),
+      error(ColumnFile(Path.of(""), col1, col1),
         s"[ColumnFile] duplicate column '$col1'")
     }
 
     "missing file" in {
-      domainException(ColumnFile(Path.of("x"), col1),
+      error(ColumnFile(Path.of("x"), col1),
         _.startsWith(s"[ColumnFile] failed to read header row: x"))
     }
 
@@ -70,8 +70,7 @@ class ColumnFileTest extends FileTest {
     "called after close" in {
       val f = create(Seq(col1), "col1")
       assert(!f.nextRow())
-      domainException(f.nextRow(),
-        s"[$mainClassName] file: '$testFileName' has been closed")
+      domainError(f.nextRow(), s"file: '$testFileName' has been closed")
     }
 
     "too many columns" in {
@@ -113,8 +112,7 @@ class ColumnFileTest extends FileTest {
       Files.writeString(path, "col1")
       val f = new TestColumnFile(path, '\t', col1)
       f.closeFailure = true
-      domainException(f.nextRow(),
-        s"[$mainClassName] failed to close: bad close")
+      domainError(f.nextRow(), s"failed to close: bad close")
     }
   }
 
@@ -232,7 +230,7 @@ class ColumnFileTest extends FileTest {
 
   private def fileError(
       f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
-    domainException(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
+    domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
   private def create(sep: Char, cols: Seq[Column], lines: String*) = {
     testColumnFile.foreach(_.close())
