@@ -108,21 +108,16 @@ object KanjiListFile {
  *  all files for the same 'Enumeration' type, i.e., an entry can't be in more
  *  than one JLPT 'Level' file
  */
-final class EnumListFile[T <: NoneEnum] private (dir: Path, val value: T)
+final class EnumListFile[T <: NoneEnum[T]] private (dir: Path, val value: T)
     extends KanjiListFile(dir.resolve(value.toString + TextFileExtension),
       Multiple) {
 
-  /** the name of the enum type without the trailing '$' so if this class was
-   *  created with value `Kyu.K10` enumName would be "Kyu"
-   */
-  val enumName: String = value.name
-
   private val enumEntries =
-    EnumListFile.entries.getOrElseUpdate(enumName, mutable.Set[String]())
+    EnumListFile.entries.getOrElseUpdate(value.enumName, mutable.Set[String]())
 
   override protected def validate(
       entry: String): Boolean = super.validate(entry) && enumEntries.add(
-    entry) || error(s"'$entry' already in another $enumName")
+    entry) || error(s"'$entry' already in another ${value.enumName}")
 }
 
 object EnumListFile {
@@ -130,7 +125,7 @@ object EnumListFile {
    *  @param value enum value, i.e., Level.N3
    *  @return EnumListFile (file name is `value` plus ".txt", e.g., "N3.txt")
    */
-  def apply[T <: NoneEnum](dir: Path, value: T): EnumListFile[T] =
+  def apply[T <: NoneEnum[T]](dir: Path, value: T): EnumListFile[T] =
     new EnumListFile(dir, value)
 
   /** clear all entry data used to ensure uniqueness per enum */

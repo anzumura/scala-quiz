@@ -1,12 +1,15 @@
 package quiz.utils
 
-import quiz.kanji.NoneEnum
+import quiz.kanji.{NoneEnum, NoneEnumObject}
 import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
 
-enum TestEnum extends NoneEnum("TestEnum") { case E1, E2, E3, E4, None }
-enum TestEnum2 extends NoneEnum("TestEnum2") { case E1, E2, E3, E4, None }
+enum EnumA extends NoneEnum[EnumA](EnumA) { case E1, E2, E3, E4, None }
+object EnumA extends NoneEnumObject[EnumA] {}
+
+enum EnumB extends NoneEnum[EnumB](EnumB) { case E1, E2, E3, E4, None }
+object EnumB extends NoneEnumObject[EnumB] {}
 
 class ListFileTest extends FileTest {
   "name is capitalized file name stem by default" in {
@@ -110,35 +113,34 @@ class EnumListFileTest extends FileTest {
 
   "read entries for a JLPT Level" in {
     Files.writeString(tempDir.resolve("E4.txt"), "一 二 三\n四 五 六")
-    val f = EnumListFile(tempDir, TestEnum.E4)
+    val f = EnumListFile(tempDir, EnumA.E4)
     assert(f.size == 6)
-    assert(f.enumName == "TestEnum")
-    assert(f.value == TestEnum.E4)
+    assert(f.value == EnumA.E4)
   }
 
   "the same entries can exist in files for different enum types" in {
     Files.writeString(tempDir.resolve("E1.txt"), "七 八\n九 十")
-    val f1 = EnumListFile(tempDir, TestEnum.E1)
+    val f1 = EnumListFile(tempDir, EnumA.E1)
     assert(f1.size == 4)
     Files.writeString(tempDir.resolve("E2.txt"), "七 八\n九 十")
-    val f2 = EnumListFile(tempDir, TestEnum2.E2)
+    val f2 = EnumListFile(tempDir, EnumB.E2)
     assert(f2.size == 4)
   }
 
   "entries must be recognized Kanji" in {
     val fileName = "E3.txt"
     Files.writeString(tempDir.resolve(fileName), "北 東 S 西")
-    fileError(EnumListFile(tempDir, TestEnum.E3).entries,
+    fileError(EnumListFile(tempDir, EnumA.E3).entries,
       "'S' is not a recognized Kanji", 1, fileName)
   }
 
   "entries must be unique across all files for the same enum" in {
     Files.writeString(tempDir.resolve("E3.txt"), "七 八\n九 十")
-    val f = EnumListFile(tempDir, TestEnum2.E3)
+    val f = EnumListFile(tempDir, EnumB.E3)
     assert(f.size == 4)
     val fileName = "E4.txt"
     Files.writeString(tempDir.resolve(fileName), "百 千\n万 八")
-    fileError(EnumListFile(tempDir, TestEnum2.E4).size,
-      s"'八' already in another TestEnum2", 2, fileName)
+    fileError(EnumListFile(tempDir, EnumB.E4).size,
+      s"'八' already in another EnumB", 2, fileName)
   }
 }

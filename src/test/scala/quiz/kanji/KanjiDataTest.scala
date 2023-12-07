@@ -18,8 +18,8 @@ class KanjiDataTest extends FileTest {
     assert(fileName(result) == "data")
     assert(getFiles(result).count(_.toString.endsWith(TextFileExtension)) >= 5)
     val dirs = getDirectories(result).map(fileName).toSet
-    assert(dirs(Level.name))
-    assert(dirs(Kyu.name))
+    assert(dirs(Level.enumName))
+    assert(dirs(Kyu.enumName))
   }
 
   "get JLPT level" in {

@@ -59,8 +59,8 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
     result.toVector
   }
 
-  private def load[T <: NoneEnum](e: NoneEnumObject[T]): Map[String, T] = {
-    e.defined.map(EnumListFile(path.resolve(e.name), _)).flatMap(f =>
+  private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
+    e.defined.map(EnumListFile(path.resolve(e.enumName), _)).flatMap(f =>
       f.entries.map(_ -> f.value)
     ).toMap
   }
@@ -92,7 +92,7 @@ object KanjiData {
     getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
       val dirs = getDirectories(dir).map(fileName).toSet
       // make sure dir contains "Level" and "Kyu" subdirectories
-      dirs(Level.name) && dirs(Kyu.name)
+      dirs(Level.enumName) && dirs(Kyu.enumName)
     }
   }
 

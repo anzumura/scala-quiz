@@ -21,17 +21,20 @@ enum KanjiType {
 
 /** base class for `enum` with a "None" value (which means it ends up becoming
  *  the base class of each enum value)
- *  @param name the name of the `enum` class, i.e., "Grade", "Level", etc.
+ *  @param obj the `enum` object instance, i.e., "Grade", "Level", etc.
  */
-trait NoneEnum(val name: String) {
+trait NoneEnum[T <: NoneEnum[T]](obj: NoneEnumObject[T]) {
+  /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
+  val enumName: String = obj.enumName
+
   /** returns true if this enum value is not the "None" value */
-  def isDefined: Boolean = toString != "None" // maybe there's a nicer way ...
+  lazy val isDefined: Boolean = toString != "None" // maybe there's a nicer way
 }
 
 /** base class for companion object of `enum` with a "None" value */
-trait NoneEnumObject[T <: NoneEnum] {
+trait NoneEnumObject[T <: NoneEnum[T]] {
   /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
-  val name: String = getClass.getSimpleName.dropRight(1)
+  val enumName: String = getClass.getSimpleName.dropRight(1)
 
   /** `values` is overridden by compiler generated `enum` object */
   def values: Array[T]
@@ -39,12 +42,12 @@ trait NoneEnumObject[T <: NoneEnum] {
   /** returns true if `v` is not the "None" value */
   def isDefined(v: T): Boolean = v.isDefined
 
-  /** returns an array of all values except the "None" value */
-  def defined: Array[T] = values.filter(_.isDefined)
+  /** array of all values except the "None" value */
+  lazy val defined: Array[T] = values.filter(_.isDefined)
 }
 
 /** represents the official school grade for all Jouyou Kanji */
-enum Grade extends NoneEnum("Grade") {
+enum Grade extends NoneEnum[Grade](Grade) {
   case G1, G2, G3, G4, G5, G6, S, None
 }
 object Grade extends NoneEnumObject[Grade] {}
@@ -52,7 +55,7 @@ object Grade extends NoneEnumObject[Grade] {}
 /** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji
  *  (including 1,971 Jouyou and 251 Jinmei)
  */
-enum Level extends NoneEnum("Level") {
+enum Level extends NoneEnum[Level](Level) {
   case N5, N4, N3, N2, N1, None
 }
 object Level extends NoneEnumObject[Level] {}
@@ -60,7 +63,7 @@ object Level extends NoneEnumObject[Level] {}
 /** Kanji Kentei (漢字検定) Kyū (級), K = Kanken (漢検), J=Jun (準)
  *  @see <a href="https://en.wikipedia.org/wiki/Kanji_Kentei"></a>
  */
-enum Kyu extends NoneEnum("Kyu") {
+enum Kyu extends NoneEnum[Kyu](Kyu) {
   case K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None
 }
 object Kyu extends NoneEnumObject[Kyu] {}
@@ -76,7 +79,7 @@ object Kyu extends NoneEnumObject[Kyu] {}
  *  <li>None: not a Jinmei type Kanji
  *  </ul>
  */
-enum JinmeiReason extends NoneEnum("JinmeiReason") {
+enum JinmeiReason extends NoneEnum[JinmeiReason](JinmeiReason) {
   case Names, Print, Variant, Moved, Simple, Other, None
 }
 object JinmeiReason extends NoneEnumObject[JinmeiReason]
