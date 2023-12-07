@@ -2,8 +2,10 @@ package quiz.kanji
 
 import quiz.utils.BaseTest
 
+import scala.language.implicitConversions
+
 class KanjiTest extends BaseTest {
-  import KanjiTest._
+  import KanjiTest.*
 
   "Numbered Kanji" - {
     "create Jouyou Kanji with valid grade" in {

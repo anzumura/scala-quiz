@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.utils.FileUtils._
+import quiz.utils.FileUtils.*
 import quiz.utils.{EnumListFile, FileTest}
 
 import java.nio.file.Files.isDirectory
@@ -18,8 +18,8 @@ class KanjiDataTest extends FileTest {
     assert(fileName(result) == "data")
     assert(getFiles(result).count(_.toString.endsWith(TextFileExtension)) >= 5)
     val dirs = getDirectories(result).map(fileName).toSet
-    assert(dirs(Level.toString))
-    assert(dirs(Kyu.toString))
+    assert(dirs(Level.name))
+    assert(dirs(Kyu.name))
   }
 
   "get JLPT level" in {
@@ -98,7 +98,7 @@ class KanjiDataTest extends FileTest {
 }
 
 class TestKanjiData(path: Path) extends KanjiData(path) {
-  override def level(s: String): Level.Value = Level.None
-  override def kyu(s: String): Kyu.Value = Kyu.None
+  override def level(s: String): Level = Level.None
+  override def kyu(s: String): Kyu = Kyu.None
   override def frequency(s: String): Int = 0
 }

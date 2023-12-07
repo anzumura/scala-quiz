@@ -1,7 +1,7 @@
 package quiz.utils
 
-import quiz.utils.ColumnFile._
-import quiz.utils.ColumnFileTest._
+import quiz.utils.ColumnFile.*
+import quiz.utils.ColumnFileTest.*
 
 import java.io.IOException
 import java.nio.file.{Files, Path}
@@ -13,11 +13,11 @@ class ColumnFileTest extends FileTest {
 
   "create" - {
     "one column" in {
-      assert(create(Seq(col1), "col1").numColumns == 1)
+      assert(create(List(col1), "col1").numColumns == 1)
     }
 
     "current row zero before any rows are requested" in {
-      assert(create(Seq(col1), "col1").currentRow == 0)
+      assert(create(List(col1), "col1").currentRow == 0)
     }
 
     "multiple columns" in {
@@ -68,13 +68,13 @@ class ColumnFileTest extends FileTest {
 
   "nextRow" - {
     "called after close" in {
-      val f = create(Seq(col1), "col1")
+      val f = create(List(col1), "col1")
       assert(!f.nextRow())
       domainError(f.nextRow(), s"file: '$testFileName' has been closed")
     }
 
     "too many columns" in {
-      val f = create(Seq(col1), "col1", "A", "B\tC", "D")
+      val f = create(List(col1), "col1", "A", "B\tC", "D")
       assert(f.nextRow())
       assert(f.currentRow == 1)
       assert(f.get(col1) == "A")
@@ -119,7 +119,7 @@ class ColumnFileTest extends FileTest {
   "get" - {
     "string value" in {
       val expected = "Val"
-      val f = create(Seq(col1), "col1", expected)
+      val f = create(List(col1), "col1", expected)
       assert(f.nextRow())
       assert(f.get(col1) == expected)
     }
@@ -152,12 +152,12 @@ class ColumnFileTest extends FileTest {
     }
 
     "before nextRow fails" in {
-      val f = create(Seq(col1), "col1", "Val")
+      val f = create(List(col1), "col1", "Val")
       fileError(f.get(col1), "'nextRow' must be called before 'get'")
     }
 
     "column created after creating ColumnFile is 'unknown'" in {
-      val f = create(Seq(col1), "col1", "Val")
+      val f = create(List(col1), "col1", "Val")
       assert(f.nextRow())
       val c = Column("Created After")
       fileError(f.get(c), "unknown column 'Created After'", 1)
@@ -165,7 +165,7 @@ class ColumnFileTest extends FileTest {
 
     "column not included in ColumnFile is 'invalid'" in {
       val c = Column("Created Before")
-      val f = create(Seq(col1), "col1", "Val")
+      val f = create(List(col1), "col1", "Val")
       assert(f.nextRow())
       fileError(f.get(c), "invalid column 'Created Before'", 1)
     }
@@ -186,7 +186,7 @@ class ColumnFileTest extends FileTest {
     }
 
     "unsigned int with max value" in {
-      val f = create(Seq(col1), "col1", "0", "123")
+      val f = create(List(col1), "col1", "0", "123")
       f.nextRow()
       assert(f.getUInt(col1, 0) == 0)
       f.nextRow()
@@ -196,7 +196,7 @@ class ColumnFileTest extends FileTest {
     }
 
     "unsigned int exceeding max value" in {
-      val f = create(Seq(col1), "col1", "18", "100")
+      val f = create(List(col1), "col1", "18", "100")
       Seq((0, "18"), (99, "100")).foreach { case (max, s) =>
         f.nextRow()
         fileError(f.getUInt(col1, max), s"exceeded max value $max",
@@ -232,14 +232,14 @@ class ColumnFileTest extends FileTest {
       f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
-  private def create(sep: Char, cols: Seq[Column], lines: String*) = {
+  private def create(sep: Char, cols: List[Column], lines: String*) = {
     testColumnFile.foreach(_.close())
-    val f = new TestColumnFile(writeTestFile(lines), sep, cols: _*)
+    val f = new TestColumnFile(writeTestFile(lines: _*), sep, cols: _*)
     testColumnFile = Option(f)
     f
   }
 
-  private def create(cols: Seq[Column], lines: String*): ColumnFile = {
+  private def create(cols: List[Column], lines: String*): ColumnFile = {
     create(DefaultSeparator, cols, lines: _*)
   }
 
@@ -278,18 +278,18 @@ class ColumnTest extends BaseTest {
 }
 
 object ColumnFileTest {
-  val cols: Seq[Column] = (1 to 3).map(c => Column("col" + c))
-  val col1 :: col2 :: col3 :: Nil = cols.toList
+  val cols: List[Column] = (1 to 3).map(c => Column("col" + c)).toList
+  val col1 :: col2 :: col3 :: Nil = cols: @unchecked()
 
   private class TestColumnFile(path: Path, sep: Char, cols: Column*)
-      extends ColumnFile(path, sep, cols) with AutoCloseable {
+      extends ColumnFile(path, sep, cols: _*) with AutoCloseable {
     // allow tests to force close or read to fail
     var closeFailure: Boolean = false
     var readFailure: Boolean = false
 
     // make close public so tests can force closing the underlying file
     override def close(): Unit = {
-      super.close() // still want to close the real underlying file
+      super[ColumnFile].close() // still want to close the real underlying file
       if (closeFailure) throw new IOException("bad close")
     }
 

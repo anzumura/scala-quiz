@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.kanji.MorohashiId.IndexType._
+import quiz.kanji.MorohashiId.IndexType.*
 import quiz.kanji.MorohashiId.{MaxIndex, MaxSupplementalIndex}
 import quiz.utils.BaseTest
 

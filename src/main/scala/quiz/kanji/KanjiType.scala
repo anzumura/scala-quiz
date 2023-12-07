@@ -1,7 +1,5 @@
 package quiz.kanji
 
-import scala.language.implicitConversions
-
 /** used to identify which official group (Jouyou or Jinmei) a Kanji belongs to
  *  (or has a link to) as well as a few more groups for less common Kanji
  *
@@ -17,41 +15,55 @@ import scala.language.implicitConversions
  *  <li>Ucd: loaded from 'ucd.txt' and not one of the above types
  *  </ul>
  */
-object KanjiType extends Enumeration {
-  val Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd =
-    Value
+enum KanjiType {
+  case Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd
 }
 
-trait EnumWithNone extends Enumeration {
-  // Enumeration must have an entry called "None"
-  private lazy val noneId = values.filter(_.toString == "None").head.id
+/** base class for `enum` with a "None" value (which means it ends up becoming
+ *  the base class of each enum value)
+ *  @param name the name of the `enum` class, i.e., "Grade", "Level", etc.
+ */
+trait NoneEnum(val name: String) {
+  /** returns true if this enum value is not the "None" value */
+  def isDefined: Boolean = toString != "None" // maybe there's a nicer way ...
+}
 
-  /** return all values except "None" */
-  lazy val defined: Seq[Value] = values.filter(_.id != noneId).toSeq
+/** base class for companion object of `enum` with a "None" value */
+trait NoneEnumObject[T <: NoneEnum] {
+  /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
+  val name: String = getClass.getSimpleName.dropRight(1)
 
-  /** return true if given value is not "None" */
-  def isDefined(v: Value): Boolean = v.id != noneId
+  /** `values` is overridden by compiler generated `enum` object */
+  def values: Array[T]
+
+  /** returns true if `v` is not the "None" value */
+  def isDefined(v: T): Boolean = v.isDefined
+
+  /** returns an array of all values except the "None" value */
+  def defined: Array[T] = values.filter(_.isDefined)
 }
 
 /** represents the official school grade for all Jouyou Kanji */
-object Grade extends Enumeration with EnumWithNone {
-  val G1, G2, G3, G4, G5, G6, S, None = Value
+enum Grade extends NoneEnum("Grade") {
+  case G1, G2, G3, G4, G5, G6, S, None
 }
+object Grade extends NoneEnumObject[Grade] {}
 
 /** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji
  *  (including 1,971 Jouyou and 251 Jinmei)
  */
-object Level extends Enumeration with EnumWithNone {
-  val N5, N4, N3, N2, N1, None = Value
+enum Level extends NoneEnum("Level") {
+  case N5, N4, N3, N2, N1, None
 }
+object Level extends NoneEnumObject[Level] {}
 
 /** Kanji Kentei (漢字検定) Kyū (級), K = Kanken (漢検), J=Jun (準)
- *
  *  @see <a href="https://en.wikipedia.org/wiki/Kanji_Kentei"></a>
  */
-object Kyu extends Enumeration with EnumWithNone {
-  val K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None = Value
+enum Kyu extends NoneEnum("Kyu") {
+  case K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None
 }
+object Kyu extends NoneEnumObject[Kyu] {}
 
 /** official reason Kanji was added to Jinmeiyō list:
  *  <ul>
@@ -64,24 +76,18 @@ object Kyu extends Enumeration with EnumWithNone {
  *  <li>None: not a Jinmei type Kanji
  *  </ul>
  */
-object JinmeiReason extends Enumeration with EnumWithNone {
-  val Names, Print, Variant, Moved, Simple, Other, None = Value
+enum JinmeiReason extends NoneEnum("JinmeiReason") {
+  case Names, Print, Variant, Moved, Simple, Other, None
 }
+object JinmeiReason extends NoneEnumObject[JinmeiReason]
 
-sealed trait LinkedReadings
-object LinkedReadings {
-  case object Yes extends LinkedReadings
-  case object No extends LinkedReadings
-  val values: Seq[LinkedReadings] = Seq(Yes, No)
-
-  implicit def toBoolean(x: LinkedReadings): Boolean = x eq Yes
+enum LinkedReadings {
+  case Yes, No
 }
+given Conversion[LinkedReadings, Boolean] =
+  (x: LinkedReadings) => x eq LinkedReadings.Yes
 
-sealed trait OldLinks
-object OldLinks {
-  case object Yes extends OldLinks
-  case object No extends OldLinks
-  val values: Seq[OldLinks] = Seq(Yes, No)
-
-  implicit def toBoolean(x: OldLinks): Boolean = x eq Yes
+enum OldLinks {
+  case Yes, No
 }
+given Conversion[OldLinks, Boolean] = (x: OldLinks) => x eq OldLinks.Yes

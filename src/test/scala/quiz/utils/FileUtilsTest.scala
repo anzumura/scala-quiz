@@ -1,7 +1,7 @@
 package quiz.utils
 
-import quiz.utils.FileUtils._
-import quiz.utils.FileUtilsTest._
+import quiz.utils.FileUtils.*
+import quiz.utils.FileUtilsTest.*
 
 import java.nio.file.{Files, Path}
 

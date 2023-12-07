@@ -1,6 +1,6 @@
 package quiz.utils
 
-import quiz.utils.UnicodeUtils._
+import quiz.utils.UnicodeUtils.*
 
 class UnicodeUtilsTest extends BaseTest {
   private val dog = Code(0x72ac)    // Kanji in the Basic Multilingual Plane

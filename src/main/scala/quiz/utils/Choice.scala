@@ -1,6 +1,6 @@
 package quiz.utils
 
-import quiz.utils.Choice._
+import quiz.utils.Choice.*
 
 import java.io.{BufferedReader, InputStream, InputStreamReader, PrintStream}
 import scala.annotation.tailrec
@@ -41,7 +41,7 @@ class Choice private (private var _quit: Option[Char] = None,
    *  @throws DomainException if 'quit option' is set and is also in `choices`
    *  @throws DomainException if any choice in `choices` is not printable Ascii
    */
-  def get(choices: Choices, msg: String = "", useQuit: UseQuit = QuitOn,
+  def get(choices: Choices, msg: String = "", useQuit: UseQuit = UseQuit.Yes,
       defaultChoice: Option[Char] = None): Char = {
     val c = quit.map(q =>
       if (useQuit) {
@@ -55,7 +55,8 @@ class Choice private (private var _quit: Option[Char] = None,
   }
 
   // 'get' overloads using 'd' Char for default choice instead of Option[Char]
-  def get(c: Choices, m: String, d: Char): Char = get(c, m, QuitOn, Option(d))
+  def get(c: Choices, m: String, d: Char): Char =
+    get(c, m, UseQuit.Yes, Option(d))
   def get(c: Choices, m: String, d: Char, u: UseQuit): Char =
     get(c, m, u, Option(d))
   // overloads without 'm' message parameter (defaults to empty string)
@@ -146,7 +147,8 @@ object Choice {
     if (start > end) domainError(s"start '$start' greater than end '$end'")
 
     // call 'Choice.get' methods with this range merged into 'Choices'
-    def get(o: Choice, c: Choices, m: String = "", u: UseQuit = QuitOn): Char =
+    def get(
+        o: Choice, c: Choices, m: String = "", u: UseQuit = UseQuit.Yes): Char =
       o.get(merge(c), m, u)
     def get(o: Choice, c: Choices, m: String, d: Char): Char =
       o.get(merge(c), m, d)
@@ -176,10 +178,8 @@ object Choice {
 
   val DefaultQuitDescription = "quit"
 
-  sealed trait UseQuit
-  case object QuitOn extends UseQuit
-  case object QuitOff extends UseQuit
-  implicit def toBoolean(x: UseQuit): Boolean = x eq QuitOn
+  enum UseQuit { case Yes, No }
+  given Conversion[UseQuit, Boolean] = (x: UseQuit) => x eq UseQuit.Yes
 
   def apply(): Choice = new Choice
   def apply(q: Char, d: String = DefaultQuitDescription): Choice =

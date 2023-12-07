@@ -1,14 +1,14 @@
 package quiz.utils
 
-import quiz.utils.FileUtils._
-import quiz.utils.ListFile.EntriesPerLine._
-import quiz.utils.ListFile._
+import quiz.kanji.NoneEnum
+import quiz.utils.FileUtils.*
+import quiz.utils.ListFile.*
+import quiz.utils.ListFile.EntriesPerLine.*
 import quiz.utils.UnicodeUtils.isKanji
 
 import java.nio.file.Path
 import scala.collection.mutable
 import scala.io.Source
-import scala.reflect.ClassTag
 import scala.util.{Try, Using}
 
 /** holds data loaded from a file with Kanji string entries
@@ -108,16 +108,14 @@ object KanjiListFile {
  *  all files for the same 'Enumeration' type, i.e., an entry can't be in more
  *  than one JLPT 'Level' file
  */
-final class EnumListFile[T <: Enumeration: ClassTag] private (dir: Path,
-    val value: T#Value)
+final class EnumListFile[T <: NoneEnum] private (dir: Path, val value: T)
     extends KanjiListFile(dir.resolve(value.toString + TextFileExtension),
       Multiple) {
 
   /** the name of the enum type without the trailing '$' so if this class was
    *  created with value `Kyu.K10` enumName would be "Kyu"
    */
-  val enumName: String =
-    implicitly[ClassTag[T]].runtimeClass.getSimpleName.dropRight(1)
+  val enumName: String = value.name
 
   private val enumEntries =
     EnumListFile.entries.getOrElseUpdate(enumName, mutable.Set[String]())
@@ -132,8 +130,8 @@ object EnumListFile {
    *  @param value enum value, i.e., Level.N3
    *  @return EnumListFile (file name is `value` plus ".txt", e.g., "N3.txt")
    */
-  def apply[T <: Enumeration: ClassTag](
-      dir: Path, value: T#Value): EnumListFile[T] = new EnumListFile(dir, value)
+  def apply[T <: NoneEnum](dir: Path, value: T): EnumListFile[T] =
+    new EnumListFile(dir, value)
 
   /** clear all entry data used to ensure uniqueness per enum */
   def clearEntryData(): Unit = {

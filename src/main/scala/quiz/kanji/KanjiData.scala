@@ -1,8 +1,8 @@
 package quiz.kanji
 
+import quiz.utils.*
 import quiz.utils.ColumnFile.Column
-import quiz.utils.FileUtils._
-import quiz.utils._
+import quiz.utils.FileUtils.*
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.Path
@@ -12,20 +12,20 @@ import scala.reflect.ClassTag
 
 class KanjiData protected (val path: Path) extends ThrowsDomainException {
   /** JLPT level of `s` or "None" if it doesn't have a level */
-  def level(s: String): Level.Value = levels.getOrElse(s, Level.None)
+  def level(s: String): Level = levels.getOrElse(s, Level.None)
 
   /** Kentei kyu of `s` or "None" if it doesn't have a kyu */
-  def kyu(s: String): Kyu.Value = kyus.getOrElse(s, Kyu.None)
+  def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.None)
 
   /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
   def frequency(s: String): Int = frequencies.getOrElse(s, 0)
 
   /** get all Kanji for type `t` */
-  def getType(t: KanjiType.Value): Vector[Kanji] =
+  def getType(t: KanjiType): Vector[Kanji] =
     types.getOrElse(t, Vector.empty[Kanji])
 
-  private def loadKanji(): mutable.Map[KanjiType.Value, Vector[Kanji]] = {
-    val t = mutable.Map[KanjiType.Value, Vector[Kanji]]()
+  private def loadKanji(): mutable.Map[KanjiType, Vector[Kanji]] = {
+    val t = mutable.Map[KanjiType, Vector[Kanji]]()
     t += KanjiType.Jouyou -> loadJouyou()
     // load remaining types
     t
@@ -53,14 +53,14 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
         frequency(name),
         f.getUIntDefault(yearCol, 0),
         if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
-        Grade.withName(if (grade != "S") s"G$grade" else grade)
+        Grade.valueOf(if (grade != "S") s"G$grade" else grade)
       )
     }
     result.toVector
   }
 
-  private def load[T <: EnumWithNone: ClassTag](e: T): Map[String, T#Value] = {
-    e.defined.map(EnumListFile(path.resolve(e.toString), _)).flatMap(f =>
+  private def load[T <: NoneEnum](e: NoneEnumObject[T]): Map[String, T] = {
+    e.defined.map(EnumListFile(path.resolve(e.name), _)).flatMap(f =>
       f.entries.map(_ -> f.value)
     ).toMap
   }
@@ -92,7 +92,7 @@ object KanjiData {
     getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
       val dirs = getDirectories(dir).map(fileName).toSet
       // make sure dir contains "Level" and "Kyu" subdirectories
-      dirs(Level.toString) && dirs(Kyu.toString)
+      dirs(Level.name) && dirs(Kyu.name)
     }
   }
 

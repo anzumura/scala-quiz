@@ -1,6 +1,6 @@
 package quiz.utils
 
-import quiz.utils.ColumnFile._
+import quiz.utils.ColumnFile.*
 
 import java.io.IOException
 import java.nio.file.Path
@@ -10,7 +10,7 @@ import scala.io.Source
 /** class for loading data from a delimiter separated file with a header row
  *  containing the column names
  */
-class ColumnFile protected (path: Path, val sep: Char, cols: Seq[Column])
+class ColumnFile protected (path: Path, val sep: Char, cols: Column*)
     extends ThrowsDomainException {
   if (cols.isEmpty) domainError("must specify at least one column")
 
@@ -170,7 +170,7 @@ object ColumnFile {
   val DefaultSeparator: Char = '\t'
 
   def apply(path: Path, sep: Char, cols: Column*): ColumnFile =
-    new ColumnFile(path, sep, cols)
+    new ColumnFile(path, sep, cols: _*)
   def apply(path: Path, cols: Column*): ColumnFile =
     apply(path, DefaultSeparator, cols: _*)
 

@@ -1,11 +1,12 @@
 package quiz.utils
 
+import quiz.kanji.NoneEnum
 import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
 
-object TestEnum extends Enumeration { val E1, E2, E3, E4 = Value }
-object TestEnum2 extends Enumeration { val E1, E2, E3, E4 = Value }
+enum TestEnum extends NoneEnum("TestEnum") { case E1, E2, E3, E4, None }
+enum TestEnum2 extends NoneEnum("TestEnum2") { case E1, E2, E3, E4, None }
 
 class ListFileTest extends FileTest {
   "name is capitalized file name stem by default" in {

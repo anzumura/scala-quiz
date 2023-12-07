@@ -55,19 +55,13 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
     Files.walk(d).toScala(LazyList).reverse.filter(_ != d).foreach(delete)
   }
 
-  def writeTestFile(line: String, lines: String*): Path = {
-    val allLines = line +: lines
-    Files.write(testFile, allLines.asJava)
-  }
-
   /** write lines to testFile or create empty testFile if lines is empty
    *  @param lines lines to write to testFile
    *  @return testFile
    */
-  def writeTestFile(lines: Seq[String] = Seq.empty[String]): Path = {
-    lines.headOption.map(line => writeTestFile(line, lines.tail: _*)).getOrElse(
-      Files.createFile(testFile)
-    )
+  def writeTestFile(lines: String*): Path = {
+    if (lines.isEmpty) Files.createFile(testFile)
+    else Files.write(testFile, lines.asJava)
   }
 
   // delete all files from 'tempDir' after each test

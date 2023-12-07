@@ -5,8 +5,8 @@ import quiz.utils.ThrowsDomainException
 
 import scala.util.{Success, Try}
 
-class MorohashiId private (val index: Int, val indexType: IndexType) {
-  import IndexType._
+case class MorohashiId private (index: Int, indexType: IndexType) {
+  import IndexType.*
 
   override def toString: String = (indexType match {
     case Plain => "%05d"
@@ -27,7 +27,7 @@ object MorohashiId extends ThrowsDomainException {
     case object DoublePrime extends IndexType
     case object Supplemental extends IndexType
   }
-  import IndexType._
+  import IndexType.*
 
   def apply(index: Int, indexType: IndexType = Plain): MorohashiId = {
     if (index < 0) domainError("negative index")

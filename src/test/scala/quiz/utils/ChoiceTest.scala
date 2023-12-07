@@ -1,6 +1,6 @@
 package quiz.utils
 
-import quiz.utils.Choice._
+import quiz.utils.Choice.*
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 
@@ -66,7 +66,7 @@ class ChoiceTest extends BaseChoiceTest {
     "one choice" in {
       val (c, os) = create("a")
       val msg = "my choice"
-      assert(c.get(Choices(('a', "first")), msg, QuitOn) == 'a')
+      assert(c.get(Choices(('a', "first")), msg, UseQuit.Yes) == 'a')
       assert(os.toString == s"$msg (a=first): ")
     }
 
@@ -125,21 +125,21 @@ class ChoiceTest extends BaseChoiceTest {
     "suppress 'quit' option" in {
       val (c, os) = create("a")
       c.setQuit('q')
-      assert(c.get(Map(('a', "")), "my msg", QuitOff) == 'a')
+      assert(c.get(Map(('a', "")), "my msg", UseQuit.No) == 'a')
       assert(os.toString == "my msg (a): ")
     }
 
     "suppress 'quit' option and include same choice" in {
       val (c, os) = create("q")
       c.setQuit('q')
-      assert(c.get(Map(('q', "Q")), QuitOff) == 'q')
+      assert(c.get(Map(('q', "Q")), UseQuit.No) == 'q')
       assert(os.toString == "(q=Q): ")
     }
 
     "suppress 'quit' option with default" in {
       val (c, os) = create()
       c.setQuit('q')
-      assert(c.get(Map(('a', "")), 'a', QuitOff) == 'a')
+      assert(c.get(Map(('a', "")), 'a', UseQuit.No) == 'a')
       assert(os.toString == "(a) def 'a': ")
     }
 
@@ -214,7 +214,7 @@ class RangeTest extends BaseChoiceTest {
     "supports suppressing quit option" in {
       val (c, os) = create()
       c.setQuit('q')
-      assert(c.get(a2c, 'c', QuitOff) == 'c')
+      assert(c.get(a2c, 'c', UseQuit.No) == 'c')
       assert(os.toString == "(a-c) def 'c': ")
     }
 
@@ -237,10 +237,10 @@ class RangeTest extends BaseChoiceTest {
       "suppress quit" in {
         val (c, os) = create("b\nb")
         c.setQuit('q')
-        assert(a2c.get(c, choices, QuitOff) == 'b')
+        assert(a2c.get(c, choices, UseQuit.No) == 'b')
         assert(os.toString == prompt + "): ")
         os.reset()
-        assert(a2c.get(c, choices, msg, QuitOff) == 'b')
+        assert(a2c.get(c, choices, msg, UseQuit.No) == 'b')
         assert(os.toString == msgPrompt + "): ")
       }
 
@@ -256,10 +256,10 @@ class RangeTest extends BaseChoiceTest {
       "default option and suppress quit" in {
         val (c, os) = create("\n")
         c.setQuit('b')
-        assert(a2c.get(c, choices, 'a', QuitOff) == 'a')
+        assert(a2c.get(c, choices, 'a', UseQuit.No) == 'a')
         assert(os.toString == prompt + ") def 'a': ")
         os.reset()
-        assert(a2c.get(c, choices, msg, 'a', QuitOff) == 'a')
+        assert(a2c.get(c, choices, msg, 'a', UseQuit.No) == 'a')
         assert(os.toString == msgPrompt + ") def 'a': ")
       }
     }
