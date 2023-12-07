@@ -1,11 +1,7 @@
 package quiz.utils
 
-class DomainException(msg: String) extends Exception(msg) {}
-
-object DomainException {
-  def apply(msg: String, fromClass: Option[String] = None): DomainException =
-    new DomainException(fromClass.map(c => s"[$c] $msg").getOrElse(msg))
-}
+class DomainException(msg: String, fromClass: Option[String] = None)
+    extends Exception(fromClass.map(c => s"[$c] $msg").getOrElse(msg)) {}
 
 trait ThrowsDomainException {
   /** throws a DomainException that includes the class name at the beginning */

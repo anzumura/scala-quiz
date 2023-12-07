@@ -9,6 +9,7 @@
     <option name="testKind" value="All in package" />
     <option name="classBuf">
       <list>
+        <option value="quiz.utils.ColumnFileTest" />
         <option value="quiz.utils.ColumnTest" />
         <option value="quiz.utils.UnicodeUtilsTest" />
         <option value="quiz.utils.ChoiceTest" />
@@ -17,7 +18,6 @@
         <option value="quiz.utils.KanjiListFileTest" />
         <option value="quiz.utils.EnumListFileTest" />
         <option value="quiz.utils.FileUtilsTest" />
-        <option value="quiz.utils.ColumnFileTest" />
         <option value="quiz.kanji.KanjiTest" />
         <option value="quiz.kanji.KanjiDataTest" />
         <option value="quiz.kanji.KanjiTypeTest" />

@@ -10,9 +10,11 @@ import scala.io.Source
 /** class for loading data from a delimiter separated file with a header row
  *  containing the column names
  */
-class ColumnFile protected (path: Path, val sep: Char, cols: Column*)
+class ColumnFile(path: Path, val sep: Char, cols: Column*)
     extends ThrowsDomainException {
   if (cols.isEmpty) domainError("must specify at least one column")
+
+  def this(path: Path, cols: Column*) = this(path, DefaultSeparator, cols: _*)
 
   /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
@@ -169,11 +171,6 @@ class ColumnFile protected (path: Path, val sep: Char, cols: Column*)
 object ColumnFile {
   val DefaultSeparator: Char = '\t'
 
-  def apply(path: Path, sep: Char, cols: Column*): ColumnFile =
-    new ColumnFile(path, sep, cols: _*)
-  def apply(path: Path, cols: Column*): ColumnFile =
-    apply(path, DefaultSeparator, cols: _*)
-
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1
 
@@ -181,7 +178,7 @@ object ColumnFile {
    *  values from each row and the same Column instance can be used in multiple
    *  ColumnFiles.
    */
-  final class Column private (val name: String) {
+  final class Column(val name: String) {
     val number: Int = allColumns.getOrElseUpdate(name, allColumns.size)
 
     override def equals(rhs: Any): Boolean = rhs match {
@@ -191,5 +188,4 @@ object ColumnFile {
     override def hashCode: Int = number.hashCode
     override def toString: String = name
   }
-  object Column { def apply(name: String): Column = new Column(name) }
 }
