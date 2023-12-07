@@ -76,11 +76,7 @@ class ListFile protected (path: Path, fileType: EntriesPerLine,
 }
 
 object ListFile {
-  sealed trait EntriesPerLine
-  object EntriesPerLine {
-    case object Single extends EntriesPerLine
-    case object Multiple extends EntriesPerLine
-  }
+  enum EntriesPerLine { case Single, Multiple }
 
   def apply(path: Path) = new ListFile(path, Single)
   def apply(path: Path, fileType: EntriesPerLine) = new ListFile(path, fileType)
