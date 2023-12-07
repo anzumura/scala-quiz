@@ -1,7 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.MorohashiId.IndexType.*
-import quiz.kanji.MorohashiId.{MaxIndex, MaxSupplementalIndex}
+import quiz.kanji.MorohashiId.{IndexType, MaxIndex, MaxSupplementalIndex}
 import quiz.utils.BaseTest
 
 class MorohashiIdTest extends BaseTest {
@@ -64,7 +64,7 @@ class MorohashiIdTest extends BaseTest {
 
     "index out of range" in {
       val big = MaxIndex + 1
-      Seq(Plain, Prime, DoublePrime).foreach(i =>
+      IndexType.values.filter(_ != Supplemental).foreach(i =>
         domainError(MorohashiId(big, i), s"$i index $big exceeds $MaxIndex")
       )
     }
@@ -104,7 +104,7 @@ class MorohashiIdTest extends BaseTest {
     }
 
     "add leading zeroes if less than 5 digits for non-Supplemental index" in {
-      Seq(Plain, Prime, DoublePrime).foreach { i =>
+      IndexType.values.filter(_ != Supplemental).foreach { i =>
         assert(MorohashiId(1, i).toString.startsWith("00001"))
         assert(MorohashiId(1234, i).toString.startsWith("01234"))
       }

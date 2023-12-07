@@ -20,13 +20,7 @@ object MorohashiId extends ThrowsDomainException {
   val MaxIndex: Int = 99999
   val MaxSupplementalIndex: Int = 999
 
-  sealed trait IndexType
-  object IndexType {
-    case object Plain extends IndexType
-    case object Prime extends IndexType
-    case object DoublePrime extends IndexType
-    case object Supplemental extends IndexType
-  }
+  enum IndexType { case Plain, Prime, DoublePrime, Supplemental }
   import IndexType.*
 
   def apply(index: Int, indexType: IndexType = Plain): MorohashiId = {
