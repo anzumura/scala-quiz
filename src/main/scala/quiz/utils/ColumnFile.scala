@@ -6,6 +6,7 @@ import java.io.IOException
 import java.nio.file.Path
 import scala.collection.mutable
 import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 /** class for loading data from a delimiter separated file with a header row
  *  containing the column names
@@ -36,13 +37,10 @@ class ColumnFile(path: Path, val sep: Char, cols: Column*)
     if (_closed) domainError(s"file: '$fileName' has been closed")
     val hasNext = lines.hasNext
     if (hasNext) processNextRow()
-    else
-      try {
-        close()
-        _closed = true
-      } catch {
-        case e: IOException => domainError("failed to close: " + e.getMessage)
-      }
+    else Try {
+      close()
+      _closed = true
+    }.failed.foreach(e => domainError("failed to close: " + e.getMessage))
     hasNext
   }
 
@@ -100,51 +98,52 @@ class ColumnFile(path: Path, val sep: Char, cols: Column*)
   }
 
   private def processHeaderRow(source: Source,
-      colsIn: mutable.Map[String, Column]) =
-    try {
-      val lines = source.getLines()
-      if (!lines.hasNext) fileError("missing header row")
-      val colsFound = mutable.Set.empty[String]
-      lines.next().split(sep).zipWithIndex.foreach { case (s, pos) =>
-        if (!colsFound.add(s)) fileError(s"duplicate header '$s'")
-        colsIn.remove(s) match {
-          case Some(c) => columnToPos(c.number) = pos
-          case _ => fileError(s"unrecognized header '$s'")
-        }
+      colsIn: mutable.Map[String, Column]) = Try {
+    val lines = source.getLines()
+    if (!lines.hasNext) fileError("missing header row")
+    val colsFound = mutable.Set.empty[String]
+    lines.next().split(sep).zipWithIndex.foreach { case (s, pos) =>
+      if (!colsFound.add(s)) fileError(s"duplicate header '$s'")
+      colsIn.remove(s) match {
+        case Some(c) => columnToPos(c.number) = pos
+        case _ => fileError(s"unrecognized header '$s'")
       }
-      colsIn.size match {
-        case 0 => (source, lines)
-        case 1 => fileError(s"column '${colsIn.keys.mkString}' not found")
-        case s => fileError(colsIn.keys.toIndexedSeq.sorted.mkString(
-              s"$s columns not found: '", "', '", "'"))
-      }
-    } catch {
-      case e: DomainException =>
-        source.close
-        throw e
     }
-
-  private def processNextRow(): Unit =
-    try {
-      val vals = readRow().split(splitRegex, -1)
-      _currentRow += 1
-      vals.length match {
-        case l if l < numColumns => fileError("not enough columns")
-        case l if l > numColumns => fileError("too many columns")
-        case _ => vals.zipWithIndex.foreach { case (s, i) => rowValues(i) = s }
-      }
-    } catch {
-      case e: IOException => fileError(s"failed to read row: ${e.getMessage}")
+    colsIn.size match {
+      case 0 => (source, lines)
+      case 1 => fileError(s"column '${colsIn.keys.mkString}' not found")
+      case s => fileError(colsIn.keys.toIndexedSeq.sorted.mkString(
+            s"$s columns not found: '", "', '", "'"))
     }
+  } match {
+    case Failure(e) =>
+      source.close
+      throw e
+    case Success(x) => x
+  }
 
-  private def processUInt(s: String, col: Column, max: Int) = (try {
+  private def processNextRow(): Unit = Try {
+    val vals = readRow().split(splitRegex, -1)
+    _currentRow += 1
+    vals.length match {
+      case l if l < numColumns => fileError("not enough columns")
+      case l if l > numColumns => fileError("too many columns")
+      case _ => vals.zipWithIndex.foreach { case (s, i) => rowValues(i) = s }
+    }
+  } match {
+    case Failure(e: IOException) =>
+      fileError(s"failed to read row: ${e.getMessage}")
+    case Failure(e) => throw e
+    case _ =>
+  }
+
+  private def processUInt(s: String, col: Column, max: Int) = Try {
     Integer.parseUnsignedInt(s)
-  } catch {
-    case _: Throwable => fileError("convert to UInt failed", col, s)
-  }) match {
-    case x if max >= 0 && max < x =>
+  } match {
+    case Failure(_) => fileError("convert to UInt failed", col, s)
+    case Success(x) if max >= 0 && max < x =>
       fileError(s"exceeded max value $max", col, s)
-    case x => x
+    case Success(x) => x
   }
 
   private val fileName = path.getFileName.toString
@@ -159,11 +158,11 @@ class ColumnFile(path: Path, val sep: Char, cols: Column*)
     cols.foreach(c =>
       if (colsIn.put(c.name, c).nonEmpty) domainError(s"duplicate column '$c'")
     )
-    try {
-      processHeaderRow(Source.fromFile(path.toFile), colsIn)
-    } catch {
-      case e: IOException =>
+    Try(processHeaderRow(Source.fromFile(path.toFile), colsIn)) match {
+      case Success(x) => x
+      case Failure(e: IOException) =>
         domainError("failed to read header row: " + e.getMessage)
+      case Failure(e) => throw e
     }
   }
 }
