@@ -34,7 +34,7 @@ class UnicodeUtilsTest extends BaseTest {
 
     "exceeds Unicode max U+10FFFF" in {
       val x = 0x110000
-      error(Code(x), "code 0x%x exceeds Unicode max U+10FFFF".format(x))
+      error(Code(x), f"code 0x$x%x exceeds Unicode max U+10FFFF")
     }
 
     "create from string value" in {

@@ -55,7 +55,7 @@ object UnicodeUtils extends ThrowsDomainException {
     def apply(value: Int): Code = {
       if (value < 0) error("code can't be negative")
       if (value > UnicodeMax)
-        error("code 0x%x exceeds Unicode max U+%X".format(value, UnicodeMax))
+        error(f"code 0x$value%x exceeds Unicode max U+$UnicodeMax%X")
       new Code(value)
     }
   }
@@ -72,12 +72,14 @@ object UnicodeUtils extends ThrowsDomainException {
     def apply(x: Code): Boolean = start <= x && x <= end
   }
 
+  /** Block object required to add auxilary constructor for case class */
   object Block {
-    def apply(start: Code): Block = new Block(start, start)
+    /** create a block with a single entry of `start` */
+    def apply(start: Code): Block = Block(start, start)
   }
 
   // used to create official Unicode Blocks (see below)
-  private def block(start: Int, end: Int) = new Block(Code(start), Code(end))
+  private def block(start: Int, end: Int) = Block(Code(start), Code(end))
 
   /** blocks containing all common Japanese Kanji (plus many non-Japanese Kanji)
    *  Most Japanese Kanji are in 'CJK Unified Ideographs', but 'Extension A' has
