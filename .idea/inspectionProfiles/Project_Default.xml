@@ -5,5 +5,6 @@
     <inspection_tool class="ShellCheck" enabled="true" level="ERROR" enabled_by_default="true">
       <shellcheck_settings value="SC2001,SC2013,SC2015,SC2034,SC2048,SC2053,SC2086,SC2125,SC2154" />
     </inspection_tool>
+    <inspection_tool class="VulnerableLibrariesLocal" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>
