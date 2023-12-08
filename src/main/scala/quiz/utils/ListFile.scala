@@ -2,7 +2,7 @@ package quiz.utils
 
 import quiz.kanji.NoneEnum
 import quiz.utils.FileUtils.*
-import quiz.utils.ListFile.*
+import quiz.utils.ListFile.EntriesPerLine
 import quiz.utils.ListFile.EntriesPerLine.*
 import quiz.utils.UnicodeUtils.isKanji
 
@@ -18,9 +18,13 @@ import scala.util.{Try, Using}
  *  in order in a list. There are derived classes for specific data types, i.e.,
  *  where all entries are for a 'JLPT Level' or a 'Kentei Kyu'.
  */
-class ListFile protected (path: Path, fileType: EntriesPerLine,
-    nameIn: Option[String] = None)
+class ListFile(path: Path, fileType: EntriesPerLine, nameIn: Option[String])
     extends ThrowsDomainException {
+  def this(path: Path) = this(path, Single, None)
+  def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
+  def this(path: Path, name: String,
+      fileType: EntriesPerLine = EntriesPerLine.Single) =
+    this(path, fileType, Option(name))
 
   /** @return name assigned at construction or if no name was given then return
    *          the capitalized file name (without extensions)
@@ -41,7 +45,7 @@ class ListFile protected (path: Path, fileType: EntriesPerLine,
             err(e.getMessage)
           )
         }
-        if (fileType == Single) {
+        if (fileType == EntriesPerLine.Single) {
           if (line.contains(' ')) err("line has multiple entries")
           add(line)
         } else line.split(' ').foreach(add)
@@ -74,37 +78,28 @@ class ListFile protected (path: Path, fileType: EntriesPerLine,
    */
   protected def validate(entry: String): Boolean = true
 }
-
-object ListFile {
-  enum EntriesPerLine { case Single, Multiple }
-
-  def apply(path: Path) = new ListFile(path, Single)
-  def apply(path: Path, fileType: EntriesPerLine) = new ListFile(path, fileType)
-  def apply(path: Path, name: String, fileType: EntriesPerLine = Single) =
-    new ListFile(path, fileType, Option(name))
-}
+object ListFile { enum EntriesPerLine { case Single, Multiple } }
 
 /** derived class of ListFile that ensures each entry is a recognized Kanji */
 class KanjiListFile protected (path: Path, fileType: EntriesPerLine,
-    nameIn: Option[String] = None)
+    nameIn: Option[String])
     extends ListFile(path, fileType, nameIn) {
+  def this(path: Path) = this(path, Single, None)
+  def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
+  def this(path: Path, name: String, fileType: EntriesPerLine = Single) =
+    this(path, fileType, Option(name))
+
   override protected def validate(entry: String): Boolean =
     isKanji(entry) || error(s"'$entry' is not a recognized Kanji")
 }
 
-object KanjiListFile {
-  def apply(path: Path) = new KanjiListFile(path, Single)
-  def apply(path: Path, fileType: EntriesPerLine) =
-    new KanjiListFile(path, fileType)
-  def apply(path: Path, name: String, fileType: EntriesPerLine = Single) =
-    new KanjiListFile(path, fileType, Option(name))
-}
-
-/** derived class of KanjiList file that ensures each entry is unique across
- *  all files for the same 'Enumeration' type, i.e., an entry can't be in more
- *  than one JLPT 'Level' file
+/** derived class of [[KanjiListFile]] that ensures each entry is unique across
+ *  all files for the same `enum` type, i.e., an entry can't be in more than one
+ *  JLPT 'Level' file (file name is `value` plus ".txt", e.g., "N3.txt")
+ *  @param dir the directory containing the enum file
+ *  @param value enum value, i.e., Level.N3
  */
-final class EnumListFile[T <: NoneEnum[T]] private (dir: Path, val value: T)
+final class EnumListFile[T <: NoneEnum[T]](dir: Path, val value: T)
     extends KanjiListFile(dir.resolve(value.toString + TextFileExtension),
       Multiple) {
 
@@ -117,17 +112,8 @@ final class EnumListFile[T <: NoneEnum[T]] private (dir: Path, val value: T)
 }
 
 object EnumListFile {
-  /** @param dir the directory containing the enum file
-   *  @param value enum value, i.e., Level.N3
-   *  @return EnumListFile (file name is `value` plus ".txt", e.g., "N3.txt")
-   */
-  def apply[T <: NoneEnum[T]](dir: Path, value: T): EnumListFile[T] =
-    new EnumListFile(dir, value)
-
   /** clear all entry data used to ensure uniqueness per enum */
-  def clearEntryData(): Unit = {
-    entries.clear()
-  }
+  def clearEntryData(): Unit = entries.clear()
 
   def hasEntryData: Boolean = entries.nonEmpty
 
