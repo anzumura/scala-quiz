@@ -8,9 +8,8 @@ import java.nio.file.Files.isDirectory
 import java.nio.file.Path
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
-class KanjiData protected (val path: Path) extends ThrowsDomainException {
+class KanjiData(val path: Path) extends ThrowsDomainException {
   /** JLPT level of `s` or "None" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.None)
 
@@ -85,8 +84,6 @@ class KanjiData protected (val path: Path) extends ThrowsDomainException {
 }
 
 object KanjiData {
-  def apply(path: Path): KanjiData = new KanjiData(path)
-
   private def hasDataFiles(dir: Path) = {
     // make sure there are at least 5 ".txt" files
     getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
