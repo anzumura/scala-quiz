@@ -7,10 +7,10 @@ import scala.annotation.tailrec
 import scala.collection.immutable.TreeMap
 import scala.language.implicitConversions
 
-class Choice private (
-    private var _quit: Option[Char] = None, var quitDescription: String = DefaultQuitDescription,
-    val is: InputStream = System.in, private val os: PrintStream = System.out
-) extends ThrowsDomainException {
+class Choice private (private var _quit: Option[Char] = None,
+    var quitDescription: String = DefaultQuitDescription, val is: InputStream = System.in,
+    private val os: PrintStream = System.out)
+extends ThrowsDomainException {
   /** returns the current `quit` option or None is no option has been set */
   def quit: Option[Char] = _quit
 
@@ -41,16 +41,13 @@ class Choice private (
    *  @throws DomainException if 'quit option' is set and is also in `choices`
    *  @throws DomainException if any choice in `choices` is not printable Ascii
    */
-  def get(
-      choices: Choices, msg: String = "", useQuit: UseQuit = UseQuit.Yes,
-      defaultChoice: Option[Char] = None
-  ): Char = {
+  def get(choices: Choices, msg: String = "", useQuit: UseQuit = UseQuit.Yes,
+      defaultChoice: Option[Char] = None): Char = {
     val c = quit.map(q =>
       if (useQuit) {
         if (choices.contains(q)) domainError(s"quit option '$q' already in choices")
         choices.updated(q, quitDescription)
-      } else choices
-    ).getOrElse(choices)
+      } else choices).getOrElse(choices)
     if (c.isEmpty) domainError("must specify at least one choice")
     getChoice(getPrompt(msg, c, defaultChoice), c, defaultChoice)
   }
@@ -159,8 +156,7 @@ object Choice {
         result = result.updatedWith(c) {
           case None => Option("")
           case _ => domainError(s"option '$c' already in choices")
-        }
-      )
+        })
       result
     }
   }

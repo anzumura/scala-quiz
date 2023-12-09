@@ -163,9 +163,7 @@ object UcdData {
    *  @param meaning meaning of the character in English
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
-  case class Ucd(
-      code: Code, radical: String, strokes: Int, pinyin: String, morohashiId: MorohashiId,
-      nelsonIds: List[Int], source: Source, links: List[Code], linkType: LinkType, meaning: String,
-      reading: String
-  )
+  case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
+      morohashiId: MorohashiId, nelsonIds: List[Int], source: Source, links: List[Code],
+      linkType: LinkType, meaning: String, reading: String)
 }

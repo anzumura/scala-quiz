@@ -22,7 +22,7 @@ import scala.util.{Failure, Success, Try}
  *                          `allowExtraCols` is 'No'
  */
 class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols, cols: Column*)
-    extends ThrowsDomainException {
+extends ThrowsDomainException {
   if (cols.isEmpty) domainError("must specify at least one column")
 
   def this(path: Path, cols: Column*) = this(path, DefaultSeparator, AllowExtraCols.No, cols: _*)

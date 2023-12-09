@@ -271,8 +271,8 @@ class RangeTest extends BaseChoiceTest {
     "range overlaps with Choices" in {
       val c = Choice()
       val overlap = 'd'
-      domainError(Range('a', 'f').get(c, Map(overlap -> "")),
-        s"option '$overlap' already in choices")
+      domainError(
+        Range('a', 'f').get(c, Map(overlap -> "")), s"option '$overlap' already in choices")
     }
   }
 }

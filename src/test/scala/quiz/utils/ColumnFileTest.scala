@@ -37,8 +37,8 @@ class ColumnFileTest extends FileTest {
     }
 
     "missing file" in {
-      error(ColumnFile(Path.of("x"), col1),
-        _.startsWith(s"[ColumnFile] failed to read header row: x"))
+      error(
+        ColumnFile(Path.of("x"), col1), _.startsWith(s"[ColumnFile] failed to read header row: x"))
     }
 
     "missing header row" in { fileError(create(cols), "missing header row") }
@@ -222,17 +222,18 @@ class ColumnFileTest extends FileTest {
   private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
-  private def create(
-      sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*
-  ) = {
+  private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
+      lines: String*) = {
     testColumnFile.foreach(_.close())
     val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols, cols: _*)
     testColumnFile = Option(f)
     f
   }
 
-  private def create(allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*)
-      : ColumnFile = { create(DefaultSeparator, allowExtraCols, cols, lines: _*) }
+  private def create(
+      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile = {
+    create(DefaultSeparator, allowExtraCols, cols, lines: _*)
+  }
 
   private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile = {
     create(sep, AllowExtraCols.No, cols, lines: _*)
@@ -273,7 +274,7 @@ object ColumnFileTest {
   val col1 :: col2 :: col3 :: Nil = cols: @unchecked()
 
   private class TestColumnFile(path: Path, sep: Char, allowExtraCols: AllowExtraCols, cols: Column*)
-      extends ColumnFile(path, sep, allowExtraCols, cols: _*) with AutoCloseable {
+  extends ColumnFile(path, sep, allowExtraCols, cols: _*) with AutoCloseable {
     // allow tests to force close or read to fail
     var closeFailure: Boolean = false
     var readFailure: Boolean = false

@@ -53,8 +53,8 @@ class FileUtilsTest extends FileTest {
 
     "error has path+extension if neither path nor path+extension exists" in {
       val fileWithExtension = tempDir.resolve(name + extension)
-      error(checkExists(tempDir.resolve(name), Option(extension)),
-        s"'$fileWithExtension' not found")
+      error(
+        checkExists(tempDir.resolve(name), Option(extension)), s"'$fileWithExtension' not found")
     }
   }
 

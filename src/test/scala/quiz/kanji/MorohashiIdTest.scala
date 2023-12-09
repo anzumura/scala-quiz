@@ -68,8 +68,8 @@ class MorohashiIdTest extends BaseTest {
 
     "supplemental index out of range" in {
       val big = MaxSupplementalIndex + 1
-      domainError(MorohashiId(big, Supplemental),
-        s"$Supplemental index $big exceeds $MaxSupplementalIndex")
+      domainError(
+        MorohashiId(big, Supplemental), s"$Supplemental index $big exceeds $MaxSupplementalIndex")
     }
 
     "empty index" in { domainError(MorohashiId(""), "empty index") }

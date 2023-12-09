@@ -16,7 +16,7 @@ import scala.util.{Try, Using}
  *  verified when data is loaded, and entries are stored in-order in a list.
  */
 class ListFile(path: Path, fileType: EntriesPerLine, nameIn: Option[String])
-    extends ThrowsDomainException {
+extends ThrowsDomainException {
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
@@ -79,7 +79,7 @@ object ListFile {
 
 /** derived class of ListFile that ensures each entry is a recognized Kanji */
 class KanjiListFile protected (path: Path, fileType: EntriesPerLine, nameIn: Option[String])
-    extends ListFile(path, fileType, nameIn) {
+extends ListFile(path, fileType, nameIn) {
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
@@ -95,15 +95,15 @@ class KanjiListFile protected (path: Path, fileType: EntriesPerLine, nameIn: Opt
  *  @param dir the directory containing the enum file
  *  @param value enum value, i.e., Level.N3
  */
-final class EnumListFile[T <: NoneEnum[T]](dir: Path, val value: T) extends KanjiListFile(dir
-        .resolve(value.toString + TextFileExtension), EntriesPerLine.Multiple) {
+final class EnumListFile[T <: NoneEnum[T]](dir: Path, val value: T)
+extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPerLine.Multiple) {
 
   private val enumEntries = EnumListFile.entries
     .getOrElseUpdate(value.enumName, mutable.Set[String]())
 
-  override protected def validate(entry: String): Boolean =
-    super.validate(entry) && enumEntries.add(entry) ||
-      error(s"'$entry' already in another ${value.enumName}")
+  override protected def validate(
+      entry: String): Boolean = super.validate(entry) && enumEntries.add(entry) ||
+    error(s"'$entry' already in another ${value.enumName}")
 }
 
 object EnumListFile {

@@ -65,8 +65,7 @@ class KanjiTest extends BaseTest {
     "error for Kanji with number <= 0" in {
       Seq(-1, 0).foreach(num =>
         error(ExtraKanji(name, radical, strokes, meaning, reading, kyu, num),
-          "ExtraKanji: number must be greater than zero")
-      )
+          "ExtraKanji: number must be greater than zero"))
     }
   }
 
@@ -118,14 +117,13 @@ class KanjiTest extends BaseTest {
     "error for Frequency Kanji with no frequency" in {
       Seq(-1, 0).foreach(f =>
         error(FrequencyKanji(name, radical, strokes, meaning, reading, OldLinks.No, Nil,
-            LinkedReadings.No, kyu, f), "FrequencyKanji: frequency must be greater than zero")
-      )
+            LinkedReadings.No, kyu, f), "FrequencyKanji: frequency must be greater than zero"))
     }
 
     "create Kentei Kanji" in {
       LinkedReadings.values.foreach { linkedReadings =>
-        val k = KenteiKanji(name, radical, strokes, meaning, reading, OldLinks.No, Nil,
-          linkedReadings, kyu)
+        val k = KenteiKanji(
+          name, radical, strokes, meaning, reading, OldLinks.No, Nil, linkedReadings, kyu)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Kentei)
         assert(k.oldNames.isEmpty)
@@ -156,8 +154,8 @@ class KanjiTest extends BaseTest {
 
     "create Ucd Kanji with old names" in {
       val oldNames = List("辨", "瓣", "辯")
-      val k = UcdKanji(name, radical, strokes, meaning, reading, OldLinks.Yes, oldNames,
-        LinkedReadings.No)
+      val k = UcdKanji(
+        name, radical, strokes, meaning, reading, OldLinks.Yes, oldNames, LinkedReadings.No)
       checkLoadedFields(k)
       assert(k.oldNames == oldNames)
       assert(k.newName.isEmpty)
@@ -165,8 +163,8 @@ class KanjiTest extends BaseTest {
 
     "create Ucd Kanji with new name" in {
       val newName = "弁"
-      val k = UcdKanji(name, radical, strokes, meaning, reading, OldLinks.No, List(newName),
-        LinkedReadings.No)
+      val k = UcdKanji(
+        name, radical, strokes, meaning, reading, OldLinks.No, List(newName), LinkedReadings.No)
       checkLoadedFields(k)
       assert(k.oldNames.isEmpty)
       assert(k.newName.contains(newName))
