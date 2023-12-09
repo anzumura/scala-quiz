@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.kanji.UcdData.{LinkType, Source, Ucd}
+import quiz.kanji.UcdData.{LinkType, Source, Ucd, UcdFileName}
 import quiz.utils.ColumnFile.AllowExtraCols.Yes
 import quiz.utils.ColumnFile.{AllowExtraCols, Column}
 import quiz.utils.UnicodeUtils.Code
@@ -13,6 +13,7 @@ import scala.util.{Success, Try}
 
 class UcdData(dir: Path) extends ThrowsDomainException {
   def find(s: String): Option[Ucd] = data.get(s)
+  inline def size: Int = data.size
 
   private lazy val data = {
     val codeCol = Column("Code")
@@ -30,7 +31,7 @@ class UcdData(dir: Path) extends ThrowsDomainException {
     val meaningCol = Column("Meaning")
     val japaneseCol = Column("Japanese")
     val f = ColumnFile(
-      dir.resolve("ucd.txt"),
+      dir.resolve(UcdFileName),
       AllowExtraCols.Yes,
       codeCol,
       radicalCol,
@@ -48,19 +49,23 @@ class UcdData(dir: Path) extends ThrowsDomainException {
       japaneseCol
     )
     val result = mutable.Buffer[Ucd]()
-    while (f.nextRow()) result += Ucd(
-      Code.fromHex(f.get(codeCol)),
-      f.get(radicalCol),
-      f.getUInt(strokesCol),
-      f.get(pinyinCol),
-      MorohashiId(f.get(morohashiIdCol)),
-      nelsonIds(f.get(nelsonIdsCol)),
-      Source(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
-      links(f.get(linkCodesCol)),
-      LinkType.valueOf(f.get(linkTypeCol).replace("*", "_R")),
-      f.get(meaningCol),
-      f.get(japaneseCol)
-    )
+    Try(while (f.nextRow()) result += Ucd(
+        Code.fromHex(f.get(codeCol)),
+        f.get(radicalCol),
+        f.getUInt(strokesCol),
+        f.get(pinyinCol),
+        MorohashiId(f.get(morohashiIdCol)),
+        nelsonIds(f.get(nelsonIdsCol)),
+        Source(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
+        links(f.get(linkCodesCol)),
+        f.getOption(linkTypeCol).map(x => LinkType.valueOf(x.replace("*", "_R")))
+          .getOrElse(LinkType.None),
+        f.get(meaningCol),
+        f.get(japaneseCol)
+      )).failed.foreach { e =>
+      f.close()
+      domainError(s"${e.getMessage} - file: $UcdFileName, line: ${f.currentRow}")
+    }
     result.map(x => x.code.toUTF16 -> x).toMap
   }
 
@@ -69,18 +74,22 @@ class UcdData(dir: Path) extends ThrowsDomainException {
     case _ => throw DomainException(s"invalid NelsonIds '$s'")
   }
 
-  private def links(s: String) = Try(s.split(",").map(Code.fromHex)) match {
-    case Success(x) => x.toList
-    case _ => throw DomainException(s"invalid LinkCodes '$s'")
+  private def links(s: String): List[Code] = {
+    if (s.isEmpty) Nil
+    else Try(s.split(",").map(Code.fromHex)) match {
+      case Success(x) => x.toList
+      case _ => throw DomainException(s"invalid LinkCodes '$s'")
+    }
   }
 }
 
 object UcdData {
+  val UcdFileName = "ucd.txt"
   /** represents the XML property from which the link was loaded. '_R' means the link was also
    *  used to pull in readings. '_R' come first in the enum to allow '<' comparison to find all
    *  reading links. Note, there is no non '_R' type for 'Semantic' links by design.
    */
-  enum LinkType {
+  enum LinkType extends NoneEnum[LinkType](LinkType) {
     case Compatibility_R // *kCompatibilityVariant* link also used for 'reading'
     case Definition_R    // *kDefinition based* link and also used for 'reading'
     case Jinmei_R        // *kJinmeiyoKanji* link also used for 'reading'
@@ -94,6 +103,7 @@ object UcdData {
     case Traditional     // *kTraditionalVariant* link
     case None            // no link
   }
+  object LinkType extends NoneEnumObject[LinkType]
 
   /** set of sources for a Ucd entry plus info on whether the entry is a 'Joyo' or 'Jinmei' Kanji
    *  (officially an entry can't be both 'joyo' and 'jinmei', but these are distinct properties
@@ -130,10 +140,7 @@ object UcdData {
       case G, H, J, K, T, V, Joyo, Jinmei
     }
     private object Bits {
-      private lazy val sources = for {
-        v <- values
-        x = v.ordinal if x < Joyo.ordinal
-      } yield x
+      private lazy val sourceValues = values.takeWhile(_ != Joyo)
 
       def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet = sources
         .foldLeft(if (joyo) {
@@ -141,7 +148,8 @@ object UcdData {
         } else if (jinmei) BitSet(Jinmei.ordinal)
           else BitSet())((bits, x) => bits + valueOf(x.toString).ordinal)
 
-      def sourceString(bits: BitSet): String = sources.filter(bits).foldLeft("")(_ + _.toString)
+      def sourceString(bits: BitSet): String = sourceValues.filter(x => bits(x.ordinal))
+        .foldLeft("")(_ + _.toString)
     }
   }
 
@@ -165,5 +173,9 @@ object UcdData {
    */
   case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
       morohashiId: MorohashiId, nelsonIds: List[Int], source: Source, links: List[Code],
-      linkType: LinkType, meaning: String, reading: String)
+      linkType: LinkType, meaning: String, reading: String) {
+    def jSource: String = source.jSource
+    def joyo: Boolean = source.isJoyo
+    def jinmei: Boolean = source.isJinmei
+  }
 }
