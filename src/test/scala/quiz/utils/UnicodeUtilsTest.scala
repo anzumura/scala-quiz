@@ -53,6 +53,26 @@ class UnicodeUtilsTest extends BaseTest {
     "can't create from longer string is sizeOne is true (the default)" in {
       error(Code("犬猫"), "'犬猫' has more than one Unicode letter")
     }
+
+    "create from hex value" in {
+      val c = Code.fromHex("72ac")
+      assert(c.toString == "U+72AC")
+      assert(c.toUTF16 == "犬")
+    }
+
+    "can't create from empty hex" in {
+      error(Code.fromHex(""), "cannot create Unicode Code from empty string")
+    }
+
+    "can't create from invalid hex" in {
+      error(Code.fromHex("72ag"), "'72ag' is not a valid hex string")
+      error(Code.fromHex("72ag"), "'72ag' is not a valid hex string")
+    }
+
+    "can't create from out-of-range hex" in {
+      error(Code.fromHex("-1"), "code can't be negative")
+      error(Code.fromHex("110000"), "code 0x110000 exceeds Unicode max U+10FFFF")
+    }
   }
 
   "create Unicode block" in {

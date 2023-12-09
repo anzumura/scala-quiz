@@ -1,5 +1,7 @@
 package quiz.utils
 
+import scala.util.{Success, Try}
+
 object UnicodeUtils extends ThrowsDomainException {
   val UnicodeMax: Int = 0x10ffff
 
@@ -29,18 +31,18 @@ object UnicodeUtils extends ThrowsDomainException {
   }
 
   object Code {
-    /** @param value string value to construct Unicode Code
+    /** @param s string value to construct Unicode Code
      *  @param sizeOne if true then string can contain only one Unicode 'letter'
      *                 if false then the first Unicode letter is converted
      *  @return unicode Code
      *  @throws DomainException if `value` is empty or value contains more than
      *                          one Unicode letter when `sizeOne` is set to true
      */
-    def apply(value: String, sizeOne: Boolean = true): Code = {
-      if (value.isEmpty) error("cannot create Unicode Code from empty string")
-      val x = value.codePointAt(0)
-      if (sizeOne && Character.charCount(x) < value.length)
-        error(s"'$value' has more than one Unicode letter")
+    def apply(s: String, sizeOne: Boolean = true): Code = {
+      checkEmpty(s)
+      val x = s.codePointAt(0)
+      if (sizeOne && Character.charCount(x) < s.length)
+        error(s"'$s' has more than one Unicode letter")
       new Code(x)
     }
 
@@ -56,6 +58,17 @@ object UnicodeUtils extends ThrowsDomainException {
       if (value > UnicodeMax) error(f"code 0x$value%x exceeds Unicode max U+$UnicodeMax%X")
       new Code(value)
     }
+
+    def fromHex(s: String): Code = {
+      checkEmpty(s)
+      Try(Integer.parseInt(s, 16)) match {
+        case Success(x) => apply(x)
+        case _ => error(s"'$s' is not a valid hex string")
+      }
+    }
+
+    private def checkEmpty(s: String): Unit =
+      if (s.isEmpty) error("cannot create Unicode Code from empty string")
   }
 
   /** convenience method for checking if a string is a Kanji
