@@ -26,8 +26,8 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols, cols
   if (cols.isEmpty) domainError("must specify at least one column")
 
   def this(path: Path, cols: Column*) = this(path, DefaultSeparator, AllowExtraCols.No, cols: _*)
-  def this(path: Path, allowUnknownCols: AllowExtraCols, cols: Column*) =
-    this(path, DefaultSeparator, allowUnknownCols, cols: _*)
+  def this(path: Path, allowExtraCols: AllowExtraCols, cols: Column*) =
+    this(path, DefaultSeparator, allowExtraCols, cols: _*)
 
   /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
