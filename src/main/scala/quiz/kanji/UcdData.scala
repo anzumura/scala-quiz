@@ -1,12 +1,43 @@
 package quiz.kanji
 
-import quiz.utils.ThrowsDomainException
+import quiz.kanji.UcdData.Ucd
+import quiz.utils.ColumnFile.AllowExtraCols.Yes
+import quiz.utils.ColumnFile.{AllowExtraCols, Column}
+import quiz.utils.{ColumnFile, ThrowsDomainException}
 import quiz.utils.UnicodeUtils.Code
 
 import java.nio.file.Path
 import scala.collection.immutable.BitSet
+import scala.collection.mutable
 
-class UcdData(path: Path) extends ThrowsDomainException {}
+class UcdData(dir: Path) extends ThrowsDomainException {
+  def find(s: String): Option[Ucd] = data.get(s)
+
+  private lazy val data = {
+    val codeCol = Column("Code")
+    val radicalCol = Column("Radical")
+    val strokesCol = Column("Strokes")
+    val pinyinCol = Column("Pinyin")
+    val morohashiIdCol = Column("MorohashiId")
+    val nelsonIdsCol = Column("NelsonIds")
+    val sourcesCol = Column("Sources")
+    val jSourceCol = Column("JSource")
+    val joyoCol = Column("Joyo")
+    val jinmeiCol = Column("Jinmei")
+    val linkCodesCol = Column("LinkCodes")
+    val linkTypeCol = Column("LinkType")
+    val meaningCol = Column("Meaning")
+    val japaneseCol = Column("Japanese")
+    val f = ColumnFile(dir.resolve("ucd.txt"), AllowExtraCols.Yes, codeCol, radicalCol,
+      strokesCol, pinyinCol, morohashiIdCol, nelsonIdsCol, sourcesCol, jSourceCol, joyoCol,
+      jinmeiCol, linkCodesCol, linkTypeCol, meaningCol, japaneseCol)
+    val result = mutable.Buffer[Ucd]()
+    while(f.nextRow()) {
+      //result += Ucd(f.get)
+    }
+    result.map(x => x.code.toUTF16 -> x).toMap
+  }
+}
 
 object UcdData {
   /** represents the XML property from which the link was loaded. '_R' means the link was also

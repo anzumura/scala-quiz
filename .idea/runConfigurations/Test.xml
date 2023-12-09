@@ -19,6 +19,7 @@
         <option value="quiz.utils.EnumListFileTest" />
         <option value="quiz.utils.FileUtilsTest" />
         <option value="quiz.kanji.KanjiTest" />
+        <option value="quiz.kanji.UcdDataTest" />
         <option value="quiz.kanji.KanjiDataTest" />
         <option value="quiz.kanji.KanjiTypeTest" />
         <option value="quiz.kanji.MorohashiIdTest" />
