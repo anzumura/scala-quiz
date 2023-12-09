@@ -59,9 +59,15 @@ class ColumnFileTest extends FileTest {
   }
 
   "nextRow" - {
-    "called after close" in {
+    "called after returning false" in {
       val f = create(List(col1), "col1")
       assert(!f.nextRow())
+      domainError(f.nextRow(), s"file: '$testFileName' has been closed")
+    }
+
+    "called after close" in {
+      val f = create(List(col1), "col1")
+      f.close()
       domainError(f.nextRow(), s"file: '$testFileName' has been closed")
     }
 
@@ -114,6 +120,15 @@ class ColumnFileTest extends FileTest {
       val f = create(List(col1), "col1", expected)
       assert(f.nextRow())
       assert(f.get(col1) == expected)
+    }
+
+    "optional string value" in {
+      val expected = "Val"
+      val f = create(List(col1), "col1", s"$expected\n")
+      assert(f.nextRow())
+      assert(f.getOption(col1).contains(expected))
+      assert(f.nextRow())
+      assert(f.getOption(col1).isEmpty)
     }
 
     "values after nextRow returns false" in {
@@ -215,7 +230,7 @@ class ColumnFileTest extends FileTest {
   }
 
   override protected def afterEach(): Unit = {
-    testColumnFile.foreach(_.close())
+    testColumnFile.foreach(_.closeFile())
     super.afterEach()
   }
 
@@ -224,7 +239,7 @@ class ColumnFileTest extends FileTest {
 
   private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
       lines: String*) = {
-    testColumnFile.foreach(_.close())
+    testColumnFile.foreach(_.closeFile())
     val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols, cols: _*)
     testColumnFile = Option(f)
     f
@@ -280,8 +295,8 @@ object ColumnFileTest {
     var readFailure: Boolean = false
 
     // make close public so tests can force closing the underlying file
-    override def close(): Unit = {
-      super[ColumnFile].close() // still want to close the real underlying file
+    override def closeFile(): Unit = {
+      super[ColumnFile].closeFile() // still want to close the real underlying file
       if (closeFailure) throw new IOException("bad close")
     }
 

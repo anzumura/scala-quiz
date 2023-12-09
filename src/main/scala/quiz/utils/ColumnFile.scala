@@ -45,13 +45,14 @@ extends ThrowsDomainException {
   def nextRow(): Boolean = {
     if (_closed) domainError(s"file: '$fileName' has been closed")
     val hasNext = lines.hasNext
-    if (hasNext) processNextRow()
-    else Try {
-      close()
-      _closed = true
-    }.failed.foreach(e => domainError("failed to close: " + e.getMessage))
+    if (hasNext) processNextRow() else close()
     hasNext
   }
+
+  def close(): Unit = Try {
+    closeFile()
+    _closed = true
+  }.failed.foreach(e => domainError("failed to close: " + e.getMessage))
 
   /** @param col column contained in this file
    *  @return string value for the given column in current row
@@ -64,6 +65,12 @@ extends ThrowsDomainException {
     val pos = columnToPos(col.number)
     if (pos == ColumnNotFound) fileError(s"invalid column '$col'")
     rowValues(pos)
+  }
+
+  /** similar to [[get]], but wraps the return value in a Option (with None for empty string) */
+  def getOption(col: Column): Option[String] = {
+    val x = get(col)
+    if (x.isEmpty) None else Option(x)
   }
 
   /** @param col column contained in this file
@@ -94,7 +101,7 @@ extends ThrowsDomainException {
 
   // methods to help support testing
   protected def readRow(): String = lines.next()
-  protected def close(): Unit = source.close()
+  protected def closeFile(): Unit = source.close()
 
   private def fileError(msg: String) = domainError(errorMsg(msg))
   private def fileError(msg: String, column: Column, s: String) =
