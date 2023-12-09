@@ -7,8 +7,7 @@ object UnicodeUtils extends ThrowsDomainException {
     override def compare(rhs: Code): Int = value - rhs.value
 
     /** returns standard Unicode code point format, i.e., U+'hex value' */
-    override def toString: String =
-      (if (value <= 0xfff) "U+%04X" else "U+%X").format(value)
+    override def toString: String = (if (value <= 0xfff) "U+%04X" else "U+%X").format(value)
 
     /** returns standard Java (UTF-16) String for this code point */
     def toUTF16: String = Character.toString(value)
@@ -54,8 +53,7 @@ object UnicodeUtils extends ThrowsDomainException {
      */
     def apply(value: Int): Code = {
       if (value < 0) error("code can't be negative")
-      if (value > UnicodeMax)
-        error(f"code 0x$value%x exceeds Unicode max U+$UnicodeMax%X")
+      if (value > UnicodeMax) error(f"code 0x$value%x exceeds Unicode max U+$UnicodeMax%X")
       new Code(value)
     }
   }
@@ -63,8 +61,7 @@ object UnicodeUtils extends ThrowsDomainException {
   /** convenience method for checking if a string is a Kanji
    *  @see Code.apply(String,Boolean)
    */
-  def isKanji(x: String, sizeOne: Boolean = true): Boolean =
-    Code(x, sizeOne).isKanji
+  def isKanji(x: String, sizeOne: Boolean = true): Boolean = Code(x, sizeOne).isKanji
 
   case class Block(start: Code, end: Code) {
     if (end < start) error(s"end $end is less than start $start")

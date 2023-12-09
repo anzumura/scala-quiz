@@ -79,11 +79,9 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
   protected def fileMsg(msg: String, line: Int, file: Option[String]): String =
     s"${fileMsg(msg, file)}, line: $line"
 
-  protected def fileError(f: => Any, msg: String): Unit =
-    domainError(f, fileMsg(msg, None))
+  protected def fileError(f: => Any, msg: String): Unit = domainError(f, fileMsg(msg, None))
   protected def fileError(f: => Any, msg: String, line: Int): Unit =
     domainError(f, fileMsg(msg, line, None))
-  protected def fileError(
-      f: => Any, msg: String, line: Int, file: String): Unit =
+  protected def fileError(f: => Any, msg: String, line: Int, file: String): Unit =
     domainError(f, fileMsg(msg, line, Option(file)))
 }

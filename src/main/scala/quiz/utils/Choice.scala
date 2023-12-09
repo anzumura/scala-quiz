@@ -8,8 +8,8 @@ import scala.collection.immutable.TreeMap
 import scala.language.implicitConversions
 
 class Choice private (private var _quit: Option[Char] = None,
-    var quitDescription: String = DefaultQuitDescription,
-    val is: InputStream = System.in, private val os: PrintStream = System.out)
+    var quitDescription: String = DefaultQuitDescription, val is: InputStream = System.in,
+    private val os: PrintStream = System.out)
     extends ThrowsDomainException {
   /** returns the current `quit` option or None is no option has been set */
   def quit: Option[Char] = _quit
@@ -32,8 +32,8 @@ class Choice private (private var _quit: Option[Char] = None,
 
   /** reads in a choice from `is` provided in the ctor
    *  @param choices set of choices the user must choose from
-   *  @param msg beginning part of prompt message written to `os` specified in
-   *            the ctor, the rest of the prompt message shows the choices
+   *  @param msg beginning part of prompt message written to `os` specified in the ctor, the rest
+   *             of the prompt message shows the choices
    *  @param useQuit if 'QuitOff' then 'quit option' is not included in choices
    *  @param defaultChoice optional default choice (for just pressing return)
    *  @return one of the choices from `choices` or possibly the 'quit option'
@@ -45,8 +45,7 @@ class Choice private (private var _quit: Option[Char] = None,
       defaultChoice: Option[Char] = None): Char = {
     val c = quit.map(q =>
       if (useQuit) {
-        if (choices.contains(q))
-          domainError(s"quit option '$q' already in choices")
+        if (choices.contains(q)) domainError(s"quit option '$q' already in choices")
         choices.updated(q, quitDescription)
       } else choices
     ).getOrElse(choices)
@@ -55,10 +54,8 @@ class Choice private (private var _quit: Option[Char] = None,
   }
 
   // 'get' overloads using 'd' Char for default choice instead of Option[Char]
-  def get(c: Choices, m: String, d: Char): Char =
-    get(c, m, UseQuit.Yes, Option(d))
-  def get(c: Choices, m: String, d: Char, u: UseQuit): Char =
-    get(c, m, u, Option(d))
+  def get(c: Choices, m: String, d: Char): Char = get(c, m, UseQuit.Yes, Option(d))
+  def get(c: Choices, m: String, d: Char, u: UseQuit): Char = get(c, m, u, Option(d))
   // overloads without 'm' message parameter (defaults to empty string)
   def get(c: Choices, u: UseQuit): Char = get(c, "", u)
   def get(c: Choices, d: Char): Char = get(c, "", d)
@@ -88,8 +85,8 @@ class Choice private (private var _quit: Option[Char] = None,
     val prompt = new StringBuilder(if (msg.isEmpty) "(" else s"$msg (")
     var rangeStart = Option.empty[Char]
     var prevChoice: Char = 0
-    val completeRange = () =>
-      rangeStart.foreach(c => if (c != prevChoice) prompt ++= s"-$prevChoice")
+    val completeRange =
+      () => rangeStart.foreach(c => if (c != prevChoice) prompt ++= s"-$prevChoice")
     // use TreeMap to traverse entries in alphabetical order
     (choices to TreeMap).foreach { case (choice, description) =>
       checkChoice(choice, "[Choice] option")
@@ -116,8 +113,7 @@ class Choice private (private var _quit: Option[Char] = None,
     completeRange()
     d match {
       case Some(s) =>
-        if (!choices.contains(s))
-          domainError(s"default option '$s' not in choices")
+        if (!choices.contains(s)) domainError(s"default option '$s' not in choices")
         prompt ++= s") def '$s': "
       case _ => prompt ++= "): "
     }
@@ -133,8 +129,8 @@ object Choice {
   type Choices = Map[Char, String]
   def Choices(xs: (Char, String)*): Choices = Map(xs: _*)
 
-  /** inclusive range of choices with empty descriptions that can be used in
-   *  `Choice.get` methods. For example:
+  /** inclusive range of choices with empty descriptions that can be used in `Choice.get` methods
+   *  . For example:
    *  <pre>
    *     val c = Choice()
    *     Range('1', '6').get(c, "grade", Map('h' -> "high"))
@@ -147,17 +143,13 @@ object Choice {
     if (start > end) domainError(s"start '$start' greater than end '$end'")
 
     // call 'Choice.get' methods with this range merged into 'Choices'
-    def get(
-        o: Choice, c: Choices, m: String = "", u: UseQuit = UseQuit.Yes): Char =
+    def get(o: Choice, c: Choices, m: String = "", u: UseQuit = UseQuit.Yes): Char =
       o.get(merge(c), m, u)
-    def get(o: Choice, c: Choices, m: String, d: Char): Char =
-      o.get(merge(c), m, d)
-    def get(o: Choice, c: Choices, m: String, d: Char, u: UseQuit): Char =
-      o.get(merge(c), m, d, u)
+    def get(o: Choice, c: Choices, m: String, d: Char): Char = o.get(merge(c), m, d)
+    def get(o: Choice, c: Choices, m: String, d: Char, u: UseQuit): Char = o.get(merge(c), m, d, u)
     def get(o: Choice, c: Choices, u: UseQuit): Char = o.get(merge(c), u)
     def get(o: Choice, c: Choices, d: Char): Char = o.get(merge(c), d)
-    def get(o: Choice, c: Choices, d: Char, u: UseQuit): Char =
-      o.get(merge(c), d, u)
+    def get(o: Choice, c: Choices, d: Char, u: UseQuit): Char = o.get(merge(c), d, u)
 
     private def merge(c: Choices) = {
       var result = c
@@ -171,10 +163,8 @@ object Choice {
     }
   }
 
-  // implicit conversion to allow calling 'Choice.get' methods  with 'Range'
-  // instead of 'Choices'
-  implicit def toChoices(r: Range): Choices =
-    Choices((r.start to r.end).map(c => (c, "")): _*)
+  // implicit conversion to allow calling 'Choice.get' methods  with 'Range' instead of 'Choices'
+  implicit def toChoices(r: Range): Choices = Choices((r.start to r.end).map(c => (c, "")): _*)
 
   val DefaultQuitDescription = "quit"
 
@@ -182,14 +172,11 @@ object Choice {
   given Conversion[UseQuit, Boolean] = (x: UseQuit) => x eq UseQuit.Yes
 
   def apply(): Choice = new Choice
-  def apply(q: Char, d: String = DefaultQuitDescription): Choice =
-    new Choice(Option(q), d)
+  def apply(q: Char, d: String = DefaultQuitDescription): Choice = new Choice(Option(q), d)
   // used by test code
-  def apply(is: InputStream, os: PrintStream): Choice =
-    new Choice(is = is, os = os)
+  def apply(is: InputStream, os: PrintStream): Choice = new Choice(is = is, os = os)
 
   private def checkChoice(c: Char, msg: String): Unit = {
-    if (c < ' ' || c > '~')
-      throw DomainException(s"$msg is invalid: '0x${c.toInt.toHexString}'")
+    if (c < ' ' || c > '~') throw DomainException(s"$msg is invalid: '0x${c.toInt.toHexString}'")
   }
 }

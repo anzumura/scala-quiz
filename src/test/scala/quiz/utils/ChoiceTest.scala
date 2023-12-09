@@ -163,14 +163,12 @@ class ChoiceTest extends BaseChoiceTest {
 
     "invalid choice" in {
       val c = Choice()
-      domainError(c.get(Map(('a', "A"), (14, "bad"))),
-        "option is invalid: '0xe'")
+      domainError(c.get(Map(('a', "A"), (14, "bad"))), "option is invalid: '0xe'")
     }
 
     "default option not in choices" in {
       val c = Choice()
-      domainError(c.get(Map(('a', "")), 'b'),
-        "default option 'b' not in choices")
+      domainError(c.get(Map(('a', "")), 'b'), "default option 'b' not in choices")
     }
 
     "quit option in choices" in {

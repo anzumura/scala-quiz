@@ -10,8 +10,8 @@ object FileUtils extends ThrowsDomainException {
   // return string name of last component of path
   def fileName(path: Path): String = path.getFileName.toString
 
-  /** removes everything after first '.' that follows a non-dot character. The
-   *  following table shows return values for sample file names:
+  /** removes everything after first '.' that follows a non-dot character. The following table shows
+   *  return values for sample file names:
    *  <table>
    *   <tr><th>File Name</th> <th>Result</th></tr>
    *   <tr><td>abc.x.y</td> <td>abc</td></tr>
@@ -44,8 +44,8 @@ object FileUtils extends ThrowsDomainException {
     }
 
   /** @param path path to check for existence
-   *  @param extension if `path` doesn't exist and also doesn't have an extension
-   *                   then optionally check existence of "path + extension"
+   *  @param extension if `path` doesn't exist and also doesn't have an extension then optionally
+   *                   check existence of "path + extension"
    *  @return path to existing file
    *  @throws DomainException if `path` doesn't exist
    */
@@ -53,8 +53,7 @@ object FileUtils extends ThrowsDomainException {
   def checkExists(path: Path, extension: Option[String] = None): Path = {
     if (Files.exists(path)) path
     else extension match {
-      case Some(ext) if !hasExtension(path) =>
-        checkExists(addExtension(path, ext))
+      case Some(ext) if !hasExtension(path) => checkExists(addExtension(path, ext))
       case _ => error(s"'$path' not found")
     }
   }

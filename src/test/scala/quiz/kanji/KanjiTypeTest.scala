@@ -5,8 +5,8 @@ import quiz.utils.BaseTest
 class KanjiTypeTest extends BaseTest {
   "KanjiType has expected values" in {
     import KanjiType.*
-    assert(values.toSeq == Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld,
-      Frequency, Extra, Kentei, Ucd))
+    assert(values.toSeq == Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei,
+      Ucd))
   }
 
   "Grade has expected values" in {
@@ -23,15 +23,13 @@ class KanjiTypeTest extends BaseTest {
 
   "Kyu has expected values" in {
     import Kyu.*
-    assert(defined sameElements Array(K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2,
-      KJ1, K1))
+    assert(defined sameElements Array(K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1))
     assert(values.filterNot(isDefined) sameElements Array(None))
   }
 
   "JinmeiReason has expected values" in {
     import JinmeiReason.*
-    assert(defined sameElements Array(Names, Print, Variant, Moved, Simple,
-      Other))
+    assert(defined sameElements Array(Names, Print, Variant, Moved, Simple, Other))
     assert(values.filterNot(isDefined) sameElements Array(None))
   }
 

@@ -7,8 +7,7 @@ trait ThrowsDomainException {
   /** throws a DomainException that includes the class name at the beginning */
   protected def domainError(msg: String): Nothing = {
     val c = getClass.getSimpleName
-    throw DomainException(msg,
-      Option(if (c.endsWith("$")) c.dropRight(1) else c))
+    throw DomainException(msg, Option(if (c.endsWith("$")) c.dropRight(1) else c))
   }
 
   /** throws a DomainException that just contains `msg` */

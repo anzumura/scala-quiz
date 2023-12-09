@@ -20,8 +20,7 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
   def frequency(s: String): Int = frequencies.getOrElse(s, 0)
 
   /** get all Kanji for type `t` */
-  def getType(t: KanjiType): Vector[Kanji] =
-    types.getOrElse(t, Vector.empty[Kanji])
+  def getType(t: KanjiType): Vector[Kanji] = types.getOrElse(t, Vector.empty[Kanji])
 
   private def loadKanji(): mutable.Map[KanjiType, Vector[Kanji]] = {
     val t = mutable.Map[KanjiType, Vector[Kanji]]()
@@ -32,8 +31,8 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
 
   private def loadJouyou() = {
     val gradeCol = Column("Grade")
-    val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol,
-      oldNamesCol, yearCol, strokesCol, gradeCol, meaningCol, readingCol)
+    val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol, oldNamesCol,
+      yearCol, strokesCol, gradeCol, meaningCol, readingCol)
     val result = mutable.Buffer[Kanji]()
     while (f.nextRow()) {
       // add validation
@@ -67,9 +66,7 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
   private lazy val levels = load(Level)
   private lazy val kyus = load(Kyu)
   private lazy val frequencies =
-    KanjiListFile(textFile(path, "frequency")).indices.map { case (k, v) =>
-      (k, v + 1)
-    }
+    KanjiListFile(textFile(path, "frequency")).indices.map { case (k, v) => (k, v + 1) }
   private lazy val types = loadKanji()
 
   // common columns used for loading Kanji from text files
@@ -93,8 +90,8 @@ object KanjiData {
     }
   }
 
-  /** returns a path to a "data" directory if a suitable directory can be found
-   *  in current working directory or any of it's parent directories
+  /** returns a path to a "data" directory if a suitable directory can be found in current
+   *  working directory or any of it's parent directories
    *  @throws DomainException if a suitable directory isn't found
    */
   @tailrec
@@ -103,8 +100,7 @@ object KanjiData {
     if (isDirectory(dir) && fileName(dir) == "data" && hasDataFiles(dir)) dir
     else {
       val parent = path.getParent
-      if (parent == path.getRoot)
-        throw DomainException("couldn't find 'data' directory")
+      if (parent == path.getRoot) throw DomainException("couldn't find 'data' directory")
       dataDir(path.getParent)
     }
   }

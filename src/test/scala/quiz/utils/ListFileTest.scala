@@ -67,13 +67,11 @@ class ListFileTest extends FileTest {
   }
 
   "error for multiple entries per line" in {
-    fileError(ListFile(writeTestFile("北 東 南 西")).entries,
-      "line has multiple entries", 1)
+    fileError(ListFile(writeTestFile("北 東 南 西")).entries, "line has multiple entries", 1)
   }
 
   "error for duplicate entry" in {
-    fileError(ListFile(writeTestFile("北\n東\n北\n西")).entries,
-      "duplicate entry '北'", 3)
+    fileError(ListFile(writeTestFile("北\n東\n北\n西")).entries, "duplicate entry '北'", 3)
   }
 }
 
@@ -95,8 +93,7 @@ class KanjiListFileTest extends FileTest {
   }
 
   "error for non-Kanji entry" in {
-    fileError(KanjiListFile(writeTestFile("北\n東\nS\n西")).entries,
-      "'S' is not a recognized Kanji", 3)
+    fileError(KanjiListFile(writeTestFile("東\nS\n西")).entries, "'S' is not a recognized Kanji", 2)
   }
 
   "error for entry with more than one Kanji" in {
@@ -130,8 +127,7 @@ class EnumListFileTest extends FileTest {
   "entries must be recognized Kanji" in {
     val fileName = "E3.txt"
     Files.writeString(tempDir.resolve(fileName), "北 東 S 西")
-    fileError(EnumListFile(tempDir, EnumA.E3).entries,
-      "'S' is not a recognized Kanji", 1, fileName)
+    fileError(EnumListFile(tempDir, EnumA.E3).entries, "'S' is not a recognized Kanji", 1, fileName)
   }
 
   "entries must be unique across all files for the same enum" in {
@@ -140,7 +136,6 @@ class EnumListFileTest extends FileTest {
     assert(f.size == 4)
     val fileName = "E4.txt"
     Files.writeString(tempDir.resolve(fileName), "百 千\n万 八")
-    fileError(EnumListFile(tempDir, EnumB.E4).size,
-      s"'八' already in another EnumB", 2, fileName)
+    fileError(EnumListFile(tempDir, EnumB.E4).size, s"'八' already in another EnumB", 2, fileName)
   }
 }

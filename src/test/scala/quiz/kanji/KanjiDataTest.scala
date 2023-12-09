@@ -31,9 +31,7 @@ class KanjiDataTest extends FileTest {
     Files.writeString(p.resolve("N2.txt"), "九")
     Files.writeString(p.resolve("N1.txt"), "十")
     val data = KanjiData(tempDir)
-    Seq("一", "二", "三", "四", "五", "六").foreach(s =>
-      assert(data.level(s) == Level.N5)
-    )
+    Seq("一", "二", "三", "四", "五", "六").foreach(s => assert(data.level(s) == Level.N5))
     assert(data.level("七") == Level.N4)
     assert(data.level("八") == Level.N3)
     assert(data.level("九") == Level.N2)

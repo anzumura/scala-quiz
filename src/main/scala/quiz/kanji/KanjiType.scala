@@ -1,7 +1,7 @@
 package quiz.kanji
 
-/** used to identify which official group (Jouyou or Jinmei) a Kanji belongs to
- *  (or has a link to) as well as a few more groups for less common Kanji
+/** used to identify which official group (Jouyou or Jinmei) a Kanji belongs to (or has a link
+ *  to) as well as a few more groups for less common Kanji
  *
  *  The current types are:
  *  <ul>
@@ -19,8 +19,8 @@ enum KanjiType {
   case Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd
 }
 
-/** base class for `enum` with a "None" value (which means it ends up becoming
- *  the base class of each enum value)
+/** base class for `enum` with a "None" value (which means it ends up becoming the base class of
+ *  each enum value)
  *  @param obj the `enum` object instance, i.e., "Grade", "Level", etc.
  */
 trait NoneEnum[T <: NoneEnum[T]](obj: NoneEnumObject[T]) {
@@ -52,8 +52,8 @@ enum Grade extends NoneEnum[Grade](Grade) {
 }
 object Grade extends NoneEnumObject[Grade] {}
 
-/** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji
- *  (including 1,971 Jouyou and 251 Jinmei)
+/** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji (including 1,971
+ *  Jouyou and 251 Jinmei)
  */
 enum Level extends NoneEnum[Level](Level) {
   case N5, N4, N3, N2, N1, None
@@ -84,13 +84,12 @@ enum JinmeiReason extends NoneEnum[JinmeiReason](JinmeiReason) {
 }
 object JinmeiReason extends NoneEnumObject[JinmeiReason]
 
-enum LinkedReadings {
-  case Yes, No
+enum LinkedReadings { case Yes, No }
+object LinkedReadings {
+  given Conversion[LinkedReadings, Boolean] = (x: LinkedReadings) => x eq LinkedReadings.Yes
 }
-given Conversion[LinkedReadings, Boolean] =
-  (x: LinkedReadings) => x eq LinkedReadings.Yes
 
-enum OldLinks {
-  case Yes, No
+enum OldLinks { case Yes, No }
+object OldLinks {
+  given Conversion[OldLinks, Boolean] = (x: OldLinks) => x eq OldLinks.Yes
 }
-given Conversion[OldLinks, Boolean] = (x: OldLinks) => x eq OldLinks.Yes

@@ -25,8 +25,7 @@ class ColumnFileTest extends FileTest {
     }
 
     "allow file with extra columns (this is not allowed by default)" in {
-      assert(create(AllowExtraCols.Yes, List(col1),
-        "col1\tcolX").numColumns == 1)
+      assert(create(AllowExtraCols.Yes, List(col1), "col1\tcolX").numColumns == 1)
     }
 
     "space delimited file" in {
@@ -36,13 +35,11 @@ class ColumnFileTest extends FileTest {
 
   "create errors" - {
     "empty columns" in {
-      error(ColumnFile(Path.of("")),
-        "[ColumnFile] must specify at least one column")
+      error(ColumnFile(Path.of("")), "[ColumnFile] must specify at least one column")
     }
 
     "duplicate columns" in {
-      error(ColumnFile(Path.of(""), col1, col1),
-        s"[ColumnFile] duplicate column '$col1'")
+      error(ColumnFile(Path.of(""), col1, col1), s"[ColumnFile] duplicate column '$col1'")
     }
 
     "missing file" in {
@@ -106,10 +103,9 @@ class ColumnFileTest extends FileTest {
     "failed read" in {
       val path = Files.createFile(testFile)
       Files.writeString(path, "col1\nA")
-      Using.resource(new TestColumnFile(path, '\t', AllowExtraCols.No, col1)) {
-        f =>
-          f.readFailure = true
-          fileError(f.nextRow(), "failed to read row: bad read")
+      Using.resource(new TestColumnFile(path, '\t', AllowExtraCols.No, col1)) { f =>
+        f.readFailure = true
+        fileError(f.nextRow(), "failed to read row: bad read")
       }
     }
 
@@ -205,8 +201,7 @@ class ColumnFileTest extends FileTest {
       val f = create(List(col1), "col1", "18", "100")
       Seq((0, "18"), (99, "100")).foreach { case (max, s) =>
         f.nextRow()
-        fileError(f.getUInt(col1, max), s"exceeded max value $max",
-          f.currentRow, col1, s)
+        fileError(f.getUInt(col1, max), s"exceeded max value $max", f.currentRow, col1, s)
       }
     }
 
@@ -234,26 +229,23 @@ class ColumnFileTest extends FileTest {
     super.afterEach()
   }
 
-  private def fileError(
-      f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
+  private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
-  private def create(sep: Char, allowExtraCols: AllowExtraCols,
-      cols: List[Column], lines: String*) = {
+  private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
+      lines: String*) = {
     testColumnFile.foreach(_.close())
-    val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols,
-      cols: _*)
+    val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols, cols: _*)
     testColumnFile = Option(f)
     f
   }
 
-  private def create(allowExtraCols: AllowExtraCols, cols: List[Column],
-      lines: String*): ColumnFile = {
+  private def create(
+      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile = {
     create(DefaultSeparator, allowExtraCols, cols, lines: _*)
   }
 
-  private def create(
-      sep: Char, cols: List[Column], lines: String*): ColumnFile = {
+  private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile = {
     create(sep, AllowExtraCols.No, cols, lines: _*)
   }
 
@@ -299,10 +291,8 @@ object ColumnFileTest {
   val cols: List[Column] = (1 to 3).map(c => Column("col" + c)).toList
   val col1 :: col2 :: col3 :: Nil = cols: @unchecked()
 
-  private class TestColumnFile(path: Path, sep: Char,
-      allowExtraCols: AllowExtraCols, cols: Column*)
-      extends ColumnFile(path, sep, allowExtraCols, cols: _*)
-      with AutoCloseable {
+  private class TestColumnFile(path: Path, sep: Char, allowExtraCols: AllowExtraCols, cols: Column*)
+      extends ColumnFile(path, sep, allowExtraCols, cols: _*) with AutoCloseable {
     // allow tests to force close or read to fail
     var closeFailure: Boolean = false
     var readFailure: Boolean = false

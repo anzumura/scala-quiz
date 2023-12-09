@@ -8,47 +8,39 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
-/** class for loading data from a delimiter separated file with a header row
- *  containing the column names
+/** class for loading data from delimiter separated file with a header row containing column names
  *  @param path file to be processed
  *  @param sep column delimiter
- *  @param allowExtraCols if 'Yes' then file can contain more columns than the
- *                        list provided in `cols`. These 'extra' columns are
- *                        skipped during processing and can't be retrieved via
- *                        [[get]] methods
+ *  @param allowExtraCols if 'Yes' then file can contain more columns than the list provided in
+ *                        `cols`. These 'extra' columns are skipped during processing and can't be
+ *                        retrieved via [[get]] methods
  *  @param cols list of columns that are included in the file
- *  @throws DomainException if `cols` is empty or contains a column with a name
- *                          that's not included in the file header row
- *  @throws DomainException if file empty (so missing a header row) or contains
- *                          duplicate header names
- *  @throws DomainException if header contains columns that aren't included in
- *                          `cols` and `allowExtraCols` is 'No'
+ *  @throws DomainException if `cols` is empty or contains a column with a name that's not included
+ *                          in the file header row
+ *  @throws DomainException if file empty or contains duplicate header names
+ *  @throws DomainException if header contains columns that aren't included in `cols` and
+ *                          `allowExtraCols` is 'No'
  */
-class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
-    cols: Column*)
+class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols, cols: Column*)
     extends ThrowsDomainException {
   if (cols.isEmpty) domainError("must specify at least one column")
 
-  def this(path: Path, cols: Column*) =
-    this(path, DefaultSeparator, AllowExtraCols.No, cols: _*)
+  def this(path: Path, cols: Column*) = this(path, DefaultSeparator, AllowExtraCols.No, cols: _*)
   def this(path: Path, allowUnknownCols: AllowExtraCols, cols: Column*) =
     this(path, DefaultSeparator, allowUnknownCols, cols: _*)
 
   /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
 
-  /** returns current row number starting at 1, or 0 if [[nextRow]] hasn't been
-   *  called yet
-   */
+  /** returns current row number starting at 1, or 0 if [[nextRow]] hasn't been called yet */
   def currentRow: Int = _currentRow
 
-  /** reads next row and must be called before calling ant [[get]] methods. If
-   *  there's no more rows then false is returned and the file is closed - thus
-   *  calling nextRow again after the file is closed raises an exception.
+  /** reads next row and must be called before calling ant [[get]] methods. If there's no more rows
+   *  then false is returned and the file is closed - thus calling nextRow again after the file is
+   *  closed raises an exception.
    *
    *  @return true if a row was read or false if there is no more data
-   *  @throws DomainException if reading the next row fails or has incorrect
-   *                          number of columns
+   *  @throws DomainException if reading the next row fails or has incorrect number of columns
    */
   def nextRow(): Boolean = {
     if (_closed) domainError(s"file: '$fileName' has been closed")
@@ -63,8 +55,8 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
 
   /** @param col column contained in this file
    *  @return string value for the given column in current row
-   *  @throws DomainException if [[nextRow]] hasn't been called yet or the given
-   *                          column isn't part of this file
+   *  @throws DomainException if [[nextRow]] hasn't been called yet or the given column isn't
+   *                          part of this file
    */
   def get(col: Column): String = {
     if (_currentRow == 0) fileError("'nextRow' must be called before 'get'")
@@ -77,14 +69,13 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
   /** @param col column contained in this file
    *  @param max max value allowed (only checks if max is non-negative)
    *  @return unsigned int value for the given column in current row
-   *  @throws DomainException if [[get]] fails or value can't be converted to an
-   *                          unsigned int less than or equal to max
+   *  @throws DomainException if [[get]] fails or value can't be converted to an unsigned int that
+   *                          is less than or equal to max
    */
-  def getUInt(col: Column, max: Int = NoMaxValue): Int =
-    processUInt(get(col), col, max)
+  def getUInt(col: Column, max: Int = NoMaxValue): Int = processUInt(get(col), col, max)
 
-  /** similar to [[getUInt]], but if value stored at `col` is empty then return
-   *  `default`, note, max check is not performed when `default` is used
+  /** similar to [[getUInt]], but if value stored at `col` is empty then return `default`, note,
+   *  max check is not performed when `default` is used
    */
   def getUIntDefault(col: Column, default: Int, max: Int = NoMaxValue): Int = {
     val s = get(col)
@@ -114,8 +105,7 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
     if (currentRow > 0) s"$result, line: $currentRow" else result
   }
 
-  private def processHeaderRow(source: Source,
-      colsIn: mutable.Map[String, Column]) = Try {
+  private def processHeaderRow(source: Source, colsIn: mutable.Map[String, Column]) = Try {
     val lines = source.getLines()
     if (!lines.hasNext) fileError("missing header row")
     val colsFound = mutable.Set.empty[String]
@@ -130,8 +120,8 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
     colsIn.size match {
       case 0 => (source, lines)
       case 1 => fileError(s"column '${colsIn.keys.mkString}' not found")
-      case s => fileError(colsIn.keys.toIndexedSeq.sorted.mkString(
-            s"$s columns not found: '", "', '", "'"))
+      case s =>
+        fileError(colsIn.keys.toIndexedSeq.sorted.mkString(s"$s columns not found: '", "', '", "'"))
     }
   } match {
     case Failure(e) =>
@@ -149,8 +139,7 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
       case _ => vals.zipWithIndex.foreach { case (s, i) => rowValues(i) = s }
     }
   } match {
-    case Failure(e: IOException) =>
-      fileError(s"failed to read row: ${e.getMessage}")
+    case Failure(e: IOException) => fileError(s"failed to read row: ${e.getMessage}")
     case Failure(e) => throw e
     case _ =>
   }
@@ -159,8 +148,7 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
     Integer.parseUnsignedInt(s)
   } match {
     case Failure(_) => fileError("convert to UInt failed", col, s)
-    case Success(x) if max >= 0 && max < x =>
-      fileError(s"exceeded max value $max", col, s)
+    case Success(x) if max >= 0 && max < x => fileError(s"exceeded max value $max", col, s)
     case Success(x) => x
   }
 
@@ -173,13 +161,10 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
 
   private val (source, lines) = {
     val colsIn = mutable.Map.empty[String, Column]
-    cols.foreach(c =>
-      if (colsIn.put(c.name, c).nonEmpty) domainError(s"duplicate column '$c'")
-    )
+    cols.foreach(c => if (colsIn.put(c.name, c).nonEmpty) domainError(s"duplicate column '$c'"))
     Try(processHeaderRow(Source.fromFile(path.toFile), colsIn)) match {
       case Success(x) => x
-      case Failure(e: IOException) =>
-        domainError("failed to read header row: " + e.getMessage)
+      case Failure(e: IOException) => domainError("failed to read header row: " + e.getMessage)
       case Failure(e) => throw e
     }
   }
@@ -193,9 +178,8 @@ object ColumnFile {
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1
 
-  /** represents a column in a [[ColumnFile]]. Instances are used to get
-   *  values from each row and the same Column instance can be used in multiple
-   *  ColumnFiles.
+  /** represents a column in a [[ColumnFile]]. Instances are used to get values from each row and
+   *  the same Column instance can be used in multiple ColumnFiles.
    */
   final class Column(val name: String) {
     val number: Int = allColumns.getOrElseUpdate(name, allColumns.size)

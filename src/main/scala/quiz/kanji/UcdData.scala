@@ -9,10 +9,9 @@ import scala.collection.immutable.BitSet
 class UcdData(path: Path) extends ThrowsDomainException {}
 
 object UcdData {
-  /** represents the XML property from which the link was loaded. '_R' means the
-   *  link was also used to pull in readings. '_R' come first in the enum to
-   *  allow '<' comparison to find all reading links. Note, there is no non '_R'
-   *  type for 'Semantic' links by design.
+  /** represents the XML property from which the link was loaded. '_R' means the link was also
+   *  used to pull in readings. '_R' come first in the enum to allow '<' comparison to find all
+   *  reading links. Note, there is no non '_R' type for 'Semantic' links by design.
    */
   enum LinkType {
     case Compatibility_R // *kCompatibilityVariant* link also used for 'reading'
@@ -29,11 +28,10 @@ object UcdData {
     case None            // no link
   }
 
-  /** set of sources for a Ucd entry plus info on whether the entry is a 'Joyo'
-   *  or 'Jinmei' Kanji (officially an entry can't be both 'joyo' and 'jinmei',
-   *  but these are distinct properties in the raw data so keep them separate
-   *  here as well). The letters in `sources` represent 'country/region' where
-   *  there's source data. The top six 'countries' are currently supported:
+  /** set of sources for a Ucd entry plus info on whether the entry is a 'Joyo' or 'Jinmei' Kanji
+   *  (officially an entry can't be both 'joyo' and 'jinmei', but these are distinct properties
+   *  in the raw data so keep them separate here as well). The letters in `sources` represent
+   *  'country/region' where there's source data. The top six 'countries' are currently supported:
    *  <ul>
    *  <li>G: People’s Republic of China and Singapore
    *  <li>H: Hong Kong
@@ -43,8 +41,7 @@ object UcdData {
    *  <li>V: Vietnam
    *  </ul>
    */
-  class Source private (val jSource: String, sources: String, joyo: Boolean,
-      jinmei: Boolean) {
+  class Source private (val jSource: String, sources: String, joyo: Boolean, jinmei: Boolean) {
     import Source.Bits.*
     /** returns a string containing source country letters (can be empty) */
     override def toString: String = sourceString(bits)
@@ -67,26 +64,23 @@ object UcdData {
         if x < Joyo.ordinal
       } yield x
 
-      def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet =
-        sources.foldLeft(
-          if (joyo) {
-            if (jinmei) BitSet(Joyo.ordinal, Jinmei.ordinal)
-            else BitSet(Joyo.ordinal)
-          } else if (jinmei) BitSet(Jinmei.ordinal)
-          else BitSet()
-        )((bits, x) => bits + valueOf(x.toString).ordinal)
+      def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet = sources.foldLeft(
+        if (joyo) {
+          if (jinmei) BitSet(Joyo.ordinal, Jinmei.ordinal)
+          else BitSet(Joyo.ordinal)
+        } else if (jinmei) BitSet(Jinmei.ordinal)
+        else BitSet()
+      )((bits, x) => bits + valueOf(x.toString).ordinal)
 
-      def sourceString(bits: BitSet): String =
-        sources.filter(bits).foldLeft("")(_ + _.toString)
+      def sourceString(bits: BitSet): String = sources.filter(bits).foldLeft("")(_ + _.toString)
     }
   }
 
-  /** data for an entry from the "ucd.txt" file. Some columns in the file aren't
-   *  stored like "Name" and "LinkNames" since these are represented by [[Code]]
-   *  classes. Also ignore "VStrokes" (and maybe modify the parse script to stop
-   *  calculating it). "On" and "Kun" columns used to be the only sources for
-   *  Japanese (Rōmaji) readings, but the "kJapanese" field was added in Unicode
-   *  15.1 that can be used instead (it's also populated with 'Kana' as well)
+  /** data for an entry from the "ucd.txt" file. Some columns in the file aren't stored like
+   *  "Name" and "LinkNames" since these are represented by [[Code]] classes. Also ignore
+   *  "VStrokes" (and maybe modify the parse script to stop calculating it). "On" and "Kun"
+   *  columns used to be the only sources for Japanese (Rōmaji) readings, but the "kJapanese"
+   *  field was added in Unicode 15.1 that can be used instead (it's also populated with 'Kana')
    *
    *  @param code Unicode code point
    *  @param radical official radical
@@ -101,6 +95,6 @@ object UcdData {
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
   case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
-      morohashiId: MorohashiId, nelsonIds: Set[Int], source: Source,
-      links: List[Code], linkType: LinkType, meaning: String, reading: String)
+      morohashiId: MorohashiId, nelsonIds: Set[Int], source: Source, links: List[Code],
+      linkType: LinkType, meaning: String, reading: String)
 }

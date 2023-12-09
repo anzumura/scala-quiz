@@ -15,8 +15,8 @@ class FileUtilsTest extends FileTest {
   }
 
   "fileNameStem removes extensions" in {
-    Seq("abc.x.y" -> "abc", "def." -> "def", "abc" -> "abc", "." -> ".",
-      ".." -> "..", "..a.b" -> "..a").foreach { case (name, result) =>
+    Seq("abc.x.y" -> "abc", "def." -> "def", "abc" -> "abc", "." -> ".", ".." -> "..",
+      "..a.b" -> "..a").foreach { case (name, result) =>
       assert(fileNameStem(Path.of(name)) == result)
     }
   }
@@ -39,8 +39,7 @@ class FileUtilsTest extends FileTest {
 
   "addExtension to single component" in {
     val fileWithNoExtension = Path.of(testFileBaseName)
-    assert(fileName(addExtension(fileWithNoExtension,
-        TextFileExtension)) == testFileName)
+    assert(fileName(addExtension(fileWithNoExtension, TextFileExtension)) == testFileName)
   }
 
   "checkExists" - {
@@ -51,8 +50,7 @@ class FileUtilsTest extends FileTest {
     "return path+extension if path doesn't exist (but path+extension does)" in {
       val fileWithExtension = tempDir.resolve(name + extension)
       Files.createFile(fileWithExtension)
-      assert(checkExists(tempDir.resolve(name),
-        Option(extension)) == fileWithExtension)
+      assert(checkExists(tempDir.resolve(name), Option(extension)) == fileWithExtension)
     }
 
     "error thrown if path doesn't exist" in {
@@ -75,13 +73,11 @@ class FileUtilsTest extends FileTest {
 
     "adds extension if original file doesn't exist" in {
       Files.createFile(testFile)
-      assert(resolve(tempDir, Path.of(testFileBaseName),
-        Option(TextFileExtension)) == testFile)
+      assert(resolve(tempDir, Path.of(testFileBaseName), Option(TextFileExtension)) == testFile)
     }
 
     "dir must be a directory" in {
-      error(resolve(Path.of("bad_dir"), Path.of(testFileName)),
-        "'bad_dir' is not a directory")
+      error(resolve(Path.of("bad_dir"), Path.of(testFileName)), "'bad_dir' is not a directory")
     }
 
     "file must not be an absolute path" in {
@@ -98,8 +94,7 @@ class FileUtilsTest extends FileTest {
     }
 
     "file is not a regular file" in {
-      error(resolve(tempDir.getParent, tempDir.getFileName),
-        s"'$tempDir' is not a regular file")
+      error(resolve(tempDir.getParent, tempDir.getFileName), s"'$tempDir' is not a regular file")
     }
   }
 
