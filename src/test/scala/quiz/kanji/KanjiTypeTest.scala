@@ -5,8 +5,8 @@ import quiz.utils.BaseTest
 class KanjiTypeTest extends BaseTest {
   "KanjiType has expected values" in {
     import KanjiType.*
-    assert(values.toSeq == Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei,
-      Ucd))
+    assert(values.toSeq ==
+      Seq(Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd))
   }
 
   "Grade has expected values" in {

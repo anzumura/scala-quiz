@@ -1,14 +1,15 @@
 package quiz.kanji
 
-import quiz.kanji.UcdData.Ucd
+import quiz.kanji.UcdData.{LinkType, Source, Ucd}
 import quiz.utils.ColumnFile.AllowExtraCols.Yes
 import quiz.utils.ColumnFile.{AllowExtraCols, Column}
-import quiz.utils.{ColumnFile, ThrowsDomainException}
 import quiz.utils.UnicodeUtils.Code
+import quiz.utils.{ColumnFile, DomainException, ThrowsDomainException}
 
 import java.nio.file.Path
 import scala.collection.immutable.BitSet
 import scala.collection.mutable
+import scala.util.{Success, Try}
 
 class UcdData(dir: Path) extends ThrowsDomainException {
   def find(s: String): Option[Ucd] = data.get(s)
@@ -28,14 +29,49 @@ class UcdData(dir: Path) extends ThrowsDomainException {
     val linkTypeCol = Column("LinkType")
     val meaningCol = Column("Meaning")
     val japaneseCol = Column("Japanese")
-    val f = ColumnFile(dir.resolve("ucd.txt"), AllowExtraCols.Yes, codeCol, radicalCol,
-      strokesCol, pinyinCol, morohashiIdCol, nelsonIdsCol, sourcesCol, jSourceCol, joyoCol,
-      jinmeiCol, linkCodesCol, linkTypeCol, meaningCol, japaneseCol)
+    val f = ColumnFile(
+      dir.resolve("ucd.txt"),
+      AllowExtraCols.Yes,
+      codeCol,
+      radicalCol,
+      strokesCol,
+      pinyinCol,
+      morohashiIdCol,
+      nelsonIdsCol,
+      sourcesCol,
+      jSourceCol,
+      joyoCol,
+      jinmeiCol,
+      linkCodesCol,
+      linkTypeCol,
+      meaningCol,
+      japaneseCol
+    )
     val result = mutable.Buffer[Ucd]()
-    while(f.nextRow()) {
-      //result += Ucd(f.get)
-    }
+    while (f.nextRow()) result += Ucd(
+      Code.fromHex(f.get(codeCol)),
+      f.get(radicalCol),
+      f.getUInt(strokesCol),
+      f.get(pinyinCol),
+      MorohashiId(f.get(morohashiIdCol)),
+      nelsonIds(f.get(nelsonIdsCol)),
+      Source(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
+      links(f.get(linkCodesCol)),
+      LinkType.valueOf(f.get(linkTypeCol).replace("*", "_R")),
+      f.get(meaningCol),
+      f.get(japaneseCol)
+    )
     result.map(x => x.code.toUTF16 -> x).toMap
+  }
+
+  private def nelsonIds(s: String) = Try(s.split(",").map(Integer.parseInt)) match {
+    case Success(x) => x.toList
+    case _ => throw DomainException(s"invalid NelsonIds '$s'")
+  }
+
+  private def links(s: String) = Try(s.split(",").map(Code.fromHex)) match {
+    case Success(x) => x.toList
+    case _ => throw DomainException(s"invalid LinkCodes '$s'")
   }
 }
 
@@ -87,21 +123,23 @@ object UcdData {
   }
 
   private object Source {
-    private enum Bits { case G, H, J, K, T, V, Joyo, Jinmei }
+    def apply(jSource: String, source: String, joyo: Boolean, jinmei: Boolean): Source =
+      new Source(jSource, source, joyo, jinmei)
+
+    private enum Bits {
+      case G, H, J, K, T, V, Joyo, Jinmei
+    }
     private object Bits {
       private lazy val sources = for {
         v <- values
-        x = v.ordinal
-        if x < Joyo.ordinal
+        x = v.ordinal if x < Joyo.ordinal
       } yield x
 
-      def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet = sources.foldLeft(
-        if (joyo) {
-          if (jinmei) BitSet(Joyo.ordinal, Jinmei.ordinal)
-          else BitSet(Joyo.ordinal)
+      def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet = sources
+        .foldLeft(if (joyo) {
+          if (jinmei) BitSet(Joyo.ordinal, Jinmei.ordinal) else BitSet(Joyo.ordinal)
         } else if (jinmei) BitSet(Jinmei.ordinal)
-        else BitSet()
-      )((bits, x) => bits + valueOf(x.toString).ordinal)
+          else BitSet())((bits, x) => bits + valueOf(x.toString).ordinal)
 
       def sourceString(bits: BitSet): String = sources.filter(bits).foldLeft("")(_ + _.toString)
     }
@@ -125,7 +163,9 @@ object UcdData {
    *  @param meaning meaning of the character in English
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
-  case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
-      morohashiId: MorohashiId, nelsonIds: Set[Int], source: Source, links: List[Code],
-      linkType: LinkType, meaning: String, reading: String)
+  case class Ucd(
+      code: Code, radical: String, strokes: Int, pinyin: String, morohashiId: MorohashiId,
+      nelsonIds: List[Int], source: Source, links: List[Code], linkType: LinkType, meaning: String,
+      reading: String
+  )
 }

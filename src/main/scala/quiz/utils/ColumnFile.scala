@@ -144,13 +144,12 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols, cols
     case _ =>
   }
 
-  private def processUInt(s: String, col: Column, max: Int) = Try {
-    Integer.parseUnsignedInt(s)
-  } match {
-    case Failure(_) => fileError("convert to UInt failed", col, s)
-    case Success(x) if max >= 0 && max < x => fileError(s"exceeded max value $max", col, s)
-    case Success(x) => x
-  }
+  private def processUInt(s: String, col: Column, max: Int) =
+    Try { Integer.parseUnsignedInt(s) } match {
+      case Failure(_) => fileError("convert to UInt failed", col, s)
+      case Success(x) if max >= 0 && max < x => fileError(s"exceeded max value $max", col, s)
+      case Success(x) => x
+    }
 
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)
@@ -173,7 +172,9 @@ class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols, cols
 object ColumnFile {
   val DefaultSeparator: Char = '\t'
 
-  enum AllowExtraCols { case Yes, No }
+  enum AllowExtraCols {
+    case Yes, No
+  }
 
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1

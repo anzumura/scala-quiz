@@ -5,10 +5,14 @@ import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
 
-enum EnumA extends NoneEnum[EnumA](EnumA) { case E1, E2, E3, E4, None }
+enum EnumA extends NoneEnum[EnumA](EnumA) {
+  case E1, E2, E3, E4, None
+}
 object EnumA extends NoneEnumObject[EnumA] {}
 
-enum EnumB extends NoneEnum[EnumB](EnumB) { case E1, E2, E3, E4, None }
+enum EnumB extends NoneEnum[EnumB](EnumB) {
+  case E1, E2, E3, E4, None
+}
 object EnumB extends NoneEnumObject[EnumB] {}
 
 class ListFileTest extends FileTest {
@@ -46,9 +50,7 @@ class ListFileTest extends FileTest {
     assert(ListFile(writeTestFile("赤\n青\n黄")).size == 3)
   }
 
-  "empty file has size 0" in {
-    assert(ListFile(writeTestFile()).size == 0)
-  }
+  "empty file has size 0" in { assert(ListFile(writeTestFile()).size == 0) }
 
   "index returns optional position in entries" in {
     assert(ListFile(writeTestFile("赤\n青\n黄")).index("黄").contains(2))

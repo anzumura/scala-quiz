@@ -7,10 +7,10 @@ import scala.annotation.tailrec
 import scala.collection.immutable.TreeMap
 import scala.language.implicitConversions
 
-class Choice private (private var _quit: Option[Char] = None,
-    var quitDescription: String = DefaultQuitDescription, val is: InputStream = System.in,
-    private val os: PrintStream = System.out)
-    extends ThrowsDomainException {
+class Choice private (
+    private var _quit: Option[Char] = None, var quitDescription: String = DefaultQuitDescription,
+    val is: InputStream = System.in, private val os: PrintStream = System.out
+) extends ThrowsDomainException {
   /** returns the current `quit` option or None is no option has been set */
   def quit: Option[Char] = _quit
 
@@ -41,8 +41,10 @@ class Choice private (private var _quit: Option[Char] = None,
    *  @throws DomainException if 'quit option' is set and is also in `choices`
    *  @throws DomainException if any choice in `choices` is not printable Ascii
    */
-  def get(choices: Choices, msg: String = "", useQuit: UseQuit = UseQuit.Yes,
-      defaultChoice: Option[Char] = None): Char = {
+  def get(
+      choices: Choices, msg: String = "", useQuit: UseQuit = UseQuit.Yes,
+      defaultChoice: Option[Char] = None
+  ): Char = {
     val c = quit.map(q =>
       if (useQuit) {
         if (choices.contains(q)) domainError(s"quit option '$q' already in choices")
@@ -143,8 +145,8 @@ object Choice {
     if (start > end) domainError(s"start '$start' greater than end '$end'")
 
     // call 'Choice.get' methods with this range merged into 'Choices'
-    def get(o: Choice, c: Choices, m: String = "", u: UseQuit = UseQuit.Yes): Char =
-      o.get(merge(c), m, u)
+    def get(o: Choice, c: Choices, m: String = "", u: UseQuit = UseQuit.Yes): Char = o
+      .get(merge(c), m, u)
     def get(o: Choice, c: Choices, m: String, d: Char): Char = o.get(merge(c), m, d)
     def get(o: Choice, c: Choices, m: String, d: Char, u: UseQuit): Char = o.get(merge(c), m, d, u)
     def get(o: Choice, c: Choices, u: UseQuit): Char = o.get(merge(c), u)
@@ -168,7 +170,9 @@ object Choice {
 
   val DefaultQuitDescription = "quit"
 
-  enum UseQuit { case Yes, No }
+  enum UseQuit {
+    case Yes, No
+  }
   given Conversion[UseQuit, Boolean] = (x: UseQuit) => x eq UseQuit.Yes
 
   def apply(): Choice = new Choice

@@ -34,9 +34,10 @@ object Kanji {
    *  Some of these Kanji are in the top 2,501 frequency list and almost all of them are in Kentei
    *  KJ1 or K1. However, none of them have a JLPT level.
    */
-  sealed abstract class Linked(name: String, radical: String, strokes: Int, l: Kanji,
-      override val frequency: Int, override val kyu: Kyu)
-      extends Kanji(name, radical, strokes) {
+  sealed abstract class Linked(
+      name: String, radical: String, strokes: Int, l: Kanji, override val frequency: Int,
+      override val kyu: Kyu
+  ) extends Kanji(name, radical, strokes) {
     override val link: Option[Kanji] = Option(l)
     override def meaning: String = link.map(_.meaning).getOrElse("")
     override def reading: String = link.map(_.reading).getOrElse("")
@@ -45,57 +46,60 @@ object Kanji {
   }
 
   /** contains 'meaning' and 'reading' fields loaded from files */
-  sealed abstract class Loaded(name: String, radical: String, strokes: Int,
-      override val meaning: String, override val reading: String)
-      extends Kanji(name, radical, strokes) {}
+  sealed abstract class Loaded(
+      name: String, radical: String, strokes: Int, override val meaning: String,
+      override val reading: String
+  ) extends Kanji(name, radical, strokes) {}
 
   // abstract subclasses of Loaded
 
-  sealed abstract class Numbered(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, override val kyu: Kyu, override val number: Int)
-      extends Loaded(name, radical, strokes, meaning, reading) {
+  sealed abstract class Numbered(
+      name: String, radical: String, strokes: Int, meaning: String, reading: String,
+      override val kyu: Kyu, override val number: Int
+  ) extends Loaded(name, radical, strokes, meaning, reading) {
     if (number <= 0) error("number must be greater than zero")
   }
 
-  sealed abstract class Other(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, oldLinks: OldLinks, linkNames: List[String],
-      override val linkedReadings: LinkedReadings)
-      extends Loaded(name, radical, strokes, meaning, reading) {
+  sealed abstract class Other(
+      name: String, radical: String, strokes: Int, meaning: String, reading: String,
+      oldLinks: OldLinks, linkNames: List[String], override val linkedReadings: LinkedReadings
+  ) extends Loaded(name, radical, strokes, meaning, reading) {
     override val oldNames: List[String] = if (oldLinks) linkNames else Nil
     override val newName: Option[String] = if (oldLinks) None else linkNames.headOption
   }
 
   // abstract subclasses of Numbered
 
-  sealed abstract class Official(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, kyu: Kyu, number: Int, override val level: Level,
-      override val frequency: Int, override val year: Int)
-      extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {}
+  sealed abstract class Official(
+      name: String, radical: String, strokes: Int, meaning: String, reading: String, kyu: Kyu,
+      number: Int, override val level: Level, override val frequency: Int, override val year: Int
+  ) extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {}
 
   // abstract subclasses of Other
 
-  sealed abstract class Standard(name: String, radical: String, strokes: Int, meaning: String,
-      reading: String, oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
-      override val kyu: Kyu)
-      extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames,
-        linkedReadings) {}
+  sealed abstract class Standard(
+      name: String, radical: String, strokes: Int, meaning: String, reading: String,
+      oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
+      override val kyu: Kyu
+  ) extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings) {}
 }
 
 // concrete subclasses of Kanji.Numbered
 
-final class ExtraKanji(name: String, radical: String, strokes: Int, meaning: String,
-    reading: String, kyu: Kyu, number: Int, override val newName: Option[String] = None)
-    extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {
+final class ExtraKanji(
+    name: String, radical: String, strokes: Int, meaning: String, reading: String, kyu: Kyu,
+    number: Int, override val newName: Option[String] = None
+) extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {
   override def kanjiType: KanjiType = KanjiType.Extra
 }
 
 // concrete subclasses of Kanji.Official
 
-final class JinmeiKanji(name: String, radical: String, strokes: Int, meaning: String,
-    reading: String, kyu: Kyu, number: Int, level: Level, frequency: Int, year: Int,
-    override val oldNames: List[String], override val reason: JinmeiReason)
-    extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
-      year) {
+final class JinmeiKanji(
+    name: String, radical: String, strokes: Int, meaning: String, reading: String, kyu: Kyu,
+    number: Int, level: Level, frequency: Int, year: Int, override val oldNames: List[String],
+    override val reason: JinmeiReason
+) extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency, year) {
   // Jinmei Kanji have year values starting at 1951, but for now just ensure
   // it's non-zero to prevent the case of constructing without a year
   if (year == 0) error("must have a valid year")
@@ -103,38 +107,40 @@ final class JinmeiKanji(name: String, radical: String, strokes: Int, meaning: St
   override def kanjiType: KanjiType = KanjiType.Jinmei
 }
 
-final class JouyouKanji(name: String, radical: String, strokes: Int, meaning: String,
-    reading: String, kyu: Kyu, number: Int, level: Level, frequency: Int, year: Int,
-    override val oldNames: List[String], override val grade: Grade)
-    extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
-      year) {
+final class JouyouKanji(
+    name: String, radical: String, strokes: Int, meaning: String, reading: String, kyu: Kyu,
+    number: Int, level: Level, frequency: Int, year: Int, override val oldNames: List[String],
+    override val grade: Grade
+) extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency, year) {
   if (!grade.isDefined) error("must have a valid grade")
   override def kanjiType: KanjiType = KanjiType.Jouyou
 }
 
 // concrete subclass of Kanji.Other
 
-final class UcdKanji(name: String, radical: String, strokes: Int, meaning: String, reading: String,
-    oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings)
-    extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings) {
+final class UcdKanji(
+    name: String, radical: String, strokes: Int, meaning: String, reading: String,
+    oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings
+) extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings) {
   override def kanjiType: KanjiType = KanjiType.Ucd
 }
 
 // concrete subclasses of Kanji.Standard
 
-final class FrequencyKanji(name: String, radical: String, strokes: Int, meaning: String,
-    reading: String, oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
-    kyu: Kyu, override val frequency: Int)
-    extends Standard(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings,
+final class FrequencyKanji(
+    name: String, radical: String, strokes: Int, meaning: String, reading: String,
+    oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings, kyu: Kyu,
+    override val frequency: Int
+) extends Standard(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings,
       kyu) {
   if (frequency <= 0) error("frequency must be greater than zero")
   override def kanjiType: KanjiType = KanjiType.Frequency
 }
 
-final class KenteiKanji(name: String, radical: String, strokes: Int, meaning: String,
-    reading: String, oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
-    kyu: Kyu)
-    extends Standard(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings,
+final class KenteiKanji(
+    name: String, radical: String, strokes: Int, meaning: String, reading: String,
+    oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings, kyu: Kyu
+) extends Standard(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings,
       kyu) {
   if (!kyu.isDefined) error("must have a valid kyu")
   override def kanjiType: KanjiType = KanjiType.Kentei
@@ -150,9 +156,9 @@ final class KenteiKanji(name: String, radical: String, strokes: Int, meaning: St
  *  <li>18 are alternate forms of standard JinmeiKanji
  *  </ul>
  */
-final class LinkedJinmeiKanji(name: String, radical: String, strokes: Int, link: Kanji,
-    frequency: Int, kyu: Kyu)
-    extends Linked(name, radical, strokes, link, frequency, kyu) {
+final class LinkedJinmeiKanji(
+    name: String, radical: String, strokes: Int, link: Kanji, frequency: Int, kyu: Kyu
+) extends Linked(name, radical, strokes, link, frequency, kyu) {
   if (!link.isInstanceOf[Official]) error("link must be JouyouKanji or JinmeiKanji")
   override def kanjiType: KanjiType = KanjiType.LinkedJinmei
 }
@@ -160,9 +166,9 @@ final class LinkedJinmeiKanji(name: String, radical: String, strokes: Int, link:
 /** 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants that aren't
  *  already included in the 230 Jinmeiyō 'official variants'.
  */
-final class LinkedOldKanji(name: String, radical: String, strokes: Int, link: Kanji, frequency: Int,
-    kyu: Kyu)
-    extends Linked(name, radical, strokes, link, frequency, kyu) {
+final class LinkedOldKanji(
+    name: String, radical: String, strokes: Int, link: Kanji, frequency: Int, kyu: Kyu
+) extends Linked(name, radical, strokes, link, frequency, kyu) {
   if (!link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")
   override def kanjiType: KanjiType = KanjiType.LinkedOld
 }

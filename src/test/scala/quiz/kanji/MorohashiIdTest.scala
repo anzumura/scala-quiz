@@ -58,15 +58,12 @@ class MorohashiIdTest extends BaseTest {
   }
 
   "create error" - {
-    "negative index" in {
-      domainError(MorohashiId(-2), "negative index")
-    }
+    "negative index" in { domainError(MorohashiId(-2), "negative index") }
 
     "index out of range" in {
       val big = MaxIndex + 1
-      IndexType.values.filter(_ != Supplemental).foreach(i =>
-        domainError(MorohashiId(big, i), s"$i index $big exceeds $MaxIndex")
-      )
+      IndexType.values.filter(_ != Supplemental)
+        .foreach(i => domainError(MorohashiId(big, i), s"$i index $big exceeds $MaxIndex"))
     }
 
     "supplemental index out of range" in {
@@ -75,25 +72,18 @@ class MorohashiIdTest extends BaseTest {
         s"$Supplemental index $big exceeds $MaxSupplementalIndex")
     }
 
-    "empty index" in {
-      domainError(MorohashiId(""), "empty index")
-    }
+    "empty index" in { domainError(MorohashiId(""), "empty index") }
 
     "invalid format" in {
-      Seq("H123P", "123PPP", "PP", "H", "xyz").foreach(s =>
-        domainError(MorohashiId(s), s"invalid format '$s'")
-      )
+      Seq("H123P", "123PPP", "PP", "H", "xyz")
+        .foreach(s => domainError(MorohashiId(s), s"invalid format '$s'"))
     }
   }
 
   "to string" - {
-    "plain index" in {
-      assert(MorohashiId(12345).toString == "12345")
-    }
+    "plain index" in { assert(MorohashiId(12345).toString == "12345") }
 
-    "prime index has trailing 'P'" in {
-      assert(MorohashiId(67890, Prime).toString == "67890P")
-    }
+    "prime index has trailing 'P'" in { assert(MorohashiId(67890, Prime).toString == "67890P") }
 
     "double prime index has trailing 'PP'" in {
       assert(MorohashiId(34567, DoublePrime).toString == "34567PP")

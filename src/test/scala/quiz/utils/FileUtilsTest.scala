@@ -6,9 +6,7 @@ import quiz.utils.FileUtilsTest.*
 import java.nio.file.{Files, Path}
 
 class FileUtilsTest extends FileTest {
-  "fileName returns final component of path" in {
-    assert(fileName(testFile) == testFileName)
-  }
+  "fileName returns final component of path" in { assert(fileName(testFile) == testFileName) }
 
   "fileName works for path with single component" in {
     assert(fileName(Path.of(testFileName)) == testFileName)
@@ -21,9 +19,7 @@ class FileUtilsTest extends FileTest {
     }
   }
 
-  "hasExtension returns true if file has an extension" in {
-    assert(hasExtension(testFile))
-  }
+  "hasExtension returns true if file has an extension" in { assert(hasExtension(testFile)) }
 
   "hasExtension returns false if file doesn't have an extension" in {
     val fileWithNoExtension = Path.of(testFileBaseName)
@@ -43,9 +39,7 @@ class FileUtilsTest extends FileTest {
   }
 
   "checkExists" - {
-    "return given path if it exists" in {
-      assert(checkExists(tempDir) == tempDir)
-    }
+    "return given path if it exists" in { assert(checkExists(tempDir) == tempDir) }
 
     "return path+extension if path doesn't exist (but path+extension does)" in {
       val fileWithExtension = tempDir.resolve(name + extension)
@@ -84,9 +78,7 @@ class FileUtilsTest extends FileTest {
       error(resolve(tempDir, testFile), s"'$testFile' is an absolute path")
     }
 
-    "file not found" in {
-      error(resolve(tempDir, Path.of(testFileName)), s"'$testFile' not found")
-    }
+    "file not found" in { error(resolve(tempDir, Path.of(testFileName)), s"'$testFile' not found") }
 
     "file not found after adding extension" in {
       error(resolve(tempDir, Path.of(name), Option(extension)),
@@ -103,9 +95,7 @@ class FileUtilsTest extends FileTest {
     assert(textFile(tempDir, testFileBaseName) == testFile)
   }
 
-  "get current working directory" in {
-    assert(cwd.toString.nonEmpty)
-  }
+  "get current working directory" in { assert(cwd.toString.nonEmpty) }
 
   "get all files in a directory" in {
     Seq("aa", "bb").foreach(f => Files.createFile(tempDir.resolve(f)))

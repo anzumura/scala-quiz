@@ -58,15 +58,14 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
   }
 
   private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
-    e.defined.map(EnumListFile(path.resolve(e.enumName), _)).flatMap(f =>
-      f.entries.map(_ -> f.value)
-    ).toMap
+    e.defined.map(EnumListFile(path.resolve(e.enumName), _))
+      .flatMap(f => f.entries.map(_ -> f.value)).toMap
   }
 
   private lazy val levels = load(Level)
   private lazy val kyus = load(Kyu)
-  private lazy val frequencies =
-    KanjiListFile(textFile(path, "frequency")).indices.map { case (k, v) => (k, v + 1) }
+  private lazy val frequencies = KanjiListFile(textFile(path, "frequency")).indices
+    .map { case (k, v) => (k, v + 1) }
   private lazy val types = loadKanji()
 
   // common columns used for loading Kanji from text files

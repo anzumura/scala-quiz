@@ -28,9 +28,7 @@ class UnicodeUtilsTest extends BaseTest {
       assert(result.length == 2)
     }
 
-    "can't be negative" in {
-      error(Code(-1), "code can't be negative")
-    }
+    "can't be negative" in { error(Code(-1), "code can't be negative") }
 
     "exceeds Unicode max U+10FFFF" in {
       val x = 0x110000
@@ -42,9 +40,7 @@ class UnicodeUtilsTest extends BaseTest {
       assert(Code("𠮟").value == scold.value)
     }
 
-    "create from longer string value" in {
-      assert(Code("犬猫", sizeOne = false).value == 0x72ac)
-    }
+    "create from longer string value" in { assert(Code("犬猫", sizeOne = false).value == 0x72ac) }
 
     "can't create from empty string" in {
       error(Code(""), "cannot create Unicode Code from empty string")

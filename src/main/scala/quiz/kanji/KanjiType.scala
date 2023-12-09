@@ -84,12 +84,16 @@ enum JinmeiReason extends NoneEnum[JinmeiReason](JinmeiReason) {
 }
 object JinmeiReason extends NoneEnumObject[JinmeiReason]
 
-enum LinkedReadings { case Yes, No }
+enum LinkedReadings {
+  case Yes, No
+}
 object LinkedReadings {
   given Conversion[LinkedReadings, Boolean] = (x: LinkedReadings) => x eq LinkedReadings.Yes
 }
 
-enum OldLinks { case Yes, No }
+enum OldLinks {
+  case Yes, No
+}
 object OldLinks {
   given Conversion[OldLinks, Boolean] = (x: OldLinks) => x eq OldLinks.Yes
 }

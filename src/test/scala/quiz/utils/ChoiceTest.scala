@@ -34,9 +34,7 @@ class ChoiceTest extends BaseChoiceTest {
     assert(c.quitDescription == expectedDesc)
   }
 
-  "create with invalid quit option" in {
-    domainError(Choice(12: Char), "quit is invalid: '0xc'")
-  }
+  "create with invalid quit option" in { domainError(Choice(12: Char), "quit is invalid: '0xc'") }
 
   "update quit value" in {
     val expected = 'q'
@@ -264,17 +262,11 @@ class RangeTest extends BaseChoiceTest {
   }
 
   "get errors" - {
-    "invalid range start" in {
-      domainError(Range(15, 'c'), "start is invalid: '0xf'")
-    }
+    "invalid range start" in { domainError(Range(15, 'c'), "start is invalid: '0xf'") }
 
-    "invalid range end" in {
-      domainError(Range('c', 10), "end is invalid: '0xa'")
-    }
+    "invalid range end" in { domainError(Range('c', 10), "end is invalid: '0xa'") }
 
-    "start greater than end" in {
-      domainError(Range('c', 'b'), "start 'c' greater than end 'b'")
-    }
+    "start greater than end" in { domainError(Range('c', 'b'), "start 'c' greater than end 'b'") }
 
     "range overlaps with Choices" in {
       val c = Choice()

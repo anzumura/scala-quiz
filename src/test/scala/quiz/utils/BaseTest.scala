@@ -25,9 +25,7 @@ trait BaseTest extends AnyFreeSpec {
   }
 
   /** calls [[error]] with "[mainClassName]" prepended to `msg` */
-  protected def domainError(f: => Any, msg: String): Unit = {
-    error(f, s"[$mainClassName] $msg")
-  }
+  protected def domainError(f: => Any, msg: String): Unit = { error(f, s"[$mainClassName] $msg") }
 }
 
 trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
@@ -60,19 +58,14 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
    *  @return testFile
    */
   def writeTestFile(lines: String*): Path = {
-    if (lines.isEmpty) Files.createFile(testFile)
-    else Files.write(testFile, lines.asJava)
+    if (lines.isEmpty) Files.createFile(testFile) else Files.write(testFile, lines.asJava)
   }
 
   // delete all files from 'tempDir' after each test
-  override protected def afterEach(): Unit = {
-    clearDirectory(tempDir)
-  }
+  override protected def afterEach(): Unit = { clearDirectory(tempDir) }
 
   // delete 'tempDir' after all tests
-  override protected def afterAll(): Unit = {
-    deleteIfExists(tempDir)
-  }
+  override protected def afterAll(): Unit = { deleteIfExists(tempDir) }
 
   protected def fileMsg(msg: String, file: Option[String]): String =
     s"$msg - file: ${file.getOrElse(testFileName)}"

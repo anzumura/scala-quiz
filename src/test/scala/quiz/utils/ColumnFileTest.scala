@@ -12,25 +12,19 @@ class ColumnFileTest extends FileTest {
   override val mainClassName: String = "TestColumnFile"
 
   "create" - {
-    "one column" in {
-      assert(create(List(col1), "col1").numColumns == 1)
-    }
+    "one column" in { assert(create(List(col1), "col1").numColumns == 1) }
 
     "current row zero before any rows are requested" in {
       assert(create(List(col1), "col1").currentRow == 0)
     }
 
-    "multiple columns" in {
-      assert(create(cols.take(2), "col1\tcol2").numColumns == 2)
-    }
+    "multiple columns" in { assert(create(cols.take(2), "col1\tcol2").numColumns == 2) }
 
     "allow file with extra columns (this is not allowed by default)" in {
       assert(create(AllowExtraCols.Yes, List(col1), "col1\tcolX").numColumns == 1)
     }
 
-    "space delimited file" in {
-      assert(create(' ', cols.take(2), "col1 col2").numColumns == 2)
-    }
+    "space delimited file" in { assert(create(' ', cols.take(2), "col1 col2").numColumns == 2) }
   }
 
   "create errors" - {
@@ -47,9 +41,7 @@ class ColumnFileTest extends FileTest {
         _.startsWith(s"[ColumnFile] failed to read header row: x"))
     }
 
-    "missing header row" in {
-      fileError(create(cols), "missing header row")
-    }
+    "missing header row" in { fileError(create(cols), "missing header row") }
 
     "duplicate header columns" in {
       fileError(create(cols, "col1\tcol1"), "duplicate header 'col1'")
@@ -59,9 +51,7 @@ class ColumnFileTest extends FileTest {
       fileError(create(cols, "col11"), "unrecognized header 'col11'")
     }
 
-    "one missing column" in {
-      fileError(create(cols, "col1\tcol3"), "column 'col2' not found")
-    }
+    "one missing column" in { fileError(create(cols, "col1\tcol3"), "column 'col2' not found") }
 
     "multiple missing columns" in {
       fileError(create(cols, "col2"), "2 columns not found: 'col1', 'col3'")
@@ -232,18 +222,17 @@ class ColumnFileTest extends FileTest {
   private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
-  private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
-      lines: String*) = {
+  private def create(
+      sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*
+  ) = {
     testColumnFile.foreach(_.close())
     val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols, cols: _*)
     testColumnFile = Option(f)
     f
   }
 
-  private def create(
-      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile = {
-    create(DefaultSeparator, allowExtraCols, cols, lines: _*)
-  }
+  private def create(allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*)
+      : ColumnFile = { create(DefaultSeparator, allowExtraCols, cols, lines: _*) }
 
   private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile = {
     create(sep, AllowExtraCols.No, cols, lines: _*)
@@ -257,19 +246,13 @@ class ColumnFileTest extends FileTest {
 }
 
 class ColumnTest extends BaseTest {
-  "toString returns column name" in {
-    assert(col1.toString == "col1")
-  }
+  "toString returns column name" in { assert(col1.toString == "col1") }
 
   "number is assigned based on creation order" in {
-    cols.iterator.sliding(2).foreach { s =>
-      assert(s.head.number + 1 == s.last.number)
-    }
+    cols.iterator.sliding(2).foreach { s => assert(s.head.number + 1 == s.last.number) }
   }
 
-  "number is unique per name" in {
-    cols.foreach { c => assert(c.number == Column(c.name).number) }
-  }
+  "number is unique per name" in { cols.foreach { c => assert(c.number == Column(c.name).number) } }
 
   "same name is considered equal" in {
     cols.foreach { c =>
@@ -282,9 +265,7 @@ class ColumnTest extends BaseTest {
     assert(col1 == x) // classes are the same
   }
 
-  "hasCode is based on number" in {
-    assert(col1.hashCode == col1.number.hashCode)
-  }
+  "hasCode is based on number" in { assert(col1.hashCode == col1.number.hashCode) }
 }
 
 object ColumnFileTest {
