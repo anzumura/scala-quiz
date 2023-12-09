@@ -10,12 +10,29 @@ import scala.util.{Failure, Success, Try}
 
 /** class for loading data from a delimiter separated file with a header row
  *  containing the column names
+ *  @param path file to be processed
+ *  @param sep column delimiter
+ *  @param allowExtraCols if 'Yes' then file can contain more columns than the
+ *                        list provided in `cols`. These 'extra' columns are
+ *                        skipped during processing and can't be retrieved via
+ *                        [[get]] methods
+ *  @param cols list of columns that are included in the file
+ *  @throws DomainException if `cols` is empty or contains a column with a name
+ *                          that's not included in the file header row
+ *  @throws DomainException if file empty (so missing a header row) or contains
+ *                          duplicate header names
+ *  @throws DomainException if header contains columns that aren't included in
+ *                          `cols` and `allowExtraCols` is 'No'
  */
-class ColumnFile(path: Path, val sep: Char, cols: Column*)
+class ColumnFile(path: Path, val sep: Char, allowExtraCols: AllowExtraCols,
+    cols: Column*)
     extends ThrowsDomainException {
   if (cols.isEmpty) domainError("must specify at least one column")
 
-  def this(path: Path, cols: Column*) = this(path, DefaultSeparator, cols: _*)
+  def this(path: Path, cols: Column*) =
+    this(path, DefaultSeparator, AllowExtraCols.No, cols: _*)
+  def this(path: Path, allowUnknownCols: AllowExtraCols, cols: Column*) =
+    this(path, DefaultSeparator, allowUnknownCols, cols: _*)
 
   /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
@@ -106,6 +123,7 @@ class ColumnFile(path: Path, val sep: Char, cols: Column*)
       if (!colsFound.add(s)) fileError(s"duplicate header '$s'")
       colsIn.remove(s) match {
         case Some(c) => columnToPos(c.number) = pos
+        case _ if allowExtraCols eq AllowExtraCols.Yes =>
         case _ => fileError(s"unrecognized header '$s'")
       }
     }
@@ -169,6 +187,8 @@ class ColumnFile(path: Path, val sep: Char, cols: Column*)
 
 object ColumnFile {
   val DefaultSeparator: Char = '\t'
+
+  enum AllowExtraCols { case Yes, No }
 
   private val allColumns = mutable.HashMap.empty[String, Int]
   private val ColumnNotFound, NoMaxValue = -1

@@ -24,6 +24,11 @@ class ColumnFileTest extends FileTest {
       assert(create(cols.take(2), "col1\tcol2").numColumns == 2)
     }
 
+    "allow file with extra columns (this is not allowed by default)" in {
+      assert(create(AllowExtraCols.Yes, List(col1),
+        "col1\tcolX").numColumns == 1)
+    }
+
     "space delimited file" in {
       assert(create(' ', cols.take(2), "col1 col2").numColumns == 2)
     }
@@ -101,16 +106,17 @@ class ColumnFileTest extends FileTest {
     "failed read" in {
       val path = Files.createFile(testFile)
       Files.writeString(path, "col1\nA")
-      Using.resource(new TestColumnFile(path, '\t', col1)) { f =>
-        f.readFailure = true
-        fileError(f.nextRow(), "failed to read row: bad read")
+      Using.resource(new TestColumnFile(path, '\t', AllowExtraCols.No, col1)) {
+        f =>
+          f.readFailure = true
+          fileError(f.nextRow(), "failed to read row: bad read")
       }
     }
 
     "failed close" in {
       val path = Files.createFile(testFile)
       Files.writeString(path, "col1")
-      val f = new TestColumnFile(path, '\t', col1)
+      val f = new TestColumnFile(path, '\t', AllowExtraCols.No, col1)
       f.closeFailure = true
       domainError(f.nextRow(), s"failed to close: bad close")
     }
@@ -232,15 +238,27 @@ class ColumnFileTest extends FileTest {
       f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
-  private def create(sep: Char, cols: List[Column], lines: String*) = {
+  private def create(sep: Char, allowExtraCols: AllowExtraCols,
+      cols: List[Column], lines: String*) = {
     testColumnFile.foreach(_.close())
-    val f = new TestColumnFile(writeTestFile(lines: _*), sep, cols: _*)
+    val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols,
+      cols: _*)
     testColumnFile = Option(f)
     f
   }
 
+  private def create(allowExtraCols: AllowExtraCols, cols: List[Column],
+      lines: String*): ColumnFile = {
+    create(DefaultSeparator, allowExtraCols, cols, lines: _*)
+  }
+
+  private def create(
+      sep: Char, cols: List[Column], lines: String*): ColumnFile = {
+    create(sep, AllowExtraCols.No, cols, lines: _*)
+  }
+
   private def create(cols: List[Column], lines: String*): ColumnFile = {
-    create(DefaultSeparator, cols, lines: _*)
+    create(AllowExtraCols.No, cols, lines: _*)
   }
 
   private var testColumnFile = Option.empty[TestColumnFile]
@@ -281,8 +299,10 @@ object ColumnFileTest {
   val cols: List[Column] = (1 to 3).map(c => Column("col" + c)).toList
   val col1 :: col2 :: col3 :: Nil = cols: @unchecked()
 
-  private class TestColumnFile(path: Path, sep: Char, cols: Column*)
-      extends ColumnFile(path, sep, cols: _*) with AutoCloseable {
+  private class TestColumnFile(path: Path, sep: Char,
+      allowExtraCols: AllowExtraCols, cols: Column*)
+      extends ColumnFile(path, sep, allowExtraCols, cols: _*)
+      with AutoCloseable {
     // allow tests to force close or read to fail
     var closeFailure: Boolean = false
     var readFailure: Boolean = false
