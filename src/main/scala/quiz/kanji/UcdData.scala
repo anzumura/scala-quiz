@@ -89,8 +89,8 @@ object UcdData {
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
   case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
-                 morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
-                 linkType: LinkType, meaning: String, reading: String) {
+      morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
+      linkType: LinkType, meaning: String, reading: String) {
     def jSource: String = source.jSource
     def joyo: Boolean = source.isJoyo
     def jinmei: Boolean = source.isJinmei
