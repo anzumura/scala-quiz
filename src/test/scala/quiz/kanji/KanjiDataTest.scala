@@ -88,9 +88,9 @@ class KanjiDataTest extends FileTest {
     assert(k.meaning == "sub-")
     assert(k.reading == "ア")
     // the following values are defaults populated by TestKanjiData class
-    assert(k.level == Level.None)
-    assert(k.kyu == Kyu.None)
-    assert(k.frequency == 0)
+    assert(k.level == testLevel)
+    assert(k.kyu == testKyu)
+    assert(k.frequency == testFrequency)
     // check year and grade on different Kanji
     assert(result(2).year == 2010)
     assert(result(3).grade == Grade.G4)
@@ -123,13 +123,32 @@ class KanjiDataTest extends FileTest {
     assert(k.reading == "チュウ、うし")
     assert(k.reason == JinmeiReason.Names)
     // the following values are defaults populated by TestKanjiData class
-    assert(k.level == Level.None)
-    assert(k.kyu == Kyu.None)
-    assert(k.frequency == 0)
+    assert(k.level == testLevel)
+    assert(k.kyu == testKyu)
+    assert(k.frequency == testFrequency)
     // check year, oldNames and reason on different Kanji
     assert(result(4).year == 2004)
     assert(result(4).reason == JinmeiReason.Print)
     assert(result(7).oldNames == List("亙"))
+  }
+
+  "load extra Kanji" in {
+    Files.writeString(tempDir.resolve("extra.txt"),
+      """Number	Name	Radical	Strokes	Meaning	Reading
+        |1	埃	土	10	dust	アイ、ほこり、ちり
+        |""".stripMargin)
+    val data = new TestKanjiData(tempDir)
+    val result = data.getType(KanjiType.Extra)
+    assert(result.size == 1)
+    val k = result(0)
+    assert(k.number == 1)
+    assert(k.name == "埃")
+    assert(k.radical == testRadical)
+    assert(k.strokes == 10)
+    assert(k.meaning == "dust")
+    assert(k.reading == "アイ、ほこり、ちり")
+    // the following values are defaults populated by TestKanjiData class
+    assert(k.kyu == testKyu)
   }
 }
 
@@ -148,10 +167,13 @@ object KanjiDataTest {
   private val testUcdData = new UcdData(Path.of(""), testRadicalData) {
     override def find(s: String): Option[Ucd] = Option(testUcd)
   }
-
+  // test KanjiData
+  private val testLevel = Level.N2
+  private val testKyu = Kyu.KJ1
+  private val testFrequency = 1234
   private class TestKanjiData(path: Path) extends KanjiData(path, testRadicalData, testUcdData) {
-    override def level(s: String): Level = Level.None
-    override def kyu(s: String): Kyu = Kyu.None
-    override def frequency(s: String): Int = 0
+    override def level(s: String): Level = testLevel
+    override def kyu(s: String): Kyu = testKyu
+    override def frequency(s: String): Int = testFrequency
   }
 }

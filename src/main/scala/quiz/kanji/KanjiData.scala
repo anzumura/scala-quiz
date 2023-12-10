@@ -27,6 +27,7 @@ extends ThrowsDomainException {
   private def loadType(t: KanjiType) = t match {
     case KanjiType.Jouyou => loadJouyou()
     case KanjiType.Jinmei => loadJinmei()
+    case KanjiType.Extra => loadExtra()
     case _ => Vector[Kanji]() // load remaining types
   }
 
@@ -35,7 +36,6 @@ extends ThrowsDomainException {
     val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, strokesCol, gradeCol, meaningCol, readingCol)
     f.processRows(mutable.Buffer[Kanji]()) { result =>
-      // add validation
       val name = f.get(nameCol)
       val grade = f.get(gradeCol)
       val oldNames = f.get(oldNamesCol)
@@ -52,7 +52,6 @@ extends ThrowsDomainException {
     val f = ColumnFile(textFile(path, "jinmei"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, reasonCol, readingCol)
     f.processRows(mutable.Buffer[Kanji]()) { result =>
-      // add validation
       val name = f.get(nameCol)
       val ucd = getUcd(name)
       val oldNames = f.get(oldNamesCol)
@@ -61,6 +60,16 @@ extends ThrowsDomainException {
         f.getUInt(numberCol), level(name), frequency(name), f.getUIntDefault(yearCol, 0),
         if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
         JinmeiReason.valueOf(f.get(reasonCol)))
+    }.toVector
+  }
+
+  private def loadExtra() = {
+    val f = ColumnFile(
+      textFile(path, "extra"), numberCol, nameCol, radicalCol, strokesCol, meaningCol, readingCol)
+    f.processRows(mutable.Buffer[Kanji]()) { result =>
+      val name = f.get(nameCol)
+      result += ExtraKanji(name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol),
+        f.get(meaningCol), f.get(readingCol), kyu(name), f.getUInt(numberCol))
     }.toVector
   }
 
