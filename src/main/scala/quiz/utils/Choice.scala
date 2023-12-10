@@ -125,8 +125,20 @@ extends ThrowsDomainException {
 }
 
 object Choice {
+  val DefaultQuitDescription = "quit"
+
+  def apply(): Choice = new Choice
+  def apply(q: Char, d: String = DefaultQuitDescription): Choice = new Choice(Option(q), d)
+  // used by test code
+  def apply(is: InputStream, os: PrintStream): Choice = new Choice(is = is, os = os)
+
   type Choices = Map[Char, String]
   def Choices(xs: (Char, String)*): Choices = Map(xs: _*)
+
+  enum UseQuit {
+    case Yes, No
+  }
+  given Conversion[UseQuit, Boolean] = (x: UseQuit) => x eq UseQuit.Yes
 
   /** inclusive range of choices with empty descriptions that can be used in `Choice.get` methods
    *  . For example:
@@ -161,20 +173,8 @@ object Choice {
     }
   }
 
-  // implicit conversion to allow calling 'Choice.get' methods  with 'Range' instead of 'Choices'
-  implicit def toChoices(r: Range): Choices = Choices((r.start to r.end).map(c => (c, "")): _*)
-
-  val DefaultQuitDescription = "quit"
-
-  enum UseQuit {
-    case Yes, No
-  }
-  given Conversion[UseQuit, Boolean] = (x: UseQuit) => x eq UseQuit.Yes
-
-  def apply(): Choice = new Choice
-  def apply(q: Char, d: String = DefaultQuitDescription): Choice = new Choice(Option(q), d)
-  // used by test code
-  def apply(is: InputStream, os: PrintStream): Choice = new Choice(is = is, os = os)
+  // implicit conversion to allow calling 'Choice.get' with 'Range' instead of 'Choices'
+  given Conversion[Range, Choices] = (r: Range) => Choices((r.start to r.end).map(c => (c, "")): _*)
 
   private def checkChoice(c: Char, msg: String): Unit = {
     if (c < ' ' || c > '~') throw DomainException(s"$msg is invalid: '0x${c.toInt.toHexString}'")

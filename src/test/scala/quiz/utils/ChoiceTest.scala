@@ -3,6 +3,7 @@ package quiz.utils
 import quiz.utils.Choice.*
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
+import scala.language.implicitConversions
 
 trait BaseChoiceTest extends BaseTest {
   protected def create(input: String = ""): (Choice, ByteArrayOutputStream) = {
