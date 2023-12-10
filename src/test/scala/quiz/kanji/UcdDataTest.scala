@@ -1,7 +1,8 @@
 package quiz.kanji
 
-import quiz.kanji.UcdData.UcdFileName
+import quiz.kanji.UcdData.{LinkType, UcdFileName}
 import quiz.utils.FileTest
+import quiz.utils.UnicodeUtils.Code
 
 import java.nio.file.Files
 
@@ -37,6 +38,22 @@ class UcdDataTest extends FileTest {
     data.find("猫").map { ucd =>
       assert(ucd.code.value == 0x732b)
       assert(ucd.strokes == 11)
+    }.orElse(fail("find failed"))
+  }
+
+  "rows with links" in {
+    // sample Jinmei Kanji (9059) and another Kanji (48A3) that links back to it
+    val data = create("9059\t162\t14\t\t\t\t\t\t\tY\t9065\tJinmei\t\t",
+      "48A3\t162\t14\t\t\t\t\t\t\t\t9059\tDefinition*\t\t")
+    data.find("遙").map { ucd =>
+      assert(ucd.links == List(Code(0x9065)))
+      assert(ucd.linkType == LinkType.Jinmei)
+      assert(ucd.jinmei)
+    }.orElse(fail("find failed"))
+    data.find("䢣").map { ucd =>
+      assert(ucd.links == List(Code(0x9059)))
+      assert(ucd.linkType == LinkType.Definition_R)
+      assert(!ucd.jinmei)
     }.orElse(fail("find failed"))
   }
 
