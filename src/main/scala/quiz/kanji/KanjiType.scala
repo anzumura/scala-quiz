@@ -24,15 +24,16 @@ enum KanjiType {
  *  @param obj the `enum` object instance, i.e., "Grade", "Level", etc.
  */
 trait NoneEnum[T <: NoneEnum[T]](obj: NoneEnumObject[T]) {
-  /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
-  val enumName: String = obj.enumName
-
   /** returns true if this enum value is not the "None" value */
   lazy val isDefined: Boolean = toString != "None" // maybe there's a nicer way
+  /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
+  val enumName: String = obj.enumName
 }
 
 /** base class for companion object of `enum` with a "None" value */
 trait NoneEnumObject[T <: NoneEnum[T]] {
+  /** array of all values except the "None" value */
+  lazy val defined: Array[T] = values.filter(_.isDefined)
   /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
   val enumName: String = getClass.getSimpleName.dropRight(1)
 
@@ -41,9 +42,6 @@ trait NoneEnumObject[T <: NoneEnum[T]] {
 
   /** returns true if `v` is not the "None" value */
   def isDefined(v: T): Boolean = v.isDefined
-
-  /** array of all values except the "None" value */
-  lazy val defined: Array[T] = values.filter(_.isDefined)
 }
 
 /** represents the official school grade for all Jouyou Kanji */

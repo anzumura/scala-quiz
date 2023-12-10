@@ -1,13 +1,12 @@
 package quiz.kanji
 
 import quiz.kanji.MorohashiId.IndexType
+import quiz.kanji.MorohashiId.IndexType.*
 import quiz.utils.ThrowsDomainException
 
 import scala.util.{Success, Try}
 
 case class MorohashiId private (index: Int, indexType: IndexType) {
-  import IndexType.*
-
   override def toString: String = (indexType match {
     case Plain => "%05d"
     case Prime => "%05dP"
@@ -20,19 +19,6 @@ object MorohashiId extends ThrowsDomainException {
   val MaxIndex: Int = 99999
   val MaxSupplementalIndex: Int = 999
 
-  enum IndexType {
-    case Plain, Prime, DoublePrime, Supplemental
-  }
-  import IndexType.*
-
-  def apply(index: Int, indexType: IndexType = Plain): MorohashiId = {
-    if (index < 0) domainError("negative index")
-    (if (indexType == Supplemental) MaxSupplementalIndex else MaxIndex) match {
-      case x if index > x => domainError(s"$indexType index $index exceeds $x")
-      case _ => new MorohashiId(index, indexType)
-    }
-  }
-
   def apply(id: String): MorohashiId = {
     if (id.isEmpty) domainError("empty index")
     val (index, indexType) =
@@ -44,5 +30,17 @@ object MorohashiId extends ThrowsDomainException {
       case Success(x) => apply(x, indexType)
       case _ => domainError(s"invalid format '$id'")
     }
+  }
+
+  def apply(index: Int, indexType: IndexType = Plain): MorohashiId = {
+    if (index < 0) domainError("negative index")
+    (if (indexType == Supplemental) MaxSupplementalIndex else MaxIndex) match {
+      case x if index > x => domainError(s"$indexType index $index exceeds $x")
+      case _ => new MorohashiId(index, indexType)
+    }
+  }
+
+  enum IndexType {
+    case Plain, Prime, DoublePrime, Supplemental
   }
 }
