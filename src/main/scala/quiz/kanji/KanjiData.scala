@@ -10,7 +10,8 @@ import java.nio.file.Path
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-class KanjiData protected (path: Path, radicalData: RadicalData) extends ThrowsDomainException {
+class KanjiData protected (path: Path, radicalData: RadicalData, ucdData: UcdData)
+extends ThrowsDomainException {
   /** JLPT level of `s` or "None" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.None)
 
@@ -21,13 +22,12 @@ class KanjiData protected (path: Path, radicalData: RadicalData) extends ThrowsD
   def frequency(s: String): Int = frequencies.getOrElse(s, 0)
 
   /** get all Kanji for type `t` */
-  def getType(t: KanjiType): Vector[Kanji] = types.getOrElse(t, Vector.empty[Kanji])
+  def getType(t: KanjiType): Vector[Kanji] = types.getOrElseUpdate(t, loadType(t))
 
-  private def loadKanji(): mutable.Map[KanjiType, Vector[Kanji]] = {
-    val t = mutable.Map[KanjiType, Vector[Kanji]]()
-    t += KanjiType.Jouyou -> loadJouyou()
-    // load remaining types
-    t
+  private def loadType(t: KanjiType) = t match {
+    case KanjiType.Jouyou => loadJouyou()
+    case KanjiType.Jinmei => loadJinmei()
+    case _ => Vector[Kanji]() // load remaining types
   }
 
   private def loadJouyou() = {
@@ -41,7 +41,7 @@ class KanjiData protected (path: Path, radicalData: RadicalData) extends ThrowsD
       val oldNames = f.get(oldNamesCol)
       result += JouyouKanji(
         name,
-        radical(f.get(radicalCol)),
+        getRadical(f.get(radicalCol)),
         f.getUInt(strokesCol),
         f.get(meaningCol),
         f.get(readingCol),
@@ -56,23 +56,54 @@ class KanjiData protected (path: Path, radicalData: RadicalData) extends ThrowsD
     }.toVector
   }
 
+  private def loadJinmei() = {
+    val reasonCol = Column("Reason")
+    val f = ColumnFile(textFile(path, "jinmei"), numberCol, nameCol, radicalCol, oldNamesCol,
+      yearCol, reasonCol, readingCol)
+    f.processRows(mutable.Buffer[Kanji]()) { result =>
+      // add validation
+      val name = f.get(nameCol)
+      val ucd = getUcd(name)
+      val oldNames = f.get(oldNamesCol)
+      result += JinmeiKanji(
+        name,
+        getRadical(f.get(radicalCol)),
+        ucd.strokes,
+        ucd.meaning,
+        f.get(readingCol),
+        kyu(name),
+        f.getUInt(numberCol),
+        level(name),
+        frequency(name),
+        f.getUIntDefault(yearCol, 0),
+        if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
+        JinmeiReason.valueOf(f.get(reasonCol))
+      )
+    }.toVector
+  }
+
   private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
     e.defined.map(EnumListFile(path.resolve(e.enumName), _))
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
   }
 
-  private def radical(s: String) = radicalData.findByName(s)
+  private def getUcd(s: String) = ucdData.find(s).getOrElse(error(s"couldn't find Ucd for '$s'"))
+  private def getRadical(s: String) = radicalData.findByName(s)
     .getOrElse(error(s"couldn't find Radical '$s'"))
 
   private lazy val levels = load(Level)
   private lazy val kyus = load(Kyu)
   private lazy val frequencies = KanjiListFile(textFile(path, "frequency")).indices
     .map { case (k, v) => (k, v + 1) }
-  private lazy val types = loadKanji()
+  private lazy val types = mutable.Map[KanjiType, Vector[Kanji]]()
 }
 
 object KanjiData {
-  def apply(dir: Path): KanjiData = new KanjiData(dir, RadicalData(dir))
+  def apply(dir: Path): KanjiData = {
+    val radicalData = RadicalData(dir)
+    new KanjiData(dir, radicalData, UcdData(dir, radicalData))
+  }
+
   /** returns a path to a "data" directory if a suitable directory can be found in current
    *  working directory or any of it's parent directories
    *  @throws DomainException if a suitable directory isn't found
