@@ -131,11 +131,14 @@ extends ThrowsDomainException {
     val lines = source.getLines()
     if (!lines.hasNext) fileError("missing header row")
     val colsFound = mutable.Set.empty[String]
+    var includedColumnPos = 0
     lines.next().split(sep).zipWithIndex.foreach { case (s, pos) =>
       if (!colsFound.add(s)) fileError(s"duplicate header '$s'")
       colsIn.remove(s) match {
-        case Some(c) => columnToPos(c.number) = pos
-        case _ if allowExtraCols eq AllowExtraCols.Yes =>
+        case Some(c) =>
+          columnToPos(c.number) = includedColumnPos
+          includedColumnPos += 1
+        case _ if allowExtraCols eq AllowExtraCols.Yes => skipColumnPos.add(pos)
         case _ => fileError(s"unrecognized header '$s'")
       }
     }
@@ -153,7 +156,9 @@ extends ThrowsDomainException {
   }
 
   private def processNextRow(): Unit = Try {
-    val vals = readRow().split(splitRegex, -1)
+    val vals = readRow().split(splitRegex, -1).zipWithIndex.collect {
+      case (s, i) if !skipColumnPos(i) => s
+    }
     _currentRow += 1
     vals.length match {
       case l if l < numColumns => fileError("not enough columns")
@@ -175,6 +180,7 @@ extends ThrowsDomainException {
 
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)
+  private val skipColumnPos = mutable.Set[Int]()
   private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)
   private val splitRegex = sep.toString // needed for regex split function
   private var _currentRow = 0

@@ -155,6 +155,12 @@ class ColumnFileTest extends FileTest {
       assert(f.getOption(col1).isEmpty)
     }
 
+    "get value from file with extra columns" in {
+      val f = create(AllowExtraCols.Yes, List(col1), "col1\tcolX", "A\tB")
+      assert(f.nextRow())
+      assert(f.get(col1) == "A")
+    }
+
     "values after nextRow returns false" in {
       val f = create(cols.take(2), "col1\tcol2", "A\tB")
       Seq(true, false).foreach { rowRetrieved =>
