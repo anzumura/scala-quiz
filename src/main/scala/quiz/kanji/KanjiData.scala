@@ -1,9 +1,9 @@
 package quiz.kanji
 
 import quiz.kanji.KanjiData.*
+import quiz.utils.*
 import quiz.utils.ColumnFile.Column
 import quiz.utils.FileUtils.*
-import quiz.utils.*
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.Path
