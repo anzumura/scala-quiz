@@ -49,6 +49,21 @@ extends ThrowsDomainException {
     hasNext
   }
 
+  /** similar to `foldLeft`, but catches exceptions from `op` and properly closes the file before
+   *  rethrowing a DomainException that includes the file name and line number. Note, `op` simply
+   *  builds up results starting from the initial value `z` (no extra value is passed in per row)
+   */
+  def processRows[T](z: T)(op: T => T): T = {
+    var v = z
+    Try(while (nextRow()) v = op(v)).failed.foreach { e =>
+      close()
+      // don't add file name, column, etc. if exception already came from this class
+      if (e.getMessage.startsWith("[" + getClass.getSimpleName)) throw e
+      else fileError(e.getMessage)
+    }
+    v
+  }
+
   def close(): Unit = Try {
     closeFile()
     _closed = true

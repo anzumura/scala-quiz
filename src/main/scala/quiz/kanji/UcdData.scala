@@ -48,8 +48,7 @@ class UcdData(dir: Path) extends ThrowsDomainException {
       meaningCol,
       japaneseCol
     )
-    val result = mutable.Buffer[Ucd]()
-    Try(while (f.nextRow()) result += Ucd(
+    f.processRows(mutable.Buffer[Ucd]())(_ += Ucd(
         Code.fromHex(f.get(codeCol)),
         f.get(radicalCol),
         f.getUInt(strokesCol),
@@ -62,11 +61,7 @@ class UcdData(dir: Path) extends ThrowsDomainException {
           .getOrElse(LinkType.None),
         f.get(meaningCol),
         f.get(japaneseCol)
-      )).failed.foreach { e =>
-      f.close()
-      domainError(s"${e.getMessage} - file: $UcdFileName, line: ${f.currentRow}")
-    }
-    result.map(x => x.code.toUTF16 -> x).toMap
+      )).map(x => x.code.toUTF16 -> x).toMap
   }
 
   private def nelsonIds(s: String) = Try(s.split(",").map(Integer.parseInt)) match {

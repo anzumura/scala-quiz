@@ -58,6 +58,30 @@ class ColumnFileTest extends FileTest {
     }
   }
 
+  "processRows" - {
+    "returns initial value if file has no data" in {
+      val expected = "some value"
+      assert(create(cols.take(1), "col1").processRows(expected)(_ + "x") == expected)
+    }
+
+    "op is called for each row" in {
+      val f = create(cols.take(1), "col1", "A", "B", "C")
+      assert(f.processRows(List[String]())(f.get(col1) :: _) == List("C", "B", "A"))
+    }
+
+    "exception from op is wrapped in a DomainException including the file name and line" in {
+      val f = create(cols.take(1), "col1", "x", "y", "z")
+      fileError(f.processRows(0)(if (f.currentRow != 3) _ else throw new Exception("some error")),
+        "some error", 3)
+    }
+
+    "exception from same instance doesn't repeat file name, line number, etc." in {
+      val f = create(cols.take(1), "col1", "2", "B", "7")
+      fileError(
+        f.processRows(List[Int]())(f.getUInt(col1) :: _), "convert to UInt failed", 2, col1, "B")
+    }
+  }
+
   "nextRow" - {
     "called after returning false" in {
       val f = create(List(col1), "col1")
