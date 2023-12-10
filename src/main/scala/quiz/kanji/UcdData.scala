@@ -42,7 +42,7 @@ class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException
         f.get(pinyinCol),
         f.getOption(morohashiIdCol).map(MorohashiId(_)),
         nelsonIds(f.get(nelsonIdsCol)),
-        Source(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
+        Sources(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
         links(f.get(linkCodesCol)),
         f.getOption(linkTypeCol).map(x => LinkType.valueOf(x.replace("*", "_R")))
           .getOrElse(LinkType.None),
@@ -90,7 +90,7 @@ object UcdData {
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
   case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
-      morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
+      morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Sources, links: List[Code],
       linkType: LinkType, meaning: String, reading: String) {
     def jSource: String = source.jSource
     def joyo: Boolean = source.isJoyo
@@ -130,8 +130,8 @@ object UcdData {
    *  <li>V: Vietnam
    *  </ul>
    */
-  class Source private (val jSource: String, sources: String, joyo: Boolean, jinmei: Boolean) {
-    import Source.Bits.*
+  class Sources(val jSource: String, sources: String, joyo: Boolean, jinmei: Boolean) {
+    import Sources.Bits.*
     /** returns a string containing source country letters (can be empty) */
     override def toString: String = sourceString(bits)
 
@@ -144,10 +144,7 @@ object UcdData {
     private val bits = bitSet(sources, joyo, jinmei)
   }
 
-  private object Source {
-    def apply(jSource: String, source: String, joyo: Boolean, jinmei: Boolean): Source =
-      new Source(jSource, source, joyo, jinmei)
-
+  object Sources {
     private enum Bits {
       case G, H, J, K, T, V, Joyo, Jinmei
     }
