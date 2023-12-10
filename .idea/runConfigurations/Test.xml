@@ -23,6 +23,7 @@
         <option value="quiz.kanji.KanjiDataTest" />
         <option value="quiz.kanji.KanjiTypeTest" />
         <option value="quiz.kanji.MorohashiIdTest" />
+        <option value="quiz.kanji.RadicalDataTest" />
       </list>
     </option>
     <option name="shortenClasspath" value="NONE" />
