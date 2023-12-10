@@ -1,5 +1,6 @@
 package quiz.kanji
 
+import quiz.kanji.RadicalData.Radical
 import quiz.kanji.UcdData.*
 import quiz.utils.ColumnFile.AllowExtraCols.Yes
 import quiz.utils.ColumnFile.{AllowExtraCols, Column}
@@ -11,7 +12,7 @@ import scala.collection.immutable.BitSet
 import scala.collection.mutable
 import scala.util.{Success, Try}
 
-class UcdData(dir: Path) extends ThrowsDomainException {
+class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException {
   def find(s: String): Option[Ucd] = data.get(s)
   inline def size: Int = data.size
 
@@ -36,7 +37,7 @@ class UcdData(dir: Path) extends ThrowsDomainException {
     )
     f.processRows(mutable.Buffer[Ucd]())(_ += Ucd(
         Code.fromHex(f.get(codeCol)),
-        f.get(radicalCol),
+        radicalData.findByNumber(f.getUInt(radicalCol)),
         f.getUInt(strokesCol),
         f.get(pinyinCol),
         f.getOption(morohashiIdCol).map(MorohashiId(_)),
@@ -88,7 +89,7 @@ object UcdData {
    *  @param meaning meaning of the character in English
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
-  case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
+  case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
       morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
       linkType: LinkType, meaning: String, reading: String) {
     def jSource: String = source.jSource

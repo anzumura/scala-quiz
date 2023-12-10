@@ -1,5 +1,6 @@
 package quiz.kanji
 
+import quiz.kanji.RadicalData.Radical
 import quiz.utils.BaseTest
 
 import scala.language.implicitConversions
@@ -220,7 +221,7 @@ class KanjiTest extends BaseTest {
 object KanjiTest {
   // sample Kanji fields
   private val name = "海"
-  private val radical = "水"
+  private val radical = Radical(85, "水", List("氵", "氺"), "水部（すいぶ）", "みず さんずい したみず")
   private val strokes = 9
   private val meaning = "sea"
   private val reading = "カイ、うみ"

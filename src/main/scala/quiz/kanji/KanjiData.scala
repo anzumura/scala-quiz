@@ -10,7 +10,7 @@ import java.nio.file.Path
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-class KanjiData(val path: Path) extends ThrowsDomainException {
+class KanjiData protected (path: Path, radicalData: RadicalData) extends ThrowsDomainException {
   /** JLPT level of `s` or "None" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.None)
 
@@ -41,7 +41,7 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
       val oldNames = f.get(oldNamesCol)
       result += JouyouKanji(
         name,
-        f.get(radicalCol),
+        radical(f.get(radicalCol)),
         f.getUInt(strokesCol),
         f.get(meaningCol),
         f.get(readingCol),
@@ -61,6 +61,9 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
   }
 
+  private def radical(s: String) = radicalData.findByName(s)
+    .getOrElse(error(s"couldn't find Radical '$s'"))
+
   private lazy val levels = load(Level)
   private lazy val kyus = load(Kyu)
   private lazy val frequencies = KanjiListFile(textFile(path, "frequency")).indices
@@ -69,6 +72,7 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
 }
 
 object KanjiData {
+  def apply(dir: Path): KanjiData = new KanjiData(dir, RadicalData(dir))
   /** returns a path to a "data" directory if a suitable directory can be found in current
    *  working directory or any of it's parent directories
    *  @throws DomainException if a suitable directory isn't found

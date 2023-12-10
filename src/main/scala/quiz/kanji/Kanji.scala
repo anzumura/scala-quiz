@@ -1,11 +1,12 @@
 package quiz.kanji
 
 import quiz.kanji.Kanji.*
+import quiz.kanji.RadicalData.Radical
 import quiz.utils.DomainException
 
 import scala.language.implicitConversions
 
-sealed abstract class Kanji(val name: String, val radical: String, val strokes: Int) {
+sealed abstract class Kanji(val name: String, val radical: Radical, val strokes: Int) {
   // abstract methods
   def kanjiType: KanjiType
   def meaning: String
@@ -34,7 +35,7 @@ object Kanji {
    *  Some of these Kanji are in the top 2,501 frequency list and almost all of them are in Kentei
    *  KJ1 or K1. However, none of them have a JLPT level.
    */
-  sealed abstract class Linked(name: String, radical: String, strokes: Int, l: Kanji,
+  sealed abstract class Linked(name: String, radical: Radical, strokes: Int, l: Kanji,
       override val frequency: Int, override val kyu: Kyu)
   extends Kanji(name, radical, strokes) {
     override val link: Option[Kanji] = Option(l)
@@ -45,19 +46,19 @@ object Kanji {
   }
 
   /** contains 'meaning' and 'reading' fields loaded from files */
-  sealed abstract class Loaded(name: String, radical: String, strokes: Int,
+  sealed abstract class Loaded(name: String, radical: Radical, strokes: Int,
       override val meaning: String, override val reading: String)
   extends Kanji(name, radical, strokes) {}
 
   // abstract subclasses of Loaded
 
-  sealed abstract class Numbered(name: String, radical: String, strokes: Int, meaning: String,
+  sealed abstract class Numbered(name: String, radical: Radical, strokes: Int, meaning: String,
       reading: String, override val kyu: Kyu, override val number: Int)
   extends Loaded(name, radical, strokes, meaning, reading) {
     if (number <= 0) error("number must be greater than zero")
   }
 
-  sealed abstract class Other(name: String, radical: String, strokes: Int, meaning: String,
+  sealed abstract class Other(name: String, radical: Radical, strokes: Int, meaning: String,
       reading: String, oldLinks: OldLinks, linkNames: List[String],
       override val linkedReadings: LinkedReadings)
   extends Loaded(name, radical, strokes, meaning, reading) {
@@ -67,14 +68,14 @@ object Kanji {
 
   // abstract subclasses of Numbered
 
-  sealed abstract class Official(name: String, radical: String, strokes: Int, meaning: String,
+  sealed abstract class Official(name: String, radical: Radical, strokes: Int, meaning: String,
       reading: String, kyu: Kyu, number: Int, override val level: Level,
       override val frequency: Int, override val year: Int)
   extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {}
 
   // abstract subclasses of Other
 
-  sealed abstract class Standard(name: String, radical: String, strokes: Int, meaning: String,
+  sealed abstract class Standard(name: String, radical: Radical, strokes: Int, meaning: String,
       reading: String, oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
       override val kyu: Kyu)
   extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings) {}
@@ -82,7 +83,7 @@ object Kanji {
 
 // concrete subclasses of Kanji.Numbered
 
-final class ExtraKanji(name: String, radical: String, strokes: Int, meaning: String,
+final class ExtraKanji(name: String, radical: Radical, strokes: Int, meaning: String,
     reading: String, kyu: Kyu, number: Int, override val newName: Option[String] = None)
 extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {
   override def kanjiType: KanjiType = KanjiType.Extra
@@ -90,7 +91,7 @@ extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {
 
 // concrete subclasses of Kanji.Official
 
-final class JinmeiKanji(name: String, radical: String, strokes: Int, meaning: String,
+final class JinmeiKanji(name: String, radical: Radical, strokes: Int, meaning: String,
     reading: String, kyu: Kyu, number: Int, level: Level, frequency: Int, year: Int,
     override val oldNames: List[String], override val reason: JinmeiReason)
 extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency, year) {
@@ -101,7 +102,7 @@ extends Official(name, radical, strokes, meaning, reading, kyu, number, level, f
   override def kanjiType: KanjiType = KanjiType.Jinmei
 }
 
-final class JouyouKanji(name: String, radical: String, strokes: Int, meaning: String,
+final class JouyouKanji(name: String, radical: Radical, strokes: Int, meaning: String,
     reading: String, kyu: Kyu, number: Int, level: Level, frequency: Int, year: Int,
     override val oldNames: List[String], override val grade: Grade)
 extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency, year) {
@@ -111,7 +112,7 @@ extends Official(name, radical, strokes, meaning, reading, kyu, number, level, f
 
 // concrete subclass of Kanji.Other
 
-final class UcdKanji(name: String, radical: String, strokes: Int, meaning: String, reading: String,
+final class UcdKanji(name: String, radical: Radical, strokes: Int, meaning: String, reading: String,
     oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings)
 extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings) {
   override def kanjiType: KanjiType = KanjiType.Ucd
@@ -119,7 +120,7 @@ extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, lin
 
 // concrete subclasses of Kanji.Standard
 
-final class FrequencyKanji(name: String, radical: String, strokes: Int, meaning: String,
+final class FrequencyKanji(name: String, radical: Radical, strokes: Int, meaning: String,
     reading: String, oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
     kyu: Kyu, override val frequency: Int)
 extends Standard(
@@ -128,7 +129,7 @@ extends Standard(
   override def kanjiType: KanjiType = KanjiType.Frequency
 }
 
-final class KenteiKanji(name: String, radical: String, strokes: Int, meaning: String,
+final class KenteiKanji(name: String, radical: Radical, strokes: Int, meaning: String,
     reading: String, oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings,
     kyu: Kyu)
 extends Standard(
@@ -147,7 +148,7 @@ extends Standard(
  *  <li>18 are alternate forms of standard JinmeiKanji
  *  </ul>
  */
-final class LinkedJinmeiKanji(name: String, radical: String, strokes: Int, link: Kanji,
+final class LinkedJinmeiKanji(name: String, radical: Radical, strokes: Int, link: Kanji,
     frequency: Int, kyu: Kyu)
 extends Linked(name, radical, strokes, link, frequency, kyu) {
   if (!link.isInstanceOf[Official]) error("link must be JouyouKanji or JinmeiKanji")
@@ -157,8 +158,8 @@ extends Linked(name, radical, strokes, link, frequency, kyu) {
 /** 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants that aren't
  *  already included in the 230 Jinmeiyō 'official variants'.
  */
-final class LinkedOldKanji(name: String, radical: String, strokes: Int, link: Kanji, frequency: Int,
-    kyu: Kyu)
+final class LinkedOldKanji(name: String, radical: Radical, strokes: Int, link: Kanji,
+    frequency: Int, kyu: Kyu)
 extends Linked(name, radical, strokes, link, frequency, kyu) {
   if (!link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")
   override def kanjiType: KanjiType = KanjiType.LinkedOld

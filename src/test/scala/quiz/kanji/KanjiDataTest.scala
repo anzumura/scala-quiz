@@ -1,5 +1,7 @@
 package quiz.kanji
 
+import quiz.kanji.KanjiDataTest.{TestKanjiData, testRadical}
+import quiz.kanji.RadicalData.Radical
 import quiz.utils.FileUtils.*
 import quiz.utils.{EnumListFile, FileTest}
 
@@ -77,7 +79,7 @@ class KanjiDataTest extends FileTest {
     val k = result(0)
     assert(k.number == 1)
     assert(k.name == "亜")
-    assert(k.radical == "二")
+    assert(k.radical == testRadical)
     assert(k.strokes == 7)
     assert(k.oldNames == List("亞"))
     assert(k.year == 0)
@@ -95,8 +97,15 @@ class KanjiDataTest extends FileTest {
   }
 }
 
-class TestKanjiData(path: Path) extends KanjiData(path) {
-  override def level(s: String): Level = Level.None
-  override def kyu(s: String): Kyu = Kyu.None
-  override def frequency(s: String): Int = 0
+object KanjiDataTest {
+  private val testRadical = Radical(1, "一", Nil, "", "")
+  private val testRadicalData = new RadicalData(Path.of("")) {
+    override def findByName(s: String): Option[Radical] = Option(testRadical)
+  }
+
+  private class TestKanjiData(path: Path) extends KanjiData(path, testRadicalData) {
+    override def level(s: String): Level = Level.None
+    override def kyu(s: String): Kyu = Kyu.None
+    override def frequency(s: String): Int = 0
+  }
 }

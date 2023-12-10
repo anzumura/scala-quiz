@@ -1,10 +1,12 @@
 package quiz.kanji
 
+import quiz.kanji.RadicalData.Radical
 import quiz.kanji.UcdData.{LinkType, UcdFileName}
+import quiz.kanji.UcdDataTest.*
 import quiz.utils.FileTest
 import quiz.utils.UnicodeUtils.Code
 
-import java.nio.file.Files
+import java.nio.file.{Files, Path}
 
 class UcdDataTest extends FileTest {
   "file with just a header doesn't load any data" in { assert(create().size == 0) }
@@ -13,7 +15,7 @@ class UcdDataTest extends FileTest {
     val data = create("72AC\t94\t4\tquǎn\t20234\t2868\tGHJKTV\tJ0-3824\tY\t\t\t\tdog\tケン いぬ")
     data.find("犬").map { ucd =>
       assert(ucd.code.value == 0x72ac)
-      assert(ucd.radical == "94")
+      assert(ucd.radical == testRadical)
       assert(ucd.strokes == 4)
       assert(ucd.pinyin == "quǎn")
       assert(ucd.morohashiId.contains(MorohashiId(20234)))
@@ -60,9 +62,15 @@ class UcdDataTest extends FileTest {
   private def create(lines: String*) = {
     Files.writeString(
       tempDir.resolve(UcdFileName), if (lines.isEmpty) header else header + lines.mkString("\n"))
-    UcdData(tempDir)
+    UcdData(tempDir, testRadicalData)
   }
+}
 
+object UcdDataTest {
+  private val testRadical = Radical(1, "一", Nil, "", "")
+  private val testRadicalData = new RadicalData(Path.of("")) {
+    override def findByNumber(i: Int): Radical = testRadical
+  }
   private val header =
     "Code\tRadical\tStrokes\tPinyin\tMorohashiId\tNelsonIds\tSources\tJSource\tJoyo\tJinmei\t" +
       "LinkCodes\tLinkType\tMeaning\tJapanese\n"
