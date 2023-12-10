@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.kanji.UcdData.{LinkType, Source, Ucd, UcdFileName}
+import quiz.kanji.UcdData.*
 import quiz.utils.ColumnFile.AllowExtraCols.Yes
 import quiz.utils.ColumnFile.{AllowExtraCols, Column}
 import quiz.utils.UnicodeUtils.Code
@@ -16,20 +16,6 @@ class UcdData(dir: Path) extends ThrowsDomainException {
   inline def size: Int = data.size
 
   private lazy val data = {
-    val codeCol = Column("Code")
-    val radicalCol = Column("Radical")
-    val strokesCol = Column("Strokes")
-    val pinyinCol = Column("Pinyin")
-    val morohashiIdCol = Column("MorohashiId")
-    val nelsonIdsCol = Column("NelsonIds")
-    val sourcesCol = Column("Sources")
-    val jSourceCol = Column("JSource")
-    val joyoCol = Column("Joyo")
-    val jinmeiCol = Column("Jinmei")
-    val linkCodesCol = Column("LinkCodes")
-    val linkTypeCol = Column("LinkType")
-    val meaningCol = Column("Meaning")
-    val japaneseCol = Column("Japanese")
     val f = ColumnFile(
       dir.resolve(UcdFileName),
       AllowExtraCols.Yes,
@@ -83,6 +69,33 @@ class UcdData(dir: Path) extends ThrowsDomainException {
 
 object UcdData {
   val UcdFileName = "ucd.txt"
+
+  /** data for an entry from the "ucd.txt" file. Some columns in the file aren't stored like
+   *  "Name" and "LinkNames" since these are represented by [[Code]] classes. Also ignore
+   *  "VStrokes" (and maybe modify the parse script to stop calculating it). "On" and "Kun"
+   *  columns used to be the only sources for Japanese (Rōmaji) readings, but the "kJapanese"
+   *  field was added in Unicode 15.1 that can be used instead (it's also populated with 'Kana')
+   *
+   *  @param code Unicode code point
+   *  @param radical official radical
+   *  @param strokes total stroke count (mostly accurate, but not 100% perfect)
+   *  @param pinyin 'hànyǔ pīnyīn' (漢語拼音) from 'kMandarin' XML property
+   *  @param morohashiId see [[MorohashiId]]
+   *  @param nelsonIds 'Classic Nelson' ids, see parse script for details
+   *  @param source see [[Source]]
+   *  @param links list of Unicode code points representing links
+   *  @param linkType see [[LinkType]]
+   *  @param meaning meaning of the character in English
+   *  @param reading Japanese readings in 'Kana' (仮名)
+   */
+  case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
+                 morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
+                 linkType: LinkType, meaning: String, reading: String) {
+    def jSource: String = source.jSource
+    def joyo: Boolean = source.isJoyo
+    def jinmei: Boolean = source.isJinmei
+  }
+
   /** represents the XML property from which the link was loaded. '_R' means the link was also
    *  used to pull in readings. '_R' come first in the enum to allow '<' comparison to find all
    *  reading links. Note, there is no non '_R' type for 'Semantic' links by design.
@@ -151,29 +164,18 @@ object UcdData {
     }
   }
 
-  /** data for an entry from the "ucd.txt" file. Some columns in the file aren't stored like
-   *  "Name" and "LinkNames" since these are represented by [[Code]] classes. Also ignore
-   *  "VStrokes" (and maybe modify the parse script to stop calculating it). "On" and "Kun"
-   *  columns used to be the only sources for Japanese (Rōmaji) readings, but the "kJapanese"
-   *  field was added in Unicode 15.1 that can be used instead (it's also populated with 'Kana')
-   *
-   *  @param code Unicode code point
-   *  @param radical official radical
-   *  @param strokes total stroke count (mostly accurate, but not 100% perfect)
-   *  @param pinyin 'hànyǔ pīnyīn' (漢語拼音) from 'kMandarin' XML property
-   *  @param morohashiId see [[MorohashiId]]
-   *  @param nelsonIds 'Classic Nelson' ids, see parse script for details
-   *  @param source see [[Source]]
-   *  @param links list of Unicode code points representing links
-   *  @param linkType see [[LinkType]]
-   *  @param meaning meaning of the character in English
-   *  @param reading Japanese readings in 'Kana' (仮名)
-   */
-  case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
-      morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
-      linkType: LinkType, meaning: String, reading: String) {
-    def jSource: String = source.jSource
-    def joyo: Boolean = source.isJoyo
-    def jinmei: Boolean = source.isJinmei
-  }
+  private val codeCol = Column("Code")
+  private val radicalCol = Column("Radical")
+  private val strokesCol = Column("Strokes")
+  private val pinyinCol = Column("Pinyin")
+  private val morohashiIdCol = Column("MorohashiId")
+  private val nelsonIdsCol = Column("NelsonIds")
+  private val sourcesCol = Column("Sources")
+  private val jSourceCol = Column("JSource")
+  private val joyoCol = Column("Joyo")
+  private val jinmeiCol = Column("Jinmei")
+  private val linkCodesCol = Column("LinkCodes")
+  private val linkTypeCol = Column("LinkType")
+  private val meaningCol = Column("Meaning")
+  private val japaneseCol = Column("Japanese")
 }

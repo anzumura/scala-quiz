@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.kanji.RadicalData.{MaxRadical, Radical, RadicalFileName}
+import quiz.kanji.RadicalData.*
 import quiz.utils.ColumnFile.Column
 import quiz.utils.{ColumnFile, ThrowsDomainException}
 
@@ -17,18 +17,18 @@ class RadicalData(dir: Path) extends ThrowsDomainException {
   protected def verifyDataSize(x: Int): Unit =
     if (x != MaxRadical) domainError(s"loaded $x, but expected " + s"$MaxRadical")
 
+  private def verifyRadicalNumber(x: Int): Unit = {
+    if (x == 0) error("Radical number can't be zero")
+    if (Option(radicals(x - 1)).nonEmpty) error(s"duplicate Radical number '$x'")
+  }
+
   private lazy val data = {
-    val numberCol = Column("Number")
-    val nameCol = Column("Name")
-    val longNameCol = Column("LongName")
-    val readingCol = Column("Reading")
     val f = ColumnFile(dir.resolve(RadicalFileName), numberCol, nameCol, longNameCol, readingCol)
     val d = f.processRows(Map.empty[String, Radical])(result =>
       f.get(nameCol).split(" ").toList match {
         case name :: altNames if name.nonEmpty =>
           val number = f.getUInt(numberCol, 214)
-          if (number == 0) error("Radical number can't be zero")
-          if (Option(radicals(number - 1)).nonEmpty) error(s"duplicate Radical number '$number'")
+          verifyRadicalNumber(number)
           val radical = Radical(number, name, altNames, f.get(longNameCol), f.get(readingCol))
           radicals(number - 1) = radical
           result + (name -> radical)
@@ -46,4 +46,9 @@ object RadicalData {
 
   case class Radical(number: Int, name: String, altNames: List[String], longName: String,
       reading: String)
+
+  private val numberCol = Column("Number")
+  private val nameCol = Column("Name")
+  private val longNameCol = Column("LongName")
+  private val readingCol = Column("Reading")
 }

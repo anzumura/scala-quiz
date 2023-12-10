@@ -1,8 +1,9 @@
 package quiz.kanji
 
-import quiz.utils.*
+import quiz.kanji.KanjiData.*
 import quiz.utils.ColumnFile.Column
 import quiz.utils.FileUtils.*
+import quiz.utils.*
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.Path
@@ -65,28 +66,9 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
   private lazy val frequencies = KanjiListFile(textFile(path, "frequency")).indices
     .map { case (k, v) => (k, v + 1) }
   private lazy val types = loadKanji()
-
-  // common columns used for loading Kanji from text files
-  private val numberCol = Column("Number")
-  private val nameCol = Column("Name")
-  private val radicalCol = Column("Radical")
-  private val strokesCol = Column("Strokes")
-  private val readingCol = Column("Reading")
-  private val meaningCol = Column("Meaning")
-  private val yearCol = Column("Year")
-  private val oldNamesCol = Column("OldNames")
 }
 
 object KanjiData {
-  private def hasDataFiles(dir: Path) = {
-    // make sure there are at least 5 ".txt" files
-    getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
-      val dirs = getDirectories(dir).map(fileName).toSet
-      // make sure dir contains "Level" and "Kyu" subdirectories
-      dirs(Level.enumName) && dirs(Kyu.enumName)
-    }
-  }
-
   /** returns a path to a "data" directory if a suitable directory can be found in current
    *  working directory or any of it's parent directories
    *  @throws DomainException if a suitable directory isn't found
@@ -101,4 +83,23 @@ object KanjiData {
       dataDir(path.getParent)
     }
   }
+
+  private def hasDataFiles(dir: Path) = {
+    // make sure there are at least 5 ".txt" files
+    getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
+      val dirs = getDirectories(dir).map(fileName).toSet
+      // make sure dir contains "Level" and "Kyu" subdirectories
+      dirs(Level.enumName) && dirs(Kyu.enumName)
+    }
+  }
+
+  // common columns used for loading Kanji from text files
+  private val numberCol = Column("Number")
+  private val nameCol = Column("Name")
+  private val radicalCol = Column("Radical")
+  private val strokesCol = Column("Strokes")
+  private val readingCol = Column("Reading")
+  private val meaningCol = Column("Meaning")
+  private val yearCol = Column("Year")
+  private val oldNamesCol = Column("OldNames")
 }
