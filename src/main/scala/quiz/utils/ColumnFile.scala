@@ -156,9 +156,8 @@ extends ThrowsDomainException {
   }
 
   private def processNextRow(): Unit = Try {
-    val vals = readRow().split(splitRegex, -1).zipWithIndex.collect {
-      case (s, i) if !skipColumnPos(i) => s
-    }
+    val vals = readRow().split(splitRegex, -1).zipWithIndex
+      .collect { case (s, i) if !skipColumnPos(i) => s }
     _currentRow += 1
     vals.length match {
       case l if l < numColumns => fileError("not enough columns")
