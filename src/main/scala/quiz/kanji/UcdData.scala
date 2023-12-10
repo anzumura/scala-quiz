@@ -53,7 +53,7 @@ class UcdData(dir: Path) extends ThrowsDomainException {
         f.get(radicalCol),
         f.getUInt(strokesCol),
         f.get(pinyinCol),
-        MorohashiId(f.get(morohashiIdCol)),
+        f.getOption(morohashiIdCol).map(MorohashiId(_)),
         nelsonIds(f.get(nelsonIdsCol)),
         Source(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
         links(f.get(linkCodesCol)),
@@ -64,9 +64,12 @@ class UcdData(dir: Path) extends ThrowsDomainException {
       )).map(x => x.code.toUTF16 -> x).toMap
   }
 
-  private def nelsonIds(s: String) = Try(s.split(",").map(Integer.parseInt)) match {
-    case Success(x) => x.toList
-    case _ => throw DomainException(s"invalid NelsonIds '$s'")
+  private def nelsonIds(s: String): List[Int] = {
+    if (s.isEmpty) Nil
+    else Try(s.split(",").map(Integer.parseInt)) match {
+      case Success(x) => x.toList
+      case _ => throw DomainException(s"invalid NelsonIds '$s'")
+    }
   }
 
   private def links(s: String): List[Code] = {
@@ -167,7 +170,7 @@ object UcdData {
    *  @param reading Japanese readings in 'Kana' (仮名)
    */
   case class Ucd(code: Code, radical: String, strokes: Int, pinyin: String,
-      morohashiId: MorohashiId, nelsonIds: List[Int], source: Source, links: List[Code],
+      morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Source, links: List[Code],
       linkType: LinkType, meaning: String, reading: String) {
     def jSource: String = source.jSource
     def joyo: Boolean = source.isJoyo

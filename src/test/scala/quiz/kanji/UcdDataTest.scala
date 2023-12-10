@@ -15,7 +15,7 @@ class UcdDataTest extends FileTest {
       assert(ucd.radical == "94")
       assert(ucd.strokes == 4)
       assert(ucd.pinyin == "quǎn")
-      assert(ucd.morohashiId == MorohashiId(20234))
+      assert(ucd.morohashiId.contains(MorohashiId(20234)))
       assert(ucd.nelsonIds == List(2868))
       assert(ucd.source.toString == "GHJKTV")
       assert(ucd.jSource == "J0-3824")
@@ -25,6 +25,18 @@ class UcdDataTest extends FileTest {
       assert(!ucd.linkType.isDefined)
       assert(ucd.meaning == "dog")
       assert(ucd.reading == "ケン いぬ")
+    }.orElse(fail("find failed"))
+  }
+
+  "file with two rows" in {
+    val data = create("72AC\t94\t4" + "\t".repeat(11), "732B\t94\t11" + "\t".repeat(11))
+    data.find("犬").map { ucd =>
+      assert(ucd.code.value == 0x72ac)
+      assert(ucd.strokes == 4)
+    }.orElse(fail("find failed"))
+    data.find("猫").map { ucd =>
+      assert(ucd.code.value == 0x732b)
+      assert(ucd.strokes == 11)
     }.orElse(fail("find failed"))
   }
 
