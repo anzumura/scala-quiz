@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.kanji.RadicalData.{Radical, RadicalFileName}
+import quiz.kanji.RadicalData.{MaxRadical, Radical, RadicalFileName}
 import quiz.utils.FileTest
 
 import java.nio.file.Files
@@ -32,7 +32,7 @@ class RadicalDataTest extends FileTest {
 
   "find by number out of range" in {
     val data = create(true, sampleRadicals)
-    Seq(-1, 0, 215).foreach(i =>
+    Seq(-1, 0, MaxRadical + 1).foreach(i =>
       error(data.findByNumber(i), s"invalid Radical number '$i' (must be between 1 and 214)"))
   }
 
