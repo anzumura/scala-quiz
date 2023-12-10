@@ -21,7 +21,7 @@ trait BaseTest extends AnyFreeSpec {
   /** assert that `f` throws a DomainException and test the message using `t` */
   protected def error(f: => Any, t: String => Boolean): Unit = {
     val e = intercept[DomainException] { f }
-    assert(t(e.getMessage))
+    assert(t(e.getMessage), " --- for message: " + e.getMessage)
   }
 
   /** calls [[error]] with "[mainClassName]" prepended to `msg` */
