@@ -33,8 +33,7 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
     val gradeCol = Column("Grade")
     val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, strokesCol, gradeCol, meaningCol, readingCol)
-    val result = mutable.Buffer[Kanji]()
-    while (f.nextRow()) {
+    f.processRows(mutable.Buffer[Kanji]()) { result =>
       // add validation
       val name = f.get(nameCol)
       val grade = f.get(gradeCol)
@@ -53,8 +52,7 @@ class KanjiData(val path: Path) extends ThrowsDomainException {
         if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
         Grade.valueOf(if (grade != "S") s"G$grade" else grade)
       )
-    }
-    result.toVector
+    }.toVector
   }
 
   private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
