@@ -73,8 +73,7 @@ class KanjiDataTest extends FileTest {
         |2	哀	口			9	S	pathetic	アイ、あわ-れ、あわ-れむ
         |3	挨	手		2010	10	S	push open	アイ
         |4	愛	心			13	4	love	アイ
-        |""".stripMargin
-    )
+        |""".stripMargin)
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.Jouyou)
     assert(result.size == 4)
@@ -109,8 +108,7 @@ class KanjiDataTest extends FileTest {
         |6	也	乙		1951	Names	ヤ、エ、なり、か、また
         |7	云	二		2004	Print	ウン、い-う、ここに
         |8	亘	二	亙	1951	Names	コウ、カン、わた-る、もと-める
-        |""".stripMargin
-    )
+        |""".stripMargin)
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.Jinmei)
     assert(result.size == 8)

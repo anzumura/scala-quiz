@@ -18,37 +18,18 @@ class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException
 
   private lazy val data = {
     val f = ColumnFile(
-      dir.resolve(UcdFileName),
-      AllowExtraCols.Yes,
-      codeCol,
-      radicalCol,
-      strokesCol,
-      pinyinCol,
-      morohashiIdCol,
-      nelsonIdsCol,
-      sourcesCol,
-      jSourceCol,
-      joyoCol,
-      jinmeiCol,
-      linkCodesCol,
-      linkTypeCol,
-      meaningCol,
-      japaneseCol
-    )
+      dir.resolve(UcdFileName), AllowExtraCols.Yes, codeCol, radicalCol, strokesCol, pinyinCol,
+      morohashiIdCol, nelsonIdsCol, sourcesCol, jSourceCol, joyoCol, jinmeiCol, linkCodesCol,
+      linkTypeCol, meaningCol, japaneseCol)
     f.processRows(mutable.Buffer[Ucd]())(_ += Ucd(
-        Code.fromHex(f.get(codeCol)),
-        radicalData.findByNumber(f.getUInt(radicalCol)),
-        f.getUInt(strokesCol),
-        f.get(pinyinCol),
-        f.getOption(morohashiIdCol).map(MorohashiId(_)),
+        Code.fromHex(f.get(codeCol)), radicalData.findByNumber(f.getUInt(radicalCol)),
+        f.getUInt(strokesCol), f.get(pinyinCol), f.getOption(morohashiIdCol).map(MorohashiId(_)),
         nelsonIds(f.get(nelsonIdsCol)),
         Sources(f.get(jSourceCol), f.get(sourcesCol), f.getBool(joyoCol), f.getBool(jinmeiCol)),
         links(f.get(linkCodesCol)),
         f.getOption(linkTypeCol).map(x => LinkType.valueOf(x.replace("*", "_R")))
-          .getOrElse(LinkType.None),
-        f.get(meaningCol),
-        f.get(japaneseCol)
-      )).map(x => x.code.toUTF16 -> x).toMap
+          .getOrElse(LinkType.None), f.get(meaningCol), f.get(japaneseCol)))
+      .map(x => x.code.toUTF16 -> x).toMap
   }
 
   private def nelsonIds(s: String): List[Int] = {

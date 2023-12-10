@@ -40,19 +40,10 @@ extends ThrowsDomainException {
       val grade = f.get(gradeCol)
       val oldNames = f.get(oldNamesCol)
       result += JouyouKanji(
-        name,
-        getRadical(f.get(radicalCol)),
-        f.getUInt(strokesCol),
-        f.get(meaningCol),
-        f.get(readingCol),
-        kyu(name),
-        f.getUInt(numberCol),
-        level(name),
-        frequency(name),
-        f.getUIntDefault(yearCol, 0),
-        if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
-        Grade.valueOf(if (grade != "S") s"G$grade" else grade)
-      )
+        name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol), f.get(meaningCol),
+        f.get(readingCol), kyu(name), f.getUInt(numberCol), level(name), frequency(name),
+        f.getUIntDefault(yearCol, 0), if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
+        Grade.valueOf(if (grade != "S") s"G$grade" else grade))
     }.toVector
   }
 
@@ -66,19 +57,10 @@ extends ThrowsDomainException {
       val ucd = getUcd(name)
       val oldNames = f.get(oldNamesCol)
       result += JinmeiKanji(
-        name,
-        getRadical(f.get(radicalCol)),
-        ucd.strokes,
-        ucd.meaning,
-        f.get(readingCol),
-        kyu(name),
-        f.getUInt(numberCol),
-        level(name),
-        frequency(name),
-        f.getUIntDefault(yearCol, 0),
+        name, getRadical(f.get(radicalCol)), ucd.strokes, ucd.meaning, f.get(readingCol), kyu(name),
+        f.getUInt(numberCol), level(name), frequency(name), f.getUIntDefault(yearCol, 0),
         if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
-        JinmeiReason.valueOf(f.get(reasonCol))
-      )
+        JinmeiReason.valueOf(f.get(reasonCol)))
     }.toVector
   }
 
