@@ -1,7 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.KanjiDataSanityTest.data
-import quiz.utils.BaseTest
+import quiz.test.BaseTest
 
 // use real data files for these tests
 class KanjiDataSanityTest extends BaseTest {

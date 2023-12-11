@@ -1,5 +1,6 @@
 package quiz.utils
 
+import quiz.test.BaseTest
 import quiz.utils.Choice.*
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}

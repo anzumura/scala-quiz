@@ -1,5 +1,6 @@
 package quiz.utils
 
+import quiz.test.BaseTest
 import quiz.utils.UnicodeUtils.*
 
 class UnicodeUtilsTest extends BaseTest {

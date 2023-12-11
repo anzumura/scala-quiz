@@ -73,13 +73,18 @@ object UcdData {
   case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
       morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Sources, links: List[Code],
       linkType: LinkType, meaning: String, reading: String) {
-    // convenience methods
+    // convert names to standard strings
     def name: String = code.toUTF16
     def linkNames: List[String] = links.map(_.toUTF16)
+    // get values from `sources`
     def jSource: String = source.jSource
     def joyo: Boolean = source.isJoyo
     def jinmei: Boolean = source.isJinmei
-    def linkedJinmei: Boolean = linkType == LinkType.Jinmei || linkType == LinkType.Jinmei_R
+    // helper methods for `linkType`
+    import LinkType.*
+    def linkedReadings: LinkedReadings = LinkedReadings(linkType < Compatibility)
+    def oldLinks: OldLinks = OldLinks(linkType == Traditional || linkType == Traditional_R)
+    def linkedJinmei: Boolean = linkType == Jinmei || linkType == Jinmei_R
   }
 
   /** represents the XML property from which the link was loaded. '_R' means the link was also

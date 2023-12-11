@@ -1,36 +1,15 @@
-package quiz.utils
+package quiz.test
 
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import quiz.test.FileTest.testFileName
 
 import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
 import scala.util.Try
 
-trait BaseTest extends AnyFreeSpec {
-  /** attempts to return main class name by removing "Test" from this class */
-  def mainClassName: String = getClass.getSimpleName.replaceAll("Test", "")
-
-  /** assert that `f` throws a DomainException with given `msg` */
-  protected def error(f: => Any, msg: String): Unit = {
-    val e = intercept[DomainException] { f }
-    assert(e.getMessage == s"$msg")
-  }
-
-  /** assert that `f` throws a DomainException and test the message using `t` */
-  protected def error(f: => Any, t: String => Boolean): Unit = {
-    val e = intercept[DomainException] { f }
-    assert(t(e.getMessage), " --- for message: " + e.getMessage)
-  }
-
-  /** calls [[error]] with "[mainClassName]" prepended to `msg` */
-  protected def domainError(f: => Any, msg: String): Unit = { error(f, s"[$mainClassName] $msg") }
-}
-
 trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
-  val testFileBaseName: String = "test"
-  val testFileName: String = testFileBaseName + ".txt"
   // on Windows tempDir is created in ~/AppData/Local/Temp
   val tempDir: Path = Files.createTempDirectory("tempDir")
   val testFile: Path = tempDir.resolve(testFileName)
@@ -77,4 +56,9 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
     domainError(f, fileMsg(msg, line, None))
   protected def fileError(f: => Any, msg: String, line: Int, file: String): Unit =
     domainError(f, fileMsg(msg, line, Option(file)))
+}
+
+object FileTest {
+  val testFileBaseName: String = "test"
+  val testFileName: String = testFileBaseName + ".txt"
 }

@@ -19,31 +19,6 @@ enum KanjiType {
   case Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd
 }
 
-/** base class for `enum` with a "None" value (which means it ends up becoming the base class of
- *  each enum value)
- *  @param obj the `enum` object instance, i.e., "Grade", "Level", etc.
- */
-trait NoneEnum[T <: NoneEnum[T]](obj: NoneEnumObject[T]) {
-  /** returns true if this enum value is not the "None" value */
-  lazy val isDefined: Boolean = toString != "None" // maybe there's a nicer way
-  /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
-  val enumName: String = obj.enumName
-}
-
-/** base class for companion object of `enum` with a "None" value */
-trait NoneEnumObject[T <: NoneEnum[T]] {
-  /** array of all values except the "None" value */
-  lazy val defined: Array[T] = values.filter(_.isDefined)
-  /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
-  val enumName: String = getClass.getSimpleName.dropRight(1)
-
-  /** `values` is overridden by compiler generated `enum` object */
-  def values: Array[T]
-
-  /** returns true if `v` is not the "None" value */
-  def isDefined(v: T): Boolean = v.isDefined
-}
-
 /** represents the official school grade for all Jouyou Kanji */
 enum Grade extends NoneEnum[Grade](Grade) {
   case G1, G2, G3, G4, G5, G6, S, None
@@ -86,6 +61,7 @@ enum LinkedReadings {
   case Yes, No
 }
 object LinkedReadings {
+  def apply(x: Boolean): LinkedReadings = if (x) LinkedReadings.Yes else LinkedReadings.No
   given Conversion[LinkedReadings, Boolean] = (x: LinkedReadings) => x eq LinkedReadings.Yes
 }
 
@@ -93,5 +69,6 @@ enum OldLinks {
   case Yes, No
 }
 object OldLinks {
+  def apply(x: Boolean): OldLinks = if (x) OldLinks.Yes else OldLinks.No
   given Conversion[OldLinks, Boolean] = (x: OldLinks) => x eq OldLinks.Yes
 }

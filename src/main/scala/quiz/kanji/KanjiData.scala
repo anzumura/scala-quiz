@@ -1,7 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.KanjiData.*
-import quiz.kanji.KanjiType.{Jouyou, LinkedJinmei}
+import quiz.kanji.KanjiType.{Jouyou, LinkedJinmei, Ucd}
 import quiz.utils.*
 import quiz.utils.ColumnFile.Column
 import quiz.utils.FileUtils.*
@@ -29,15 +29,17 @@ extends ThrowsDomainException {
     .collectFirst { case Some(k) => k }
 
   private def loadType(t: KanjiType) = t match {
-    case KanjiType.Jouyou => loadJouyou()
-    case KanjiType.Jinmei => loadJinmei()
-    case KanjiType.Extra => loadExtra()
-    case KanjiType.LinkedJinmei => loadLinkedJinmei()
-    case KanjiType.LinkedOld => loadLinkedOld()
-    case _ => Map[String, Kanji]() // load remaining types
+    case KanjiType.Jouyou => loadJouyouKanji()
+    case KanjiType.Jinmei => loadJinmeiKanji()
+    case KanjiType.LinkedJinmei => loadLinkedJinmeiKanji()
+    case KanjiType.LinkedOld => loadLinkedOldKanji()
+    case KanjiType.Frequency => loadFrequencyKanji()
+    case KanjiType.Extra => loadExtraKanji()
+    case KanjiType.Kentei => loadKenteiKanji()
+    case KanjiType.Ucd => loadUcdKanji()
   }
 
-  private def loadJouyou() = {
+  private def loadJouyouKanji() = {
     val gradeCol = Column("Grade")
     val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, strokesCol, gradeCol, meaningCol, readingCol)
@@ -54,7 +56,7 @@ extends ThrowsDomainException {
     }.toMap
   }
 
-  private def loadJinmei() = {
+  private def loadJinmeiKanji() = {
     val reasonCol = Column("Reason")
     val f = ColumnFile(textFile(path, "jinmei"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, reasonCol, readingCol)
@@ -71,7 +73,7 @@ extends ThrowsDomainException {
     }
   }
 
-  private def loadExtra() = {
+  private def loadExtraKanji() = {
     val f = ColumnFile(
       textFile(path, "extra"), numberCol, nameCol, radicalCol, strokesCol, meaningCol, readingCol)
     f.processRows(Map[String, Kanji]()) { result =>
@@ -82,7 +84,7 @@ extends ThrowsDomainException {
     }
   }
 
-  private def loadLinkedJinmei() = {
+  private def loadLinkedJinmeiKanji() = {
     val jouyou = getType(KanjiType.Jouyou)
     val jinmei = getType(KanjiType.Jinmei)
     ucdData.data.foldLeft(Map[String, Kanji]()) {
@@ -98,7 +100,7 @@ extends ThrowsDomainException {
     }
   }
 
-  private def loadLinkedOld() = {
+  private def loadLinkedOldKanji() = {
     val linkedJinmei = getType(KanjiType.LinkedJinmei)
     getType(KanjiType.Jouyou).foldLeft(Map[String, Kanji]()) { case (result, (_, linkKanji)) =>
       linkKanji.oldNames.filterNot(linkedJinmei.contains).foldLeft(result) { case (result, name) =>
@@ -108,6 +110,43 @@ extends ThrowsDomainException {
             LinkedOldKanji(name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
       }
     }
+  }
+
+  private def loadFrequencyKanji() = {
+    // create a FrequencyKanji for any entries in `frequencies` that don't already have an existing
+    // Kanji in the first four types (Jouyou, Jinmei, LinkedJinmei and LinkedOld)
+    val skip = KanjiType.values.takeWhile(_ != KanjiType.Frequency).map(getType)
+    frequencies.filterNot { case (s, _) => skip.exists(_.contains(s)) }
+      .foldLeft(Map[String, Kanji]()) { case (result, (name, freq)) =>
+        val ucd = getUcd(name, domainError)
+        result +
+          (name -> FrequencyKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading,
+            ucd.oldLinks, ucd.linkNames, ucd.linkedReadings, kyu(name), freq))
+      }
+  }
+
+  private def loadKenteiKanji() = {
+    // create a KenteiKanji for any entries in `kyus` that don't already have an existing Kanji in
+    // the first six types (Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency and Extra)
+    val skip = KanjiType.values.takeWhile(_ != KanjiType.Kentei).map(getType)
+    kyus.filterNot { case (s, _) => skip.exists(_.contains(s)) }.foldLeft(Map[String, Kanji]()) {
+      case (result, (name, kyu)) =>
+        val ucd = getUcd(name, domainError)
+        result +
+          (name -> KenteiKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading,
+            ucd.oldLinks, ucd.linkNames, ucd.linkedReadings, kyu))
+    }
+  }
+
+  private def loadUcdKanji() = {
+    // create a UcdKanji for any entries in `ucdData` that don't already have an existing Kanji
+    val skip = KanjiType.values.filter(_ != KanjiType.Ucd).map(getType)
+    ucdData.data.filterNot { case (s, _) => skip.exists(_.contains(s)) }
+      .foldLeft(Map[String, Kanji]()) { case (result, (name, ucd)) =>
+        result +
+          (name -> UcdKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading, ucd.oldLinks,
+            ucd.linkNames, ucd.linkedReadings))
+      }
   }
 
   private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {

@@ -2,7 +2,7 @@ package quiz.kanji
 
 import quiz.kanji.MorohashiId.IndexType.*
 import quiz.kanji.MorohashiId.{IndexType, MaxIndex, MaxSupplementalIndex}
-import quiz.utils.BaseTest
+import quiz.test.BaseTest
 
 class MorohashiIdTest extends BaseTest {
   "create" - {

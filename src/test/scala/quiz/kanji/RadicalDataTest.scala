@@ -1,7 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.RadicalData.{MaxRadical, Radical, RadicalFileName}
-import quiz.utils.FileTest
+import quiz.test.FileTest
 
 import java.nio.file.Files
 

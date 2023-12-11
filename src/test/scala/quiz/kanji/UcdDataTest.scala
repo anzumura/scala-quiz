@@ -1,9 +1,11 @@
 package quiz.kanji
 
 import quiz.kanji.RadicalData.Radical
-import quiz.kanji.UcdData.{LinkType, UcdFileName}
+import quiz.kanji.UcdData.{LinkType, Sources, Ucd, UcdFileName}
 import quiz.kanji.UcdDataTest.*
-import quiz.utils.FileTest
+import quiz.kanji.UcdTest.*
+import quiz.test.BaseTest.testRadical
+import quiz.test.FileTest
 import quiz.utils.UnicodeUtils.Code
 
 import java.nio.file.{Files, Path}
@@ -71,7 +73,6 @@ class UcdDataTest extends FileTest {
 }
 
 object UcdDataTest {
-  private val testRadical = Radical(1, "一", Nil, "", "")
   private val testRadicalData = new RadicalData(Path.of("")) {
     override def findByNumber(i: Int): Radical = testRadical
   }

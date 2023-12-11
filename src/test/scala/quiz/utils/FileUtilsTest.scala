@@ -1,5 +1,7 @@
 package quiz.utils
 
+import quiz.test.FileTest
+import quiz.test.FileTest.{testFileBaseName, testFileName}
 import quiz.utils.FileUtils.*
 import quiz.utils.FileUtilsTest.*
 

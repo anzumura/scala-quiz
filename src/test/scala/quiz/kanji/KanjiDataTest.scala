@@ -3,9 +3,10 @@ package quiz.kanji
 import quiz.kanji.KanjiDataTest.*
 import quiz.kanji.RadicalData.Radical
 import quiz.kanji.UcdData.{LinkType, Sources, Ucd}
+import quiz.test.FileTest
+import quiz.utils.EnumListFile
 import quiz.utils.FileUtils.*
 import quiz.utils.UnicodeUtils.Code
-import quiz.utils.{EnumListFile, FileTest}
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}

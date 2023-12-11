@@ -1,7 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.RadicalData.Radical
-import quiz.utils.BaseTest
+import quiz.test.BaseTest
 
 import scala.language.implicitConversions
 

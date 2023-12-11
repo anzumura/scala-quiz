@@ -1,6 +1,6 @@
 package quiz.kanji
 
-import quiz.utils.BaseTest
+import quiz.test.BaseTest
 
 class KanjiTypeTest extends BaseTest {
   "KanjiType has expected values" in {

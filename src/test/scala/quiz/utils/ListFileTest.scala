@@ -1,6 +1,7 @@
 package quiz.utils
 
 import quiz.kanji.{NoneEnum, NoneEnumObject}
+import quiz.test.FileTest
 import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
