@@ -77,7 +77,8 @@ class KanjiDataTest extends FileTest {
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.Jouyou)
     assert(result.size == 4)
-    val k = result(0)
+    val k = result("亜")
+    assert(data.find("亜").contains(k))
     assert(k.number == 1)
     assert(k.name == "亜")
     assert(k.radical == testRadical)
@@ -92,8 +93,8 @@ class KanjiDataTest extends FileTest {
     assert(k.kyu == testKyu)
     assert(k.frequency == testFrequency)
     // check year and grade on different Kanji
-    assert(result(2).year == 2010)
-    assert(result(3).grade == Grade.G4)
+    assert(result("挨").year == 2010)
+    assert(result("愛").grade == Grade.G4)
   }
 
   "load jinmei Kanji" in {
@@ -112,7 +113,7 @@ class KanjiDataTest extends FileTest {
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.Jinmei)
     assert(result.size == 8)
-    val k = result(0)
+    val k = result("丑")
     assert(k.number == 1)
     assert(k.name == "丑")
     assert(k.radical == testRadical)
@@ -127,9 +128,9 @@ class KanjiDataTest extends FileTest {
     assert(k.kyu == testKyu)
     assert(k.frequency == testFrequency)
     // check year, oldNames and reason on different Kanji
-    assert(result(4).year == 2004)
-    assert(result(4).reason == JinmeiReason.Print)
-    assert(result(7).oldNames == List("亙"))
+    assert(result("乎").year == 2004)
+    assert(result("乎").reason == JinmeiReason.Print)
+    assert(result("亘").oldNames == List("亙"))
   }
 
   "load extra Kanji" in {
@@ -140,7 +141,7 @@ class KanjiDataTest extends FileTest {
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.Extra)
     assert(result.size == 1)
-    val k = result(0)
+    val k = result("埃")
     assert(k.number == 1)
     assert(k.name == "埃")
     assert(k.radical == testRadical)
@@ -149,6 +150,48 @@ class KanjiDataTest extends FileTest {
     assert(k.reading == "アイ、ほこり、ちり")
     // the following values are defaults populated by TestKanjiData class
     assert(k.kyu == testKyu)
+  }
+
+  "load Linked Jinmei Kanji" in {
+    Files.writeString(
+      tempDir.resolve("jouyou.txt"),
+      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
+        |41	一	一			1	1	one	イチ、イツ、ひと、ひと-つ
+        |""".stripMargin)
+    val data = new TestKanjiData(tempDir)
+    val result = data.getType(KanjiType.LinkedJinmei)
+    assert(result.size == 1)
+    val k = result("二")
+    assert(k.name == "二")
+    assert(k.radical == testRadical)
+    assert(k.strokes == testStrokes)
+    assert(k.link.map(_.name).contains("一"))
+  }
+
+  "error if Linked Jinmei doesn't have a link field" in {
+    val noLinkUcd = Ucd(Code(), testRadical, 0, "", None, Nil, Sources("", "", false, false), Nil,
+      LinkType.Jinmei, "", "")
+    val badUcdData = new UcdData(Path.of(""), testRadicalData) {
+      override lazy val data: Map[String, Ucd] = Map("二" -> noLinkUcd)
+    }
+    val data = new TestKanjiData(tempDir, badUcdData)
+    error(data.getType(KanjiType.LinkedJinmei), _.contains("Ucd entry '二' has no link"))
+  }
+
+  "error if Linked Jinmei can't find link Kanji" in {
+    // need to create both Jouyou and Jinmei Kanji since LinkedJinmeiKanji will check both
+    // of these types when trying to find a link
+    Files.writeString(
+      tempDir.resolve("jouyou.txt"),
+      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
+        |1	亜	二	亞		7	S	sub-	ア
+        |""".stripMargin)
+    Files.writeString(tempDir.resolve("jinmei.txt"),
+      """Number	Name	Radical	OldNames	Year	Reason	Reading
+        |1	丑	一		1951	Names	チュウ、うし
+        |""".stripMargin)
+    val data = new TestKanjiData(tempDir)
+    error(data.getType(KanjiType.LinkedJinmei), _.contains("can't find Kanji for link name '一'"))
   }
 }
 
@@ -163,15 +206,17 @@ object KanjiDataTest {
   private val testMeaning = "testMeaning"
   private val testReading = "testReading"
   private val testUcd = Ucd(Code(), testRadical, testStrokes, "", None, Nil,
-    Sources("", "", false, false), Nil, LinkType.None, testMeaning, testReading)
+    Sources("", "", false, false), List(Code("一")), LinkType.Jinmei, testMeaning, testReading)
   private val testUcdData = new UcdData(Path.of(""), testRadicalData) {
     override def find(s: String): Option[Ucd] = Option(testUcd)
+    override lazy val data: Map[String, Ucd] = Map("二" -> testUcd)
   }
   // test KanjiData
   private val testLevel = Level.N2
   private val testKyu = Kyu.KJ1
   private val testFrequency = 1234
-  private class TestKanjiData(path: Path) extends KanjiData(path, testRadicalData, testUcdData) {
+  private class TestKanjiData(path: Path, ucdData: UcdData = testUcdData)
+  extends KanjiData(path, testRadicalData, ucdData) {
     override def level(s: String): Level = testLevel
     override def kyu(s: String): Kyu = testKyu
     override def frequency(s: String): Int = testFrequency

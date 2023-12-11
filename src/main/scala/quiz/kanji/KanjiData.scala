@@ -1,6 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.KanjiData.*
+import quiz.kanji.KanjiType.{Jouyou, LinkedJinmei}
 import quiz.utils.*
 import quiz.utils.ColumnFile.Column
 import quiz.utils.FileUtils.*
@@ -22,55 +23,77 @@ extends ThrowsDomainException {
   def frequency(s: String): Int = frequencies.getOrElse(s, 0)
 
   /** get all Kanji for type `t` */
-  def getType(t: KanjiType): Vector[Kanji] = types.getOrElseUpdate(t, loadType(t))
+  def getType(t: KanjiType): Map[String, Kanji] = types.getOrElseUpdate(t, loadType(t))
+
+  def find(s: String): Option[Kanji] = KanjiType.values.view.map(getType(_).get(s))
+    .collectFirst { case Some(k) => k }
 
   private def loadType(t: KanjiType) = t match {
     case KanjiType.Jouyou => loadJouyou()
     case KanjiType.Jinmei => loadJinmei()
     case KanjiType.Extra => loadExtra()
-    case _ => Vector[Kanji]() // load remaining types
+    case KanjiType.LinkedJinmei => loadLinkedJinmei()
+    case _ => Map[String, Kanji]() // load remaining types
   }
 
   private def loadJouyou() = {
     val gradeCol = Column("Grade")
     val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, strokesCol, gradeCol, meaningCol, readingCol)
-    f.processRows(mutable.Buffer[Kanji]()) { result =>
+    f.processRows(mutable.Buffer[(String, Kanji)]()) { result =>
       val name = f.get(nameCol)
       val grade = f.get(gradeCol)
       val oldNames = f.get(oldNamesCol)
-      result += JouyouKanji(
-        name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol), f.get(meaningCol),
-        f.get(readingCol), kyu(name), f.getUInt(numberCol), level(name), frequency(name),
-        f.getUIntDefault(yearCol, 0), if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
-        Grade.valueOf(if (grade != "S") s"G$grade" else grade))
-    }.toVector
+      result +=
+        (name -> JouyouKanji(
+          name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol), f.get(meaningCol),
+          f.get(readingCol), kyu(name), f.getUInt(numberCol), level(name), frequency(name),
+          f.getUIntDefault(yearCol, 0), if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
+          Grade.valueOf(if (grade != "S") s"G$grade" else grade)))
+    }.toMap
   }
 
   private def loadJinmei() = {
     val reasonCol = Column("Reason")
     val f = ColumnFile(textFile(path, "jinmei"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, reasonCol, readingCol)
-    f.processRows(mutable.Buffer[Kanji]()) { result =>
+    f.processRows(Map[String, Kanji]()) { result =>
       val name = f.get(nameCol)
       val ucd = getUcd(name)
       val oldNames = f.get(oldNamesCol)
-      result += JinmeiKanji(
-        name, getRadical(f.get(radicalCol)), ucd.strokes, ucd.meaning, f.get(readingCol), kyu(name),
-        f.getUInt(numberCol), level(name), frequency(name), f.getUIntDefault(yearCol, 0),
-        if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
-        JinmeiReason.valueOf(f.get(reasonCol)))
-    }.toVector
+      result +
+        (name -> JinmeiKanji(
+          name, getRadical(f.get(radicalCol)), ucd.strokes, ucd.meaning, f.get(readingCol),
+          kyu(name), f.getUInt(numberCol), level(name), frequency(name),
+          f.getUIntDefault(yearCol, 0), if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
+          JinmeiReason.valueOf(f.get(reasonCol))))
+    }
   }
 
   private def loadExtra() = {
     val f = ColumnFile(
       textFile(path, "extra"), numberCol, nameCol, radicalCol, strokesCol, meaningCol, readingCol)
-    f.processRows(mutable.Buffer[Kanji]()) { result =>
+    f.processRows(Map[String, Kanji]()) { result =>
       val name = f.get(nameCol)
-      result += ExtraKanji(name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol),
-        f.get(meaningCol), f.get(readingCol), kyu(name), f.getUInt(numberCol))
-    }.toVector
+      result +
+        (name -> ExtraKanji(name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol),
+          f.get(meaningCol), f.get(readingCol), kyu(name), f.getUInt(numberCol)))
+    }
+  }
+
+  private def loadLinkedJinmei() = {
+    ucdData.data.foldLeft(Map[String, Kanji]()) {
+      case (result, (name, ucd)) if ucd.linkedJinmei =>
+        val linkName = ucd.links.headOption.map(_.toUTF16)
+          .getOrElse(domainError(s"Ucd entry '$name' has no link"))
+        val linkKanji = getType(KanjiType.Jouyou).get(linkName)
+          .orElse(getType(KanjiType.Jinmei).get(linkName))
+          .getOrElse(domainError(s"can't find Kanji for link name '$linkName'"))
+        result +
+          (name -> LinkedJinmeiKanji(
+            name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
+      case (result, _) => result
+    }
   }
 
   private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
@@ -86,7 +109,7 @@ extends ThrowsDomainException {
   private lazy val kyus = load(Kyu)
   private lazy val frequencies = KanjiListFile(textFile(path, "frequency")).indices
     .map { case (k, v) => (k, v + 1) }
-  private lazy val types = mutable.Map[KanjiType, Vector[Kanji]]()
+  private lazy val types = mutable.Map[KanjiType, Map[String, Kanji]]()
 }
 
 object KanjiData {
