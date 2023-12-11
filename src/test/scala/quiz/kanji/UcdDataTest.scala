@@ -15,6 +15,7 @@ class UcdDataTest extends FileTest {
     val data = create("72AC\t94\t4\tquǎn\t20234\t2868\tGHJKTV\tJ0-3824\tY\t\t\t\tdog\tケン いぬ")
     data.find("犬").map { ucd =>
       assert(ucd.code.value == 0x72ac)
+      assert(ucd.name == ucd.code.toUTF16)
       assert(ucd.radical == testRadical)
       assert(ucd.strokes == 4)
       assert(ucd.pinyin == "quǎn")
@@ -51,11 +52,14 @@ class UcdDataTest extends FileTest {
       assert(ucd.links == List(Code(0x9065)))
       assert(ucd.linkType == LinkType.Jinmei)
       assert(ucd.jinmei)
+      assert(ucd.linkedJinmei)
     }.orElse(fail("find failed"))
     data.find("䢣").map { ucd =>
       assert(ucd.links == List(Code(0x9059)))
+      assert(ucd.linkNames == List("遙"))
       assert(ucd.linkType == LinkType.Definition_R)
       assert(!ucd.jinmei)
+      assert(!ucd.linkedJinmei)
     }.orElse(fail("find failed"))
   }
 

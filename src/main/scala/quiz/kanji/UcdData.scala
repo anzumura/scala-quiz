@@ -16,7 +16,7 @@ class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException
   def find(s: String): Option[Ucd] = data.get(s)
   inline def size: Int = data.size
 
-  private lazy val data = {
+  lazy val data: Map[String, Ucd] = {
     val f = ColumnFile(
       dir.resolve(UcdFileName), AllowExtraCols.Yes, codeCol, radicalCol, strokesCol, pinyinCol,
       morohashiIdCol, nelsonIdsCol, sourcesCol, jSourceCol, joyoCol, jinmeiCol, linkCodesCol,
@@ -73,9 +73,13 @@ object UcdData {
   case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
       morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Sources, links: List[Code],
       linkType: LinkType, meaning: String, reading: String) {
+    // convenience methods
+    def name: String = code.toUTF16
+    def linkNames: List[String] = links.map(_.toUTF16)
     def jSource: String = source.jSource
     def joyo: Boolean = source.isJoyo
     def jinmei: Boolean = source.isJinmei
+    def linkedJinmei: Boolean = linkType == LinkType.Jinmei || linkType == LinkType.Jinmei_R
   }
 
   /** represents the XML property from which the link was loaded. '_R' means the link was also
