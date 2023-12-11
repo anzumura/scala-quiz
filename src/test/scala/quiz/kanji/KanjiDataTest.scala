@@ -193,6 +193,19 @@ class KanjiDataTest extends FileTest {
     val data = new TestKanjiData(tempDir)
     error(data.getType(KanjiType.LinkedJinmei), _.contains("can't find Kanji for link name '一'"))
   }
+
+  "load Linked Old Kanji" in {
+    // use real data files for this test and do sanity checks
+    val data = KanjiData(KanjiData.dataDir())
+    val result = data.getType(KanjiType.LinkedOld)
+    assert(result.size == 163)
+    val k = result.get("瓣")
+    assert(k.nonEmpty)
+    assert(k.map(_.strokes).contains(20))
+    assert(k.map(_.kyu).contains(Kyu.K1))
+    assert(k.flatMap(_.newName).contains("弁"))
+    assert(k.flatMap(_.link).map(_.name).contains("弁"))
+  }
 }
 
 object KanjiDataTest {

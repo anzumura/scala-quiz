@@ -33,6 +33,7 @@ extends ThrowsDomainException {
     case KanjiType.Jinmei => loadJinmei()
     case KanjiType.Extra => loadExtra()
     case KanjiType.LinkedJinmei => loadLinkedJinmei()
+    case KanjiType.LinkedOld => loadLinkedOld()
     case _ => Map[String, Kanji]() // load remaining types
   }
 
@@ -82,12 +83,13 @@ extends ThrowsDomainException {
   }
 
   private def loadLinkedJinmei() = {
+    lazy val jouyou = getType(KanjiType.Jouyou)
+    lazy val jinmei = getType(KanjiType.Jinmei)
     ucdData.data.foldLeft(Map[String, Kanji]()) {
       case (result, (name, ucd)) if ucd.linkedJinmei =>
         val linkName = ucd.links.headOption.map(_.toUTF16)
           .getOrElse(domainError(s"Ucd entry '$name' has no link"))
-        val linkKanji = getType(KanjiType.Jouyou).get(linkName)
-          .orElse(getType(KanjiType.Jinmei).get(linkName))
+        val linkKanji = jouyou.get(linkName).orElse(jinmei.get(linkName))
           .getOrElse(domainError(s"can't find Kanji for link name '$linkName'"))
         result +
           (name -> LinkedJinmeiKanji(
@@ -96,12 +98,25 @@ extends ThrowsDomainException {
     }
   }
 
+  private def loadLinkedOld() = {
+    val linkedJinmei = getType(KanjiType.LinkedJinmei)
+    getType(KanjiType.Jouyou).foldLeft(Map[String, Kanji]()) { case (result, (_, linkKanji)) =>
+      linkKanji.oldNames.filterNot(linkedJinmei.contains).foldLeft(result) { case (result, name) =>
+        val ucd = getUcd(name, domainError)
+        result +
+          (name ->
+            LinkedOldKanji(name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
+      }
+    }
+  }
+
   private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
     e.defined.map(EnumListFile(path.resolve(e.enumName), _))
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
   }
 
-  private def getUcd(s: String) = ucdData.find(s).getOrElse(error(s"couldn't find Ucd for '$s'"))
+  private def getUcd(s: String, f: String => Nothing = error) = ucdData.find(s)
+    .getOrElse(f(s"couldn't find Ucd for '$s'"))
   private def getRadical(s: String) = radicalData.findByName(s)
     .getOrElse(error(s"couldn't find Radical '$s'"))
 
