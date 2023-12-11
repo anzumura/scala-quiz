@@ -83,8 +83,8 @@ extends ThrowsDomainException {
   }
 
   private def loadLinkedJinmei() = {
-    lazy val jouyou = getType(KanjiType.Jouyou)
-    lazy val jinmei = getType(KanjiType.Jinmei)
+    val jouyou = getType(KanjiType.Jouyou)
+    val jinmei = getType(KanjiType.Jinmei)
     ucdData.data.foldLeft(Map[String, Kanji]()) {
       case (result, (name, ucd)) if ucd.linkedJinmei =>
         val linkName = ucd.links.headOption.map(_.toUTF16)

@@ -24,9 +24,10 @@
         <option value="quiz.kanji.KanjiTypeTest" />
         <option value="quiz.kanji.MorohashiIdTest" />
         <option value="quiz.kanji.RadicalDataTest" />
+        <option value="quiz.kanji.KanjiDataSanityTest" />
       </list>
     </option>
-    <option name="shortenClasspath" value="NONE" />
+    <option name="shortenClasspath" value="MANIFEST" />
     <option name="testPackagePath" value="quiz" />
     <method v="2">
       <option name="Make" enabled="true" />

@@ -158,6 +158,7 @@ class KanjiDataTest extends FileTest {
       """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
         |41	一	一			1	1	one	イチ、イツ、ひと、ひと-つ
         |""".stripMargin)
+    createEmptyFiles()
     val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.LinkedJinmei)
     assert(result.size == 1)
@@ -169,6 +170,7 @@ class KanjiDataTest extends FileTest {
   }
 
   "error if Linked Jinmei doesn't have a link field" in {
+    createEmptyFiles()
     val noLinkUcd = Ucd(Code(), testRadical, 0, "", None, Nil, Sources("", "", false, false), Nil,
       LinkType.Jinmei, "", "")
     val badUcdData = new UcdData(Path.of(""), testRadicalData) {
@@ -179,32 +181,39 @@ class KanjiDataTest extends FileTest {
   }
 
   "error if Linked Jinmei can't find link Kanji" in {
-    // need to create both Jouyou and Jinmei Kanji since LinkedJinmeiKanji will check both
+    // need to create both Jouyou and Jinmei files since LinkedJinmeiKanji will check both
     // of these types when trying to find a link
-    Files.writeString(
-      tempDir.resolve("jouyou.txt"),
-      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
-        |1	亜	二	亞		7	S	sub-	ア
-        |""".stripMargin)
-    Files.writeString(tempDir.resolve("jinmei.txt"),
-      """Number	Name	Radical	OldNames	Year	Reason	Reading
-        |1	丑	一		1951	Names	チュウ、うし
-        |""".stripMargin)
+    createEmptyFiles()
     val data = new TestKanjiData(tempDir)
     error(data.getType(KanjiType.LinkedJinmei), _.contains("can't find Kanji for link name '一'"))
   }
 
   "load Linked Old Kanji" in {
-    // use real data files for this test and do sanity checks
-    val data = KanjiData(KanjiData.dataDir())
+    Files.writeString(
+      tempDir.resolve("jouyou.txt"),
+      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
+        |41	一	一			1	1	one	イチ、イツ、ひと、ひと-つ
+        |1814	弁	廾	辨,瓣,辯		5	5	valve	ベン
+        |""".stripMargin)
+    createEmptyFiles()
+    val data = new TestKanjiData(tempDir)
     val result = data.getType(KanjiType.LinkedOld)
-    assert(result.size == 163)
+    assert(result.size == 3)
     val k = result.get("瓣")
     assert(k.nonEmpty)
-    assert(k.map(_.strokes).contains(20))
-    assert(k.map(_.kyu).contains(Kyu.K1))
     assert(k.flatMap(_.newName).contains("弁"))
     assert(k.flatMap(_.link).map(_.name).contains("弁"))
+  }
+
+  private def createEmptyFiles(): Unit = {
+    val jouyou = tempDir.resolve("jouyou.txt")
+    if (!Files.exists(jouyou)) Files.writeString(jouyou,
+      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
+        |""".stripMargin)
+    val jinmei = tempDir.resolve("jinmei.txt")
+    if (!Files.exists(jinmei)) Files.writeString(jinmei,
+      """Number	Name	Radical	OldNames	Year	Reason	Reading
+        |""".stripMargin)
   }
 }
 
