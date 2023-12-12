@@ -1,12 +1,14 @@
-package quiz.kanji
+package quiz.data
 
-import quiz.kanji.RadicalData.Radical
-import quiz.kanji.UcdData.{LinkType, Sources, Ucd, UcdFileName}
-import quiz.kanji.UcdDataTest.*
+import quiz.data.UcdData.UcdFileName
+import quiz.data.UcdDataTest.*
+import quiz.data.{RadicalData, UcdData}
+import quiz.kanji.Ucd.LinkType
 import quiz.kanji.UcdTest.*
+import quiz.kanji.{MorohashiId, Radical}
 import quiz.test.BaseTest.testRadical
 import quiz.test.FileTest
-import quiz.utils.UnicodeUtils.Code
+import quiz.utils.Code
 
 import java.nio.file.{Files, Path}
 

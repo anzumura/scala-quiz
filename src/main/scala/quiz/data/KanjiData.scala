@@ -1,6 +1,7 @@
-package quiz.kanji
+package quiz.data
 
-import quiz.kanji.KanjiData.*
+import quiz.data.KanjiData.*
+import quiz.kanji.*
 import quiz.kanji.KanjiType.{Jouyou, LinkedJinmei, Ucd}
 import quiz.utils.*
 import quiz.utils.ColumnFile.Column
@@ -14,10 +15,10 @@ import scala.collection.mutable
 class KanjiData protected (path: Path, radicalData: RadicalData, ucdData: UcdData)
 extends ThrowsDomainException {
   /** JLPT level of `s` or "None" if it doesn't have a level */
-  def level(s: String): Level = levels.getOrElse(s, Level.None)
+  def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
 
   /** Kentei kyu of `s` or "None" if it doesn't have a kyu */
-  def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.None)
+  def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.NoKyu)
 
   /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
   def frequency(s: String): Int = frequencies.getOrElse(s, 0)
@@ -149,7 +150,7 @@ extends ThrowsDomainException {
       }
   }
 
-  private def load[T <: NoneEnum[T]](e: NoneEnumObject[T]): Map[String, T] = {
+  private def load[T <: NoValueEnum[T]](e: NoValueEnumObject[T]): Map[String, T] = {
     e.defined.map(EnumListFile(path.resolve(e.enumName), _))
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
   }

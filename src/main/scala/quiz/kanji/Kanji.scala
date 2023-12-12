@@ -1,7 +1,6 @@
 package quiz.kanji
 
 import quiz.kanji.Kanji.*
-import quiz.kanji.RadicalData.Radical
 import quiz.utils.DomainException
 
 import scala.language.implicitConversions
@@ -14,15 +13,15 @@ sealed abstract class Kanji(val name: String, val radical: Radical, val strokes:
   // methods that return default values
   def link: Option[Kanji] = None
   def frequency: Int = 0
-  def kyu: Kyu = Kyu.None
+  def kyu: Kyu = Kyu.NoKyu
   def year: Int = 0
   def linkedReadings: LinkedReadings = LinkedReadings.No
   def oldNames: List[String] = Nil
   def newName: Option[String] = None
-  def grade: Grade = Grade.None
-  def level: Level = Level.None
+  def grade: Grade = Grade.NoGrade
+  def level: Level = Level.NoLevel
   def number: Int = 0
-  def reason: JinmeiReason = JinmeiReason.None
+  def reason: JinmeiReason = JinmeiReason.NoJinmeiReason
 
   protected def error(msg: String): Nothing =
     throw DomainException(getClass.getSimpleName + ": " + msg)

@@ -1,6 +1,5 @@
 package quiz.kanji
 
-import quiz.kanji.RadicalData.Radical
 import quiz.test.BaseTest
 
 import scala.language.implicitConversions
@@ -10,37 +9,38 @@ class KanjiTest extends BaseTest {
 
   "Numbered Kanji" - {
     "create Jouyou Kanji with valid grade" in {
-      Grade.values.filter(_ != Grade.None).foreach { grade =>
+      Grade.values.filter(_ != Grade.NoGrade).foreach { grade =>
         val k = JouyouKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
           year, oldNames, grade)
         checkOfficialFields(k)
         assert(k.kanjiType == KanjiType.Jouyou)
         assert(k.grade == grade)
-        assert(k.reason == JinmeiReason.None)
+        assert(k.reason == JinmeiReason.NoJinmeiReason)
         assert(k.oldNames == oldNames)
       }
     }
 
     "error for Jouyou Kanji with no grade" in {
       error(JouyouKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
-          year, oldNames, Grade.None), "JouyouKanji: must have a valid grade")
+          year, oldNames, Grade.NoGrade), "JouyouKanji: must have a valid grade")
     }
 
     "create Jinmei Kanji with valid reason" in {
-      JinmeiReason.values.filter(_ != JinmeiReason.None).foreach { reason =>
+      JinmeiReason.values.filter(_ != JinmeiReason.NoJinmeiReason).foreach { reason =>
         val k = JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
           year, oldNames, reason)
         checkOfficialFields(k)
         assert(k.kanjiType == KanjiType.Jinmei)
         assert(k.oldNames == oldNames)
         assert(k.reason == reason)
-        assert(k.grade == Grade.None)
+        assert(k.grade == Grade.NoGrade)
       }
     }
 
     "error for Jinmei Kanji with no reason" in {
-      error(JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
-          year, oldNames, JinmeiReason.None), "JinmeiKanji: must have a valid reason")
+      error(
+        JinmeiKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency, year,
+          oldNames, JinmeiReason.NoJinmeiReason), "JinmeiKanji: must have a valid reason")
     }
 
     "error for Jinmei Kanji with no year" in {
@@ -137,7 +137,7 @@ class KanjiTest extends BaseTest {
 
     "error for Kentei Kanji with no kyu" in {
       error(KenteiKanji(name, radical, strokes, meaning, reading, OldLinks.No, Nil,
-          LinkedReadings.No, Kyu.None), "KenteiKanji: must have a valid kyu")
+          LinkedReadings.No, Kyu.NoKyu), "KenteiKanji: must have a valid kyu")
     }
 
     "create Ucd Kanji" in {
@@ -148,7 +148,7 @@ class KanjiTest extends BaseTest {
         assert(k.oldNames.isEmpty)
         assert(k.newName.isEmpty)
         assert(k.linkedReadings == linkedReadings)
-        assert(k.kyu == Kyu.None)
+        assert(k.kyu == Kyu.NoKyu)
         assert(k.frequency == 0)
       }
     }
@@ -187,9 +187,9 @@ class KanjiTest extends BaseTest {
     assert(k.frequency == differentFrequency)
     assert(k.kyu == differentKyu)
     // these should all have default values for linked (ie non-Loaded) Kanji
-    assert(k.grade == Grade.None)
-    assert(k.level == Level.None)
-    assert(k.reason == JinmeiReason.None)
+    assert(k.grade == Grade.NoGrade)
+    assert(k.level == Level.NoLevel)
+    assert(k.reason == JinmeiReason.NoJinmeiReason)
     assert(k.number == 0)
     assert(k.year == 0)
     assert(k.oldNames.isEmpty)

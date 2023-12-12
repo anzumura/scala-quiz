@@ -1,12 +1,12 @@
-package quiz.kanji
+package quiz.data
 
-import quiz.kanji.KanjiDataTest.*
-import quiz.kanji.RadicalData.Radical
-import quiz.kanji.UcdData.{LinkType, Sources, Ucd}
+import quiz.data.KanjiDataTest.*
+import quiz.data.{KanjiData, RadicalData, UcdData}
+import quiz.kanji.*
+import quiz.kanji.Ucd.{LinkType, Sources}
 import quiz.test.FileTest
-import quiz.utils.EnumListFile
 import quiz.utils.FileUtils.*
-import quiz.utils.UnicodeUtils.Code
+import quiz.utils.{Code, EnumListFile}
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}
@@ -41,7 +41,7 @@ class KanjiDataTest extends FileTest {
     assert(data.level("八") == Level.N3)
     assert(data.level("九") == Level.N2)
     assert(data.level("十") == Level.N1)
-    assert(data.level("百") == Level.None)
+    assert(data.level("百") == Level.NoLevel)
   }
 
   "get Kentei kyu" in {
@@ -54,7 +54,7 @@ class KanjiDataTest extends FileTest {
     val data = KanjiData(tempDir)
     assert(data.kyu("一") == Kyu.K10)
     assert(data.kyu("千") == Kyu.K1)
-    assert(data.kyu("万") == Kyu.None)
+    assert(data.kyu("万") == Kyu.NoKyu)
   }
 
   "get frequency starting at 1, or 0 if no frequency" in {

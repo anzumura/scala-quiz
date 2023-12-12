@@ -1,9 +1,8 @@
 package quiz.utils
 
-import quiz.kanji.NoneEnum
+import quiz.utils.Block.isKanji
 import quiz.utils.FileUtils.*
 import quiz.utils.ListFile.EntriesPerLine
-import quiz.utils.UnicodeUtils.isKanji
 
 import java.nio.file.Path
 import scala.collection.mutable
@@ -71,6 +70,7 @@ extends ThrowsDomainException {
    */
   protected def validate(entry: String): Boolean = true
 }
+
 object ListFile {
   enum EntriesPerLine {
     case Single, Multiple
@@ -95,7 +95,7 @@ extends ListFile(path, fileType, nameIn) {
  *  @param dir the directory containing the enum file
  *  @param value enum value, i.e., Level.N3
  */
-final class EnumListFile[T <: NoneEnum[T]](dir: Path, val value: T)
+final class EnumListFile[T <: NoValueEnum[T]](dir: Path, val value: T)
 extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPerLine.Multiple) {
 
   private val enumEntries = EnumListFile.entries

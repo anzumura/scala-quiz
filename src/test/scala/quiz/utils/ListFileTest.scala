@@ -1,20 +1,19 @@
 package quiz.utils
 
-import quiz.kanji.{NoneEnum, NoneEnumObject}
 import quiz.test.FileTest
 import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
 
-enum EnumA extends NoneEnum[EnumA](EnumA) {
-  case E1, E2, E3, E4, None
+enum EnumA extends NoValueEnum[EnumA](EnumA) {
+  case E1, E2, E3, E4, NoEnumA
 }
-object EnumA extends NoneEnumObject[EnumA] {}
+object EnumA extends NoValueEnumObject[EnumA] {}
 
-enum EnumB extends NoneEnum[EnumB](EnumB) {
-  case E1, E2, E3, E4, None
+enum EnumB extends NoValueEnum[EnumB](EnumB) {
+  case E1, E2, E3, E4, NoEnumB
 }
-object EnumB extends NoneEnumObject[EnumB] {}
+object EnumB extends NoValueEnumObject[EnumB] {}
 
 class ListFileTest extends FileTest {
   "name is capitalized file name stem by default" in {

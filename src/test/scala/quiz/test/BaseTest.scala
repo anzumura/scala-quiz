@@ -1,8 +1,8 @@
 package quiz.test
 
 import org.scalatest.freespec.AnyFreeSpec
-import quiz.kanji.RadicalData.Radical
-import quiz.kanji.UcdData.Sources
+import quiz.kanji.Radical
+import quiz.kanji.Ucd.Sources
 import quiz.utils.DomainException
 
 trait BaseTest extends AnyFreeSpec {

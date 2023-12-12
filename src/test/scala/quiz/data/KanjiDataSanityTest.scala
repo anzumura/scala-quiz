@@ -1,6 +1,8 @@
-package quiz.kanji
+package quiz.data
 
-import quiz.kanji.KanjiDataSanityTest.data
+import quiz.data.KanjiData
+import quiz.data.KanjiDataSanityTest.data
+import quiz.kanji.{KanjiType, Kyu}
 import quiz.test.BaseTest
 
 // use real data files for these tests

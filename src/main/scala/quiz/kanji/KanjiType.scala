@@ -1,5 +1,7 @@
 package quiz.kanji
 
+import quiz.utils.{NoValueEnum, NoValueEnumObject}
+
 /** used to identify which official group (Jouyou or Jinmei) a Kanji belongs to (or has a link
  *  to) as well as a few more groups for less common Kanji
  *
@@ -20,26 +22,26 @@ enum KanjiType {
 }
 
 /** represents the official school grade for all Jouyou Kanji */
-enum Grade extends NoneEnum[Grade](Grade) {
-  case G1, G2, G3, G4, G5, G6, S, None
+enum Grade extends NoValueEnum[Grade](Grade) {
+  case G1, G2, G3, G4, G5, G6, S, NoGrade
 }
-object Grade extends NoneEnumObject[Grade] {}
+object Grade extends NoValueEnumObject[Grade] {}
 
 /** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji (including 1,971
  *  Jouyou and 251 Jinmei)
  */
-enum Level extends NoneEnum[Level](Level) {
-  case N5, N4, N3, N2, N1, None
+enum Level extends NoValueEnum[Level](Level) {
+  case N5, N4, N3, N2, N1, NoLevel
 }
-object Level extends NoneEnumObject[Level] {}
+object Level extends NoValueEnumObject[Level] {}
 
 /** Kanji Kentei (漢字検定) Kyū (級), K = Kanken (漢検), J=Jun (準)
  *  @see <a href="https://en.wikipedia.org/wiki/Kanji_Kentei"></a>
  */
-enum Kyu extends NoneEnum[Kyu](Kyu) {
-  case K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, None
+enum Kyu extends NoValueEnum[Kyu](Kyu) {
+  case K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, NoKyu
 }
-object Kyu extends NoneEnumObject[Kyu] {}
+object Kyu extends NoValueEnumObject[Kyu] {}
 
 /** official reason Kanji was added to Jinmeiyō list:
  *  <ul>
@@ -49,13 +51,13 @@ object Kyu extends NoneEnumObject[Kyu] {}
  *  <li>Moved: 5 Kanji - moved out of Jouyou into Jinmei
  *  <li>Simple: 2 Kanji - simplified (表外漢字字体表の簡易慣用字体)
  *  <li>Other: 26 Kanji - reason listed as その他
- *  <li>None: not a Jinmei type Kanji
+ *  <li>NoJinmeiReason: not a Jinmei type Kanji
  *  </ul>
  */
-enum JinmeiReason extends NoneEnum[JinmeiReason](JinmeiReason) {
-  case Names, Print, Variant, Moved, Simple, Other, None
+enum JinmeiReason extends NoValueEnum[JinmeiReason](JinmeiReason) {
+  case Names, Print, Variant, Moved, Simple, Other, NoJinmeiReason
 }
-object JinmeiReason extends NoneEnumObject[JinmeiReason]
+object JinmeiReason extends NoValueEnumObject[JinmeiReason]
 
 enum LinkedReadings {
   case Yes, No
