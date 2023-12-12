@@ -9,7 +9,12 @@
     <option name="testKind" value="All in package" />
     <option name="classBuf">
       <list>
-        <option value="quiz.utils.UnicodeUtilsTest" />
+        <option value="quiz.data.UcdDataTest" />
+        <option value="quiz.data.KanjiDataTest" />
+        <option value="quiz.data.RadicalDataTest" />
+        <option value="quiz.data.KanjiDataSanityTest" />
+        <option value="quiz.utils.CodeTest" />
+        <option value="quiz.utils.BlockTest" />
         <option value="quiz.utils.ChoiceTest" />
         <option value="quiz.utils.RangeTest" />
         <option value="quiz.utils.ListFileTest" />
@@ -20,12 +25,8 @@
         <option value="quiz.utils.ColumnTest" />
         <option value="quiz.kanji.UcdTest" />
         <option value="quiz.kanji.KanjiTest" />
-        <option value="quiz.kanji.UcdDataTest" />
-        <option value="quiz.kanji.KanjiDataTest" />
         <option value="quiz.kanji.KanjiTypeTest" />
         <option value="quiz.kanji.MorohashiIdTest" />
-        <option value="quiz.kanji.RadicalDataTest" />
-        <option value="quiz.kanji.KanjiDataSanityTest" />
       </list>
     </option>
     <option name="shortenClasspath" value="MANIFEST" />
