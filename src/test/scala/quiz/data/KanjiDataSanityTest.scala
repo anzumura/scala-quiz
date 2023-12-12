@@ -2,7 +2,7 @@ package quiz.data
 
 import quiz.data.KanjiDataSanityTest.{data, ucdData}
 import quiz.kanji.KanjiType.*
-import quiz.kanji.{KanjiType, Kyu}
+import quiz.kanji.{Grade, KanjiType, Kyu}
 import quiz.test.BaseTest
 
 // use real data files for these tests
@@ -27,6 +27,21 @@ class KanjiDataSanityTest extends BaseTest {
     assert(data.getType(Ucd).size == 45968)
   }
 
+  "load expected total for each Grade" in {
+    import Grade.*
+    val result = data.getType(Jouyou).foldLeft(Map[Grade, Int]()) {
+      case (result, (_, k)) => result.updatedWith(k.grade)(_.map(_ + 1).orElse(Option(1)))
+    }
+    assert(result(G1) == 80)
+    assert(result(G2) == 160)
+    assert(result(G3) == 200)
+    assert(result(G4) == 200)
+    assert(result(G5) == 185)
+    assert(result(G6) == 181)
+    assert(result(S) == 1130)
+    assert(!result.contains(NoGrade))
+  }
+
   "check Linked Jinmei link totals" in {
     data.getType(LinkedJinmei).foldLeft((0, 0)) { case ((jouyou, jinmei), (name, k)) =>
       if (k.link.map(_.kanjiType).contains(Jouyou)) (jouyou + 1, jinmei)
@@ -48,6 +63,18 @@ class KanjiDataSanityTest extends BaseTest {
       assert(k.newName.contains("弁"))
       assert(k.link.map(_.name).contains("弁"))
     }.getOrElse(fail(s"couldn't find '$oldKanji"))
+  }
+  
+  "check Kanji types with non-zero frequency" in {
+    val result = data.frequencyList.foldLeft(Map[KanjiType, Int]()) {
+      case (result, k) => result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(Option(1)))
+    }
+    assert(result.values.sum == data.frequencies.size)
+    assert(result(Jouyou) == 2037)
+    assert(result(Jinmei) == 326)
+    assert(result(LinkedJinmei) == 12)
+    assert(result(LinkedOld) == 2)
+    assert(result(Frequency) == 124)
   }
 }
 

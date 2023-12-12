@@ -24,6 +24,11 @@ extends ThrowsDomainException {
   lazy val frequencies: Map[String, Int] = KanjiListFile(textFile(path, "frequency")).indices
     .map { case (k, v) => (k, v + 1) }
 
+  /** vector of all Kanji with a non-zero frequency in ascending order */
+  lazy val frequencyList: Vector[Kanji] = KanjiType.values.takeWhile(_ != KanjiType.Kentei).flatMap(
+    t => getType(t).collect { case (_, k) if k.hasFrequency => k }
+  ).sortBy(_.frequency).toVector
+
   /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
 
