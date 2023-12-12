@@ -14,10 +14,20 @@ import scala.collection.mutable
 
 class KanjiData protected (path: Path, radicalData: RadicalData, ucdData: UcdData)
 extends ThrowsDomainException {
-  /** JLPT level of `s` or "None" if it doesn't have a level */
+  /** map of Kanji name to JLPT Level for all Kanji with a JLPT Level */
+  lazy val levels: Map[String, Level] = load(Level)
+
+  /** map of Kanji name to Kentei Kyu for all Kanji with a Kentei Kyu */
+  lazy val kyus: Map[String, Kyu] = load(Kyu)
+
+  /** map of Kanji name to frequency (starting at 1) for top 2,501 Kanji */
+  lazy val frequencies: Map[String, Int] = KanjiListFile(textFile(path, "frequency")).indices
+    .map { case (k, v) => (k, v + 1) }
+
+  /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
 
-  /** Kentei kyu of `s` or "None" if it doesn't have a kyu */
+  /** Kentei kyu of `s` or "NoKyu" if it doesn't have a kyu */
   def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.NoKyu)
 
   /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
@@ -160,10 +170,6 @@ extends ThrowsDomainException {
   private def getRadical(s: String) = radicalData.findByName(s)
     .getOrElse(error(s"couldn't find Radical '$s'"))
 
-  private lazy val levels = load(Level)
-  private lazy val kyus = load(Kyu)
-  private lazy val frequencies = KanjiListFile(textFile(path, "frequency")).indices
-    .map { case (k, v) => (k, v + 1) }
   private lazy val types = mutable.Map[KanjiType, Map[String, Kanji]]()
 }
 
