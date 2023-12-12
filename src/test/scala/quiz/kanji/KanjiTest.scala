@@ -15,8 +15,8 @@ class KanjiTest extends BaseTest {
         checkOfficialFields(k)
         assert(k.kanjiType == KanjiType.Jouyou)
         assert(k.grade == grade)
-        assert(k.reason == JinmeiReason.NoJinmeiReason)
         assert(k.oldNames == oldNames)
+        assert(!k.hasReason)
       }
     }
 
@@ -33,7 +33,7 @@ class KanjiTest extends BaseTest {
         assert(k.kanjiType == KanjiType.Jinmei)
         assert(k.oldNames == oldNames)
         assert(k.reason == reason)
-        assert(k.grade == Grade.NoGrade)
+        assert(!k.hasGrade)
       }
     }
 
@@ -52,7 +52,7 @@ class KanjiTest extends BaseTest {
       val k = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number)
       checkNumberedFields(k)
       assert(k.kanjiType == KanjiType.Extra)
-      assert(k.newName.isEmpty)
+      assert(!k.hasNewName)
     }
 
     "create Extra Kanji with a new name" in {
@@ -107,8 +107,8 @@ class KanjiTest extends BaseTest {
           linkedReadings, kyu, frequency)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Frequency)
-        assert(k.oldNames.isEmpty)
-        assert(k.newName.isEmpty)
+        assert(!k.hasOldNames)
+        assert(!k.hasNewName)
         assert(k.linkedReadings == linkedReadings)
         assert(k.kyu == kyu)
         assert(k.frequency == frequency)
@@ -127,11 +127,11 @@ class KanjiTest extends BaseTest {
           name, radical, strokes, meaning, reading, OldLinks.No, Nil, linkedReadings, kyu)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Kentei)
-        assert(k.oldNames.isEmpty)
-        assert(k.newName.isEmpty)
+        assert(!k.hasOldNames)
+        assert(!k.hasNewName)
         assert(k.linkedReadings == linkedReadings)
         assert(k.kyu == kyu)
-        assert(k.frequency == 0)
+        assert(!k.hasFrequency)
       }
     }
 
@@ -145,11 +145,11 @@ class KanjiTest extends BaseTest {
         val k = UcdKanji(name, radical, strokes, meaning, reading, OldLinks.No, Nil, linkedReadings)
         checkLoadedFields(k)
         assert(k.kanjiType == KanjiType.Ucd)
-        assert(k.oldNames.isEmpty)
-        assert(k.newName.isEmpty)
+        assert(!k.hasOldNames)
+        assert(!k.hasNewName)
         assert(k.linkedReadings == linkedReadings)
-        assert(k.kyu == Kyu.NoKyu)
-        assert(k.frequency == 0)
+        assert(!k.hasKyu)
+        assert(!k.hasFrequency)
       }
     }
 
@@ -159,7 +159,7 @@ class KanjiTest extends BaseTest {
         name, radical, strokes, meaning, reading, OldLinks.Yes, oldNames, LinkedReadings.No)
       checkLoadedFields(k)
       assert(k.oldNames == oldNames)
-      assert(k.newName.isEmpty)
+      assert(!k.hasNewName)
     }
 
     "create Ucd Kanji with new name" in {
@@ -167,7 +167,7 @@ class KanjiTest extends BaseTest {
       val k = UcdKanji(
         name, radical, strokes, meaning, reading, OldLinks.No, List(newName), LinkedReadings.No)
       checkLoadedFields(k)
-      assert(k.oldNames.isEmpty)
+      assert(!k.hasOldNames)
       assert(k.newName.contains(newName))
     }
   }
@@ -188,17 +188,17 @@ class KanjiTest extends BaseTest {
     assert(k.kyu == differentKyu)
     // these should all have default values for linked (ie non-Loaded) Kanji
     assert(k.grade == Grade.NoGrade)
-    assert(k.level == Level.NoLevel)
-    assert(k.reason == JinmeiReason.NoJinmeiReason)
-    assert(k.number == 0)
-    assert(k.year == 0)
-    assert(k.oldNames.isEmpty)
+    assert(!k.hasLevel)
+    assert(!k.hasReason)
+    assert(!k.hasNumber)
+    assert(!k.hasYear)
+    assert(!k.hasOldNames)
   }
 
   private def checkLoadedFields(k: Kanji) = {
     assert(k.meaning == meaning)
     assert(k.reading == reading)
-    assert(k.link.isEmpty)
+    assert(!k.hasLink)
     checkFields(k)
   }
 
@@ -213,7 +213,7 @@ class KanjiTest extends BaseTest {
     assert(k.level == level)
     assert(k.frequency == frequency)
     assert(k.year == year)
-    assert(k.newName.isEmpty)
+    assert(!k.hasNewName)
     checkNumberedFields(k)
   }
 }

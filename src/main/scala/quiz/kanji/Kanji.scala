@@ -11,18 +11,29 @@ sealed abstract class Kanji(val name: String, val radical: Radical, val strokes:
   def meaning: String
   def reading: String
   // methods that return default values
-  def link: Option[Kanji] = None
   def frequency: Int = 0
-  def kyu: Kyu = Kyu.NoKyu
-  def year: Int = 0
-  def linkedReadings: LinkedReadings = LinkedReadings.No
-  def oldNames: List[String] = Nil
-  def newName: Option[String] = None
   def grade: Grade = Grade.NoGrade
   def level: Level = Level.NoLevel
+  def kyu: Kyu = Kyu.NoKyu
+  def link: Option[Kanji] = None
+  def oldNames: List[String] = Nil
+  def newName: Option[String] = None
   def number: Int = 0
+  def year: Int = 0
   def reason: JinmeiReason = JinmeiReason.NoJinmeiReason
-
+  def linkedReadings: LinkedReadings = LinkedReadings.No
+  // 'has' helper methods
+  def hasFrequency: Boolean = frequency > 0
+  def hasGrade: Boolean = grade.isDefined
+  def hasLevel: Boolean = level.isDefined
+  def hasKyu: Boolean = kyu.isDefined
+  def hasLink: Boolean = link.isDefined
+  def hasOldNames: Boolean = oldNames.nonEmpty
+  def hasNewName: Boolean = newName.isDefined
+  def hasNumber: Boolean = number > 0
+  def hasYear: Boolean = year > 0
+  def hasReason: Boolean = reason.isDefined
+  
   protected def error(msg: String): Nothing =
     throw DomainException(getClass.getSimpleName + ": " + msg)
 }
