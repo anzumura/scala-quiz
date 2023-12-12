@@ -29,16 +29,14 @@ class KanjiDataSanityTest extends BaseTest {
 
   "load expected total for each Grade" in {
     import Grade.*
-    val result = data.getType(Jouyou).foldLeft(Map[Grade, Int]()) {
-      case (result, (_, k)) => result.updatedWith(k.grade)(_.map(_ + 1).orElse(Option(1)))
-    }
-    assert(result(G1) == 80)
-    assert(result(G2) == 160)
-    assert(result(G3) == 200)
-    assert(result(G4) == 200)
-    assert(result(G5) == 185)
-    assert(result(G6) == 181)
-    assert(result(S) == 1130)
+    val result = data.gradeMap
+    assert(result(G1).size == 80)
+    assert(result(G2).size == 160)
+    assert(result(G3).size == 200)
+    assert(result(G4).size == 200)
+    assert(result(G5).size == 185)
+    assert(result(G6).size == 181)
+    assert(result(S).size == 1130)
     assert(!result.contains(NoGrade))
   }
 

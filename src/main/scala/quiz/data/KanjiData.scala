@@ -25,9 +25,15 @@ extends ThrowsDomainException {
     .map { case (k, v) => (k, v + 1) }
 
   /** vector of all Kanji with a non-zero frequency in ascending order */
-  lazy val frequencyList: Vector[Kanji] = KanjiType.values.takeWhile(_ != KanjiType.Kentei).flatMap(
-    t => getType(t).collect { case (_, k) if k.hasFrequency => k }
-  ).sortBy(_.frequency).toVector
+  lazy val frequencyList: Vector[Kanji] = KanjiType.values.takeWhile(_ != KanjiType.Extra)
+    .flatMap(t => getType(t).collect { case (_, k) if k.hasFrequency => k }).sortBy(_.frequency)
+    .toVector
+
+  /** map of Grade to Vector of Kanji having that grade */
+  lazy val gradeMap: Map[Grade, Vector[Kanji]] = getType(Jouyou)
+    .foldLeft(Map[Grade, Vector[Kanji]]()) { case (result, (_, k)) =>
+      result.updatedWith(k.grade)(_.map(_ :+ k).orElse(Option(Vector[Kanji](k))))
+    }
 
   /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
