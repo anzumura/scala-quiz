@@ -2,7 +2,6 @@ package quiz.data
 
 import quiz.data.UcdData.UcdFileName
 import quiz.data.UcdDataTest.*
-import quiz.data.{RadicalData, UcdData}
 import quiz.kanji.Ucd.LinkType
 import quiz.kanji.UcdTest.*
 import quiz.kanji.{MorohashiId, Radical}
