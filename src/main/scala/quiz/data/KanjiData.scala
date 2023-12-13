@@ -49,14 +49,13 @@ extends ThrowsDomainException {
 
   /** vector of all Kanji with a non-zero frequency in ascending order */
   lazy val frequencyList: Vector[Kanji] = KanjiType.values.takeWhile(_ != KanjiType.Extra)
-    .flatMap(t => getType(t).collect { case (_, k) if k.hasFrequency => k }).sortBy(_.frequency)
-    .toVector
+    .flatMap(getType(_).collect { case (_, k) if k.hasFrequency => k }).sortBy(_.frequency).toVector
 
   // The following three maps of 'enum type' to 'Vector[Kanji]' are used as quiz types by the main
-  // app. For example, a JLPT level 'N2' quiz uses the vector returned from 'levelMap(Level .N2)'
-  lazy val gradeMap: Map[Grade, Vector[Kanji]] = enumMap(KanjiType.Jinmei, k => k.grade)
-  lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, k => k.level)
-  lazy val KyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, k => k.kyu)
+  // app. For example, a JLPT level 'N2' quiz uses the vector returned from 'levelMap(Level.N2)'
+  lazy val gradeMap: Map[Grade, Vector[Kanji]] = enumMap(KanjiType.Jinmei, _.grade)
+  lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, _.level)
+  lazy val KyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, _.kyu)
 
   private def loadType(t: KanjiType) = t match {
     case KanjiType.Jouyou => loadJouyouKanji()
