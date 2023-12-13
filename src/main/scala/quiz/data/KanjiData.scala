@@ -14,12 +14,35 @@ import scala.collection.mutable
 
 class KanjiData protected (path: Path, radicalData: RadicalData, ucdData: UcdData)
 extends ThrowsDomainException {
+  /** returns the Kanji for the string value `s`, i.e., find("空") returns a [[JouyouKanji]]
+   *  representing "空" (with strokes, meaning, readings, etc.) or `None` if no Kanji is found.
+   *
+   *  The method searches for a Kanji from most common to least common [[KanjiType]] and internally
+   *  uses a `view` to avoid calling [[getType]] unnecessarily (forcing all types to be loaded)
+   */
+  def find(s: String): Option[Kanji] = KanjiType.values.view.map(getType(_).get(s))
+    .collectFirst { case Some(k) => k }
+
+  /** get all Kanji for type `t` - this method has the side effect of loading Kanji the first time
+   *  each type is requested (via the [[loadType]] method)
+   */
+  def getType(t: KanjiType): Map[String, Kanji] = types.getOrElseUpdate(t, loadType(t))
+
+  // 'level', 'kyu' and 'frequency' methods are used during Kanji creation by the 'load' methods
+
+  /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
+  def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
+  /** Kentei kyu of `s` or "NoKyu" if it doesn't have a kyu */
+  def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.NoKyu)
+  /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
+  def frequency(s: String): Int = frequencies.getOrElse(s, 0)
+
+  // lazy val maps used by the above three methods
+
   /** map of Kanji name to JLPT Level for all Kanji with a JLPT Level */
   lazy val levels: Map[String, Level] = load(Level)
-
   /** map of Kanji name to Kentei Kyu for all Kanji with a Kentei Kyu */
   lazy val kyus: Map[String, Kyu] = load(Kyu)
-
   /** map of Kanji name to frequency (starting at 1) for top 2,501 Kanji */
   lazy val frequencies: Map[String, Int] = KanjiListFile(textFile(path, "frequency")).indices
     .map { case (k, v) => (k, v + 1) }
@@ -29,24 +52,11 @@ extends ThrowsDomainException {
     .flatMap(t => getType(t).collect { case (_, k) if k.hasFrequency => k }).sortBy(_.frequency)
     .toVector
 
+  // The following three maps of 'enum type' to 'Vector[Kanji]' are used as quiz types by the main
+  // app. For example, a JLPT level 'N2' quiz uses the vector returned from 'levelMap(Level .N2)'
   lazy val gradeMap: Map[Grade, Vector[Kanji]] = enumMap(KanjiType.Jinmei, k => k.grade)
   lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, k => k.level)
   lazy val KyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, k => k.kyu)
-
-  /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
-  def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
-
-  /** Kentei kyu of `s` or "NoKyu" if it doesn't have a kyu */
-  def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.NoKyu)
-
-  /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
-  def frequency(s: String): Int = frequencies.getOrElse(s, 0)
-
-  /** get all Kanji for type `t` */
-  def getType(t: KanjiType): Map[String, Kanji] = types.getOrElseUpdate(t, loadType(t))
-
-  def find(s: String): Option[Kanji] = KanjiType.values.view.map(getType(_).get(s))
-    .collectFirst { case Some(k) => k }
 
   private def loadType(t: KanjiType) = t match {
     case KanjiType.Jouyou => loadJouyouKanji()
