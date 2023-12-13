@@ -11,14 +11,19 @@ trait OrderedEnum[T <: OrderedEnum[T]] extends Ordered[T] {
 trait NoValueEnum[T <: NoValueEnum[T]](obj: NoValueEnumObject[T]) extends OrderedEnum[T] {
   /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
   val enumName: String = obj.enumName
+
   /** returns true if this enum value is not the "NoXxx" value */
   lazy val isDefined: Boolean = toString != "No" + enumName
+
+  /** returns this value wrapped in an Option if defined, otherwise None */
+  def toOption: Option[T] = if (isDefined) Option(this.asInstanceOf[T]) else None
 }
 
 /** base class for companion object of `enum` with a "NoXxx" value */
 trait NoValueEnumObject[T <: NoValueEnum[T]] {
   /** array of all values except the "NoXxx" value */
   lazy val defined: Array[T] = values.filter(_.isDefined)
+
   /** the name of the `enum` class, i.e., "Grade", "Level", etc. */
   val enumName: String = getClass.getSimpleName.dropRight(1)
 

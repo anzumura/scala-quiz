@@ -29,11 +29,9 @@ extends ThrowsDomainException {
     .flatMap(t => getType(t).collect { case (_, k) if k.hasFrequency => k }).sortBy(_.frequency)
     .toVector
 
-  /** map of Grade to Vector of Kanji having that grade */
-  lazy val gradeMap: Map[Grade, Vector[Kanji]] = getType(Jouyou)
-    .foldLeft(Map[Grade, Vector[Kanji]]()) { case (result, (_, k)) =>
-      result.updatedWith(k.grade)(_.map(_ :+ k).orElse(Option(Vector[Kanji](k))))
-    }
+  lazy val gradeMap: Map[Grade, Vector[Kanji]] = enumMap(KanjiType.Jinmei, k => k.grade)
+  lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, k => k.level)
+  lazy val KyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, k => k.kyu)
 
   /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
   def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
@@ -175,6 +173,12 @@ extends ThrowsDomainException {
     e.defined.map(EnumListFile(path.resolve(e.enumName), _))
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
   }
+
+  private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) = KanjiType.values
+    .takeWhile(_ != t).flatMap(getType).foldLeft(Map[T, Vector[Kanji]]()) { case (result, (_, k)) =>
+      f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Option(Vector(k)))))
+        .getOrElse(result)
+    }
 
   private def getUcd(s: String, f: String => Nothing = error) = ucdData.find(s)
     .getOrElse(f(s"couldn't find Ucd for '$s'"))

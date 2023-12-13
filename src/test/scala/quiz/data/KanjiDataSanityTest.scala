@@ -2,7 +2,7 @@ package quiz.data
 
 import quiz.data.KanjiDataSanityTest.{data, ucdData}
 import quiz.kanji.KanjiType.*
-import quiz.kanji.{Grade, KanjiType, Kyu}
+import quiz.kanji.{Grade, KanjiType, Kyu, Level}
 import quiz.test.BaseTest
 
 // use real data files for these tests
@@ -28,16 +28,36 @@ class KanjiDataSanityTest extends BaseTest {
   }
 
   "load expected total for each Grade" in {
-    import Grade.*
     val result = data.gradeMap
-    assert(result(G1).size == 80)
-    assert(result(G2).size == 160)
-    assert(result(G3).size == 200)
-    assert(result(G4).size == 200)
-    assert(result(G5).size == 185)
-    assert(result(G6).size == 181)
-    assert(result(S).size == 1130)
-    assert(!result.contains(NoGrade))
+    // every Jouyou Kanji should have a defined grade
+    assert(result.values.map(_.size).sum == data.getType(Jouyou).size)
+    Grade.values.zip(Seq(80, 160, 200, 200, 185, 181, 1130, 0)).foreach { case (x, n) =>
+      assert(result.get(x).map(_.size).getOrElse(0) == n, s" for value: $x")
+    }
+  }
+
+  "load expected total for each Level" in {
+    val result = data.levelMap
+    // there should be 2,222 entries with a defined Level value
+    assert(result.values.map(_.size).sum == data.levels.size)
+    Level.values.zip(Seq(103, 181, 361, 415, 1162, 0)).foreach { case (x, n) =>
+      assert(result.get(x).map(_.size).getOrElse(0) == n, s" for value: $x")
+    }
+  }
+
+  "load expected total for each Kyu" in {
+    val totals = Seq(80, 160, 200, 202, 193, 191, 313, 284, 328, 188, 940, 2780, 0)
+    // make sure there's an expected 'total' entry for each Kyu enum value
+    assert(Kyu.values.length == totals.size)
+    // make sure expected totals per Kyu type add up to the total number of Kanji with a Kyu value
+    assert(totals.sum == data.kyus.size)
+
+    val result = data.KyuMap
+    // there should be 5,859 entries with a defined Kyu value
+    assert(result.values.map(_.size).sum == data.kyus.size)
+    Kyu.values.zip(totals).foreach { case (x, n) =>
+      assert(result.get(x).map(_.size).getOrElse(0) == n, s" for value: $x")
+    }
   }
 
   "check Linked Jinmei link totals" in {
@@ -62,10 +82,10 @@ class KanjiDataSanityTest extends BaseTest {
       assert(k.link.map(_.name).contains("弁"))
     }.getOrElse(fail(s"couldn't find '$oldKanji"))
   }
-  
+
   "check Kanji types with non-zero frequency" in {
-    val result = data.frequencyList.foldLeft(Map[KanjiType, Int]()) {
-      case (result, k) => result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(Option(1)))
+    val result = data.frequencyList.foldLeft(Map[KanjiType, Int]()) { case (result, k) =>
+      result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(Option(1)))
     }
     assert(result.values.sum == data.frequencies.size)
     assert(result(Jouyou) == 2037)
