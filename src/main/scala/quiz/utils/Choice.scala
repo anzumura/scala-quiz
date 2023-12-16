@@ -11,6 +11,8 @@ class Choice private (private var _quit: Option[Char] = None,
     var quitDescription: String = DefaultQuitDescription, val is: InputStream = System.in,
     private val os: PrintStream = System.out)
 extends ThrowsDomainException {
+  def println(msg: String): Unit = os.println(msg)
+  
   /** returns the current `quit` option or None is no option has been set */
   def quit: Option[Char] = _quit
 
