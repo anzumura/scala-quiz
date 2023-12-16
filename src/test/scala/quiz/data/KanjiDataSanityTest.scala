@@ -52,7 +52,7 @@ class KanjiDataSanityTest extends BaseTest {
     // make sure expected totals per Kyu type add up to the total number of Kanji with a Kyu value
     assert(totals.sum == data.kyus.size)
 
-    val result = data.KyuMap
+    val result = data.kyuMap
     // there should be 5,859 entries with a defined Kyu value
     assert(result.values.map(_.size).sum == data.kyus.size)
     Kyu.values.zip(totals).foreach { case (x, n) =>

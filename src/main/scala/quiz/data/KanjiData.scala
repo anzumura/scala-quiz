@@ -55,7 +55,7 @@ extends ThrowsDomainException {
   // app. For example, a JLPT level 'N2' quiz uses the vector returned from 'levelMap(Level.N2)'
   lazy val gradeMap: Map[Grade, Vector[Kanji]] = enumMap(KanjiType.Jinmei, _.grade)
   lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, _.level)
-  lazy val KyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, _.kyu)
+  lazy val kyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, _.kyu)
 
   private def loadType(t: KanjiType) = t match {
     case KanjiType.Jouyou => loadJouyouKanji()
