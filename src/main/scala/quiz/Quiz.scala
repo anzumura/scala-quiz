@@ -6,7 +6,9 @@ import quiz.kanji.{Grade, Kanji, Kyu, Level}
 import quiz.utils.Choice
 import quiz.utils.Choice.Range
 
-import scala.language.implicitConversions
+import scala.annotation.tailrec
+import scala.collection.mutable
+import scala.language.{dynamics, implicitConversions, reflectiveCalls}
 import scala.util.Random
 
 class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
@@ -68,18 +70,39 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
   }
 
   private def run(entries: Vector[Kanji]) = {
-    choice.println(s">>> Starting quiz for ${entries.size} Kanji\n")
     val result = entries.foldLeft(Result()) {
-      case (r, _) if r.isQuit => r // once quit has been set then don't modify result anymore
-      case (r, _) => r.next(true)
+      case (r, _) if r.isQuit => r // once quit has been set don't modify result anymore
+      case (r, k) => question(entries, k, r)
     }
     choice.println(s"\n>>> Final score: $result\n")
-    true
+    !result.isQuit
+  }
+
+  private def question(entries: Vector[Kanji], k: Kanji, result: Result) = {
+    val choices = mutable.Set[Int](result.question)
+    while (choices.size < 4) choices.add(Random.nextInt(entries.size))
+    val answers = choices.toArray
+
+    @tailrec
+    def f(r: Result): Result = {
+      choice.println(r.questionMsg(entries.size, k))
+      answers.zipWithIndex.foreach { case (answer, index) =>
+        choice.println(s"${index + 1}: " + entries(answer).reading)
+      }
+      Range('1', '4').get(choice, Map(FlipMeaning -> r.meaningMsg), "Choose reading") match {
+        case FlipMeaning => f(r.flipMeaning)
+        case x if choice.isQuit(x) => r.quit
+        case x => r.next(answers(x - '1') == r.question)
+      }
+    }
+    f(result)
   }
 }
 
 object Quiz {
   def apply(): Quiz = new Quiz(KanjiData(KanjiData.dataDir()), Choice(), true)
+
+  private val FlipMeaning = '-'
 
   // Quiz Types
   private val FrequencyQuiz = 'f'
@@ -103,6 +126,11 @@ object Quiz {
   import State.*
   private case class Result(question: Int = 0, score: Int = 0, state: State = MeaningOff) {
     override def toString: String = s"$score/$question"
+
+    def questionMsg(size: Int, k: Kanji): String =
+      s"\nQuestion ${question + 1} of $size (score $score/${question - score}): Kanji ${k.name}" +
+        (if (state == MeaningOn) s" - ${k.meaning}" else "")
+    def meaningMsg: String = (if (state == MeaningOn) "hide" else "show") + " meanings"
 
     def next(correct: Boolean): Result =
       Result(question + 1, if (correct) score + 1 else score, state)
