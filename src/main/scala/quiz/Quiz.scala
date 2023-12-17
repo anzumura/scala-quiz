@@ -7,7 +7,7 @@ import quiz.utils.Choice
 import quiz.utils.Choice.Range
 
 import scala.annotation.tailrec
-import scala.collection.mutable
+import scala.collection.immutable.TreeMap
 import scala.language.{dynamics, implicitConversions, reflectiveCalls}
 import scala.util.Random
 
@@ -26,14 +26,15 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
   private def frequency(): Boolean = Range('1', '9').get(choice, FrequencyMap, FrequencyMsg) match {
     case x if choice.isQuit(x) => false
     case x =>
-      val pos = (x - '0') * FrequencyBlock
-      val end = (if (x == '9') data.frequencyList.size else pos + FrequencyBlock) + 1
+      val pos = (x - MostFrequent) * FrequencyBlock
+      val end = if (x == LeastFrequent) data.frequencyList.size else pos + FrequencyBlock + 1
       makeList(data.frequencyList.slice(pos, end))
   }
 
   private def grade(): Boolean = Range('1', '6').get(choice, GradeMap, "Grade", 's') match {
     case x if choice.isQuit(x) => false
-    case x => makeList(data.gradeMap(if (x == 's') Grade.S else Grade.fromOrdinal(x - '1')))
+    case x =>
+      makeList(data.gradeMap(if (x == SecondarySchool) Grade.S else Grade.fromOrdinal(x - '1')))
   }
 
   private def level(): Boolean = choice.get(Range('1', '5'), "JLPT Level", '1') match {
@@ -44,9 +45,9 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
   private def kyu(): Boolean = Range('1', '9').get(choice, KyuMap, "Kentei Kyu") match {
     case x if choice.isQuit(x) => false
     case x => makeList(data.kyuMap(x match {
-        case '0' => Kyu.K10
-        case 'j' => Kyu.KJ2
-        case 'k' => Kyu.KJ1
+        case K10 => Kyu.K10
+        case KJ2 => Kyu.KJ2
+        case KJ1 => Kyu.KJ1
         case _ => Kyu.valueOf("K" + x)
       }))
   }
@@ -68,15 +69,18 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
   }
 
   private def question(entries: Vector[Kanji], k: Kanji, result: Result) = {
-    val choices = mutable.Set(result.question)
-    while (choices.size < 4) choices.add(Random.nextInt(entries.size))
-    val answers = choices.toArray
+    // create array of answers that contains the correct answer plus 3 other answers with different
+    // readings - use TreeMap so that answers are sorted in 'reading' order
+    val answers = Iterator.iterate(TreeMap(k.reading -> result.question)) { m =>
+      val answer = Random.nextInt(entries.size)
+      m + (entries(answer).reading -> answer)
+    }.dropWhile(_.size < 4).take(1).flatMap(_.values).toArray
 
     @tailrec
     def f(r: Result): Result = {
       choice.println(r.questionMsg(entries.size, k))
       answers.zipWithIndex.foreach { case (answer, index) =>
-        choice.println(s"${index + 1}: " + entries(answer).reading)
+        choice.println(s"  ${index + 1}: " + entries(answer).reading)
       }
       Range('1', '4').get(choice, Map(FlipMeaning -> r.meaningMsg), "Choose reading") match {
         case FlipMeaning => f(r.flipMeaning)
@@ -108,11 +112,18 @@ object Quiz {
     Map(FromBeginning -> "from beginning", FromEnd -> "from end", RandomOrder -> "random")
   // Frequency Quiz
   private val FrequencyBlock = 250
-  private val FrequencyMap = Map('0' -> "most frequent")
+  private val MostFrequent = '0'
+  private val LeastFrequent = '9'
+  private val FrequencyMap = Map(MostFrequent -> "most frequent")
   private val FrequencyMsg = s"Frequency buckets of $FrequencyBlock"
-
-  private val GradeMap = Map('s' -> "Secondary School")
-  private val KyuMap = Map('0' -> "k10", 'j' -> "Jun-K2", 'k' -> "Jun-K1")
+  // Grade Quiz
+  private val SecondarySchool = 's'
+  private val GradeMap = Map(SecondarySchool -> "Secondary School")
+  // Kyu Quiz
+  private val K10 = '0'
+  private val KJ2 = 'j'
+  private val KJ1 = 'k'
+  private val KyuMap = Map(K10 -> "k10", KJ2 -> "Jun-K2", KJ1 -> "Jun-K1")
 
   private enum State {
     case MeaningOff, MeaningOn, Quit
