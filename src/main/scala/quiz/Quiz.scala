@@ -141,6 +141,5 @@ object Quiz {
     def quit: Result = Result(question, score, Quit)
 
     def isQuit: Boolean = state == Quit
-    def showMeaning: Boolean = state == MeaningOn
   }
 }
