@@ -33,8 +33,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
 
   private def grade(): Boolean = Range('1', '6').get(choice, GradeMap, "Grade", 's') match {
     case x if choice.isQuit(x) => false
-    case x =>
-      makeList(data.gradeMap(if (x == SecondarySchool) Grade.S else Grade.fromOrdinal(x - '1')))
+    case x => makeList(data.gradeMap(if (x == GradeS) Grade.S else Grade.fromOrdinal(x - '1')))
   }
 
   private def level(): Boolean = choice.get(Range('1', '5'), "JLPT Level", '1') match {
@@ -74,7 +73,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
     val answers = Iterator.iterate(TreeMap(k.reading -> result.question)) { m =>
       val answer = Random.nextInt(entries.size)
       m + (entries(answer).reading -> answer)
-    }.dropWhile(_.size < 4).take(1).flatMap(_.values).toArray
+    }.dropWhile(_.size < ChoicesPerQuestion).next().values.toArray
 
     @tailrec
     def f(r: Result): Result = {
@@ -82,7 +81,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
       answers.zipWithIndex.foreach { case (answer, index) =>
         choice.println(s"  ${index + 1}: " + entries(answer).reading)
       }
-      Range('1', '4').get(choice, Map(FlipMeaning -> r.meaningMsg), "Choose reading") match {
+      QuestionRange.get(choice, Map(FlipMeaning -> r.meaningMsg), "Choose reading") match {
         case FlipMeaning => f(r.flipMeaning)
         case x if choice.isQuit(x) => r.quit
         case x => r.next(answers(x - '1') == r.question)
@@ -96,6 +95,8 @@ object Quiz {
   def apply(): Quiz = new Quiz(KanjiData(KanjiData.dataDir()), Choice(), true)
 
   private val FlipMeaning = '-'
+  private val ChoicesPerQuestion = 4
+  private val QuestionRange = Range('1', ('1' + ChoicesPerQuestion).asInstanceOf[Char])
 
   // Quiz Types
   private val FrequencyQuiz = 'f'
@@ -117,8 +118,8 @@ object Quiz {
   private val FrequencyMap = Map(MostFrequent -> "most frequent")
   private val FrequencyMsg = s"Frequency buckets of $FrequencyBlock"
   // Grade Quiz
-  private val SecondarySchool = 's'
-  private val GradeMap = Map(SecondarySchool -> "Secondary School")
+  private val GradeS = 's' // Secondary School
+  private val GradeMap = Map(GradeS -> "Secondary School")
   // Kyu Quiz
   private val K10 = '0'
   private val KJ2 = 'j'
