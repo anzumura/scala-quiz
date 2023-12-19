@@ -7,7 +7,7 @@
       <list />
     </option>
     <option name="testKind" value="All in package" />
-mo    <option name="classBuf">
+    <option name="classBuf">
       <list>
         <option value="quiz.data.UcdDataTest" />
         <option value="quiz.data.KanjiDataTest" />
@@ -25,6 +25,7 @@ mo    <option name="classBuf">
         <option value="quiz.utils.ColumnTest" />
         <option value="quiz.kanji.UcdTest" />
         <option value="quiz.kanji.KanjiTest" />
+        <option value="quiz.kanji.RadicalTest" />
         <option value="quiz.kanji.KanjiTypeTest" />
         <option value="quiz.kanji.MorohashiIdTest" />
       </list>
