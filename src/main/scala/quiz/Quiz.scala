@@ -2,6 +2,7 @@ package quiz
 
 import quiz.Quiz.*
 import quiz.data.KanjiData
+import quiz.kanji.Kanji.Info
 import quiz.kanji.{Grade, Kanji, Kyu, Level}
 import quiz.utils.Choice
 import quiz.utils.Choice.Range
@@ -28,46 +29,48 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
     case x =>
       val pos = (x - MostFrequent) * FrequencyBlock
       val end = if (x == LeastFrequent) data.frequencyList.size else pos + FrequencyBlock + 1
-      makeList(data.frequencyList.slice(pos, end))
+      makeList(data.frequencyList.slice(pos, end), Info.Frequency)
   }
 
   private def grade(): Boolean = Range('1', '6').get(choice, GradeMap, "Grade", 's') match {
     case x if choice.isQuit(x) => false
-    case x => makeList(data.gradeMap(if (x == GradeS) Grade.S else Grade.fromOrdinal(x - '1')))
+    case x =>
+      makeList(data.gradeMap(if (x == GradeS) Grade.S else Grade.fromOrdinal(x - '1')), Info.Grade)
   }
 
   private def level(): Boolean = choice.get(Range('1', '5'), "JLPT Level", '1') match {
     case x if choice.isQuit(x) => false
-    case x => makeList(data.levelMap(Level.valueOf("N" + x)))
+    case x => makeList(data.levelMap(Level.valueOf("N" + x)), Info.Level)
   }
 
   private def kyu(): Boolean = Range('1', '9').get(choice, KyuMap, "Kentei Kyu") match {
     case x if choice.isQuit(x) => false
     case x => makeList(data.kyuMap(x match {
-        case K10 => Kyu.K10
-        case KJ2 => Kyu.KJ2
-        case KJ1 => Kyu.KJ1
-        case _ => Kyu.valueOf("K" + x)
-      }))
+          case K10 => Kyu.K10
+          case KJ2 => Kyu.KJ2
+          case KJ1 => Kyu.KJ1
+          case _ => Kyu.valueOf("K" + x)
+        }), Info.Kyu)
   }
 
-  private def makeList(entries: Vector[Kanji]) = choice.get(ListOrder, "List order", 'r') match {
-    case FromBeginning => run(entries)
-    case FromEnd => run(entries.reverse)
-    case RandomOrder => run(random.shuffle(entries))
-    case _ => false
-  }
+  private def makeList(entries: Vector[Kanji], exclude: Info) =
+    choice.get(ListOrder, "List order", 'r') match {
+      case FromBeginning => run(entries, exclude)
+      case FromEnd => run(entries.reverse, exclude)
+      case RandomOrder => run(random.shuffle(entries), exclude)
+      case _ => false
+    }
 
-  private def run(entries: Vector[Kanji]) = {
+  private def run(entries: Vector[Kanji], exclude: Info) = {
     val result = entries.foldLeft(Result()) {
       case (r, _) if r.isQuit => r // once quit has been set don't modify result anymore
-      case (r, k) => question(entries, k, r)
+      case (r, k) => question(entries, k, r, exclude)
     }
     choice.println(s"\n>>> Final score: $result\n")
     !result.isQuit
   }
 
-  private def question(entries: Vector[Kanji], k: Kanji, result: Result) = {
+  private def question(entries: Vector[Kanji], k: Kanji, result: Result, exclude: Info) = {
     // create array of answers that contains the correct answer plus 3 other answers with different
     // readings - use TreeMap so that answers are sorted in 'reading' order
     val answers = Iterator.iterate(TreeMap(k.reading -> result.question)) { m =>
@@ -77,7 +80,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
 
     @tailrec
     def f(r: Result): Result = {
-      choice.println(r.questionMsg(entries.size, k))
+      choice.println(r.questionMsg(entries.size, k, exclude))
       answers.zipWithIndex.foreach { case (answer, index) =>
         choice.println(s"  ${index + 1}: " + entries(answer).reading)
       }
@@ -137,9 +140,9 @@ object Quiz {
     /** return a message for a quiz question that includes the question number, current score and
      *  Kanji being tested (optionally followed by the Kanji meaning depending on `state`)
      */
-    def questionMsg(size: Int, k: Kanji): String =
-      s"\nQuestion ${question + 1} of $size (score $score/${question - score}): Kanji ${k.name}" +
-        (if (state == MeaningOn) s" - ${k.meaning}" else "")
+    def questionMsg(size: Int, k: Kanji, exclude: Info): String =
+      s"\nQuestion ${question + 1} of $size (score $score/${question - score}): Kanji " +
+        k.info(exclude) + (if (state == MeaningOn) s" - ${k.meaning}" else "")
 
     /** return a message for flipping meaning based on the current value of `state` */
     def meaningMsg: String = (if (state == MeaningOn) "hide" else "show") + " meanings"
