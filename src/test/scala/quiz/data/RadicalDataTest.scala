@@ -1,8 +1,9 @@
 package quiz.data
 
 import quiz.data.RadicalData
-import quiz.data.RadicalData.{MaxRadical, RadicalFileName}
+import quiz.data.RadicalData.RadicalFileName
 import quiz.kanji.Radical
+import quiz.kanji.Radical.MaxRadical
 import quiz.test.FileTest
 
 import java.nio.file.Files

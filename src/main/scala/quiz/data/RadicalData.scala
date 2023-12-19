@@ -2,6 +2,7 @@ package quiz.data
 
 import quiz.data.RadicalData.*
 import quiz.kanji.Radical
+import quiz.kanji.Radical.MaxRadical
 import quiz.utils.ColumnFile.Column
 import quiz.utils.{ColumnFile, ThrowsDomainException}
 
@@ -43,7 +44,6 @@ class RadicalData(dir: Path) extends ThrowsDomainException {
 
 object RadicalData {
   val RadicalFileName = "radicals.txt"
-  val MaxRadical = 214
 
   private val numberCol = Column("Number")
   private val nameCol = Column("Name")

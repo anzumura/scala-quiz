@@ -19,7 +19,7 @@ object Block {
 
   /** similar to `isKanji`, but returns false instead of throwing an exception if `x` is too long */
   def isOneKanji(x: String): Boolean = Try(isKanji(x)).getOrElse(false)
-  
+
   // used to create official Unicode Blocks (see below)
   private def block(start: Int, end: Int) = Block(Code(start), Code(end))
 
