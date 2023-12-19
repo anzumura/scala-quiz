@@ -1,7 +1,7 @@
 package quiz.utils
 
 import quiz.test.BaseTest
-import quiz.utils.Block.isKanji
+import quiz.utils.Block.{isKanji, isOneKanji}
 
 class BlockTest extends BaseTest {
   "create Unicode block with only one entry" in {
@@ -48,5 +48,10 @@ class BlockTest extends BaseTest {
     assert(isKanji(scold.toUTF16))
     assert(isKanji(scold.toUTF16 + dog.toUTF16, sizeOne = false))
     nonKanjiStrings.foreach(c => assert(!isKanji(c)))
+  }
+
+  "isOneKanji returns false when string is too long instead of throwing an exception" in {
+    assert(isOneKanji("朝"))
+    assert(!isOneKanji("朝日"))
   }
 }
