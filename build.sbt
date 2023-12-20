@@ -10,6 +10,8 @@ ThisBuild / scalacOptions ++= Seq(
   "-Xfatal-warnings",
   "-Xmigration"
 )
+// a lot of tests use temporary files which can cause problems when run in parallel
+Test / parallelExecution := false
 
 lazy val root = (project in file("."))
   .settings(
