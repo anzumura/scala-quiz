@@ -17,6 +17,8 @@ class RadicalTest extends BaseTest {
     assert(rad1a == rad1b)
     assert(rad1a != rad2)
     assert(rad1b != rad2)
+    val x: Any = rad1a.number
+    assert(rad1a != x)
   }
 
   "hashCode is only based on Radical number" in {

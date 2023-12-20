@@ -35,6 +35,20 @@ class KanjiTest extends BaseTest {
       assert(k.info(Info.Kyu) == s"$prefix$frq, ${k.grade}" + s", ${k.level}")
     }
 
+    "equals is based on name" in {
+      // fake examples, real data loaded from files has unique names per Kanji
+      val k1 = JouyouKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
+        year, oldNames, Grade.G1)
+      val k2 = JouyouKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
+        year, oldNames, Grade.G2)
+      val k3 = JouyouKanji("違", radical, strokes, meaning, reading, kyu, number, level, frequency,
+        year, oldNames, Grade.G1)
+      assert(k1 == k2)
+      assert(k1 != k3)
+      val x: Any = k1.name
+      assert(k1 != x)
+    }
+
     "error for Jouyou Kanji with no grade" in {
       error(JouyouKanji(name, radical, strokes, meaning, reading, kyu, number, level, frequency,
           year, oldNames, Grade.NoGrade), "JouyouKanji: must have a valid grade")
