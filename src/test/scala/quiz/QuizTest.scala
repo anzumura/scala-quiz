@@ -1,22 +1,28 @@
 package quiz
 
+import quiz.Quiz.ListOrder
 import quiz.data.KanjiDataSanityTest.data
 import quiz.kanji.{Grade, Kyu, Level}
 import quiz.utils.BaseChoiceTest
 
 class QuizTest extends BaseChoiceTest {
+  private val firstQuestion = "Question 1 of 250 (score 0):"
+
   private def quiz(input: String) = {
     val (choice, os) = create(input)
     new Quiz(data, choice, false).start()
     os.toString
   }
+  private def questionPrompt(showMeanings: Boolean = true) =
+    s"Choose reading (-=${if (showMeanings) "show" else "hide"} meanings, 1-4, q=quit): "
 
   "prompt for choosing quiz type" in {
-    assert(quiz("q") == "Quiz Type (f=Frequency, g=Grade, k=Kyu, l=Level, q=quit) def 'l': ")
+    assert(quiz("q") == "Quiz Type (f=Frequency, g=Grade, k=Kyu, l=Level, q=quit) def 'f': ")
   }
 
   "prompt for Frequency quiz" in {
-    assert(quiz("f\nq").endsWith("Frequency buckets of 250 (0=most frequent, 1-9, q=quit): "))
+    assert(
+      quiz("\nq").endsWith("Frequency buckets of 250 (0=most frequent, 1-9, q=quit) def '0': "))
   }
 
   "prompt for Grade quiz" in {
@@ -26,40 +32,35 @@ class QuizTest extends BaseChoiceTest {
   "prompt for Level quiz" in { assert(quiz("l\nq").endsWith("JLPT Level (1-5, q=quit) def '1': ")) }
 
   "prompt for Kyu quiz" in {
-    assert(quiz("k\nq").endsWith("Kentei Kyu (0=k10, 1-9, j=Jun-K2, k=Jun-K1, q=quit): "))
+    assert(quiz("k\nq").endsWith("Kentei Kyu (0=k10, 1-9, j=Jun-K2, k=Jun-K1, q=quit) def '0': "))
   }
 
   "prompt for list order" in {
-    assert(quiz("f\n0\nq")
-        .endsWith("List order (b=from beginning, e=from end, q=quit, r=random) def 'r': "))
+    assert(quiz("\n\nq")
+        .endsWith("List order (b=from beginning, e=from end, q=quit, r=random) def 'b': "))
   }
 
-  "list from beginning" in {
-    assert(quiz("f\n0\nb\nq")
-        .contains("Question 1 of 250 (score 0): Kanji 日. Rad 日(72), Strokes 4, G1, N5, K10"))
-  }
+  private val beginQuestion = s"$firstQuestion 日. Rad 日(72), Strokes 4, G1, N5, K10"
+  private val endQuestion = s"$firstQuestion 価. Rad 人(9), Strokes 8, G5, N2, K6"
+  // random seed is constant for test code so `randomQuestion` value shouldn't change
+  private val randomQuestion = s"$firstQuestion 安. Rad 宀(40), Strokes 6, G3, N5, K8"
 
-  "list from end" in {
-    assert(quiz("f\n0\ne\nq")
-        .contains("Question 1 of 250 (score 0): Kanji 価. Rad 人(9), Strokes 8, G5, N2, K6"))
-  }
-
-  "list in random order (seed is constant for test code)" in {
-    assert(quiz("f\n0\nr\nq")
-        .contains("Question 1 of 250 (score 0): Kanji 安. Rad 宀(40), Strokes 6, G3, N5, K8"))
-  }
+  "list order is changed based on choice" in
+    ListOrder.values.zip(Array(beginQuestion, endQuestion, randomQuestion)).foreach {
+      case (x, msg) => assert(quiz(s"\n\n${x.value}\nq").contains(msg), s" -- testing $x")
+    }
 
   "question contains 4 choices followed by a prompt" in {
-    assert(quiz("f\n0\nb\nq").contains("""
+    assert(quiz("\n\n\nq").contains(s"""
         |  1: ガ、カク
         |  2: ニチ、ジツ、ひ、か
         |  3: ム、つと-める、つと-まる
         |  4: レン、つら-なる、つら-ねる、つ-れる
-        |Choose reading (-=show meanings, 1-4, q=quit): """.stripMargin))
+        |${questionPrompt()}""".stripMargin))
   }
 
-  "Frequency buckets 0-8 have 250 entries and bucket 9 has 251" in (0 to 9).foreach(x =>
-    assert(quiz(s"f\n$x\nb\nq").contains("Question 1 of 25" + (if (x == 9) 1 else 0))))
+  "Frequency buckets 0-8 have 250 entries and bucket 9 has 251" in (0 to 9)
+    .foreach(x => assert(quiz(s"\n$x\nb\nq").contains("Question 1 of 25" + (if (x == 9) 1 else 0))))
 
   "Grades have expected sizes" in Grade.defined.foreach(x =>
     assert(quiz(s"g\n${if (x == Grade.S) 's' else x.toString.last}\nb\nq")
@@ -79,23 +80,31 @@ class QuizTest extends BaseChoiceTest {
   "correct answer increases score" in {
     val correct = 2 // can rely on this since random seed is constant for test code
     (1 to 4).foreach(x =>
-      assert(quiz(s"f\n0\nb\n$x\nq")
-          .contains(s"Question 2 of 250 (score ${if (x == correct) 1 else 0})")))
+      assert(
+        quiz(s"\n\n\n$x\nq").contains(s"Question 2 of 250 (score ${if (x == correct) 1 else 0})")))
   }
 
   "incorrect answer results in a message to the user containing the correct answer" in {
-    assert(quiz("f\n0\nb\n1\nq").contains("  Incorrect: the answer is 2"))
+    assert(quiz("\n\n\n1\nq").contains("  Incorrect: the answer is 2"))
   }
 
   "final score should be 0/0 if user quits before answering the first question" in {
-    assert(quiz("f\n0\nb\nq").contains(">>> Final score: 0/0\n"))
+    assert(quiz("\n\n\nq").contains(">>> Final score: 0/0\n"))
   }
 
   "final score should be 1/1 after answering one question correctly and then quitting" in {
-    assert(quiz("f\n0\nb\n2\nq").contains(">>> Final score: 1/1\n"))
+    assert(quiz("\n\n\n2\nq").contains(">>> Final score: 1/1\n"))
   }
 
   "final score should be 0/1 and show mistakes after answering a question incorrectly" in {
-    assert(quiz("f\n0\nb\n1\nq").contains(">>> Final score: 0/1 mistakes: 日\n"))
+    assert(quiz("\n\n\n1\nq").contains(">>> Final score: 0/1 mistakes: 日\n"))
+  }
+
+  "show and hide meanings" in {
+    val result = quiz("\n\n\n-\n-\nq")
+    countString(result, beginQuestion, 3)            // expect question to be shown 3 times
+    countString(result, beginQuestion + " - day", 1) // expect 'question with meaning' 1 time
+    countString(result, questionPrompt(), 2)         // expect 'show meaning' prompt 2 times
+    countString(result, questionPrompt(false), 1)    // expect 'hide meaning' prompt 1 time
   }
 }

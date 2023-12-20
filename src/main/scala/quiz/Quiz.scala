@@ -16,7 +16,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
   private val random = Random(if (randomize) System.currentTimeMillis else 0)
   choice.setQuit('q')
 
-  def start(): Unit = while (choice.get(QuizTypes, "Quiz Type", LevelQuiz) match {
+  def start(): Unit = while (choice.get(QuizTypes, "Quiz Type", FrequencyQuiz) match {
       case FrequencyQuiz => frequency()
       case GradeQuiz => grade()
       case LevelQuiz => level()
@@ -24,15 +24,16 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
       case x => !choice.isQuit(x)
     }) {}
 
-  private def frequency(): Boolean = Range('1', '9').get(choice, FrequencyMap, FrequencyMsg) match {
-    case x if choice.isQuit(x) => false
-    case x =>
-      val pos = (x - MostFrequent) * FrequencyBlock
-      val end = if (x == LeastFrequent) data.frequencyList.size else pos + FrequencyBlock
-      makeList(data.frequencyList.slice(pos, end), Info.Frequency)
-  }
+  private def frequency(): Boolean =
+    Range('1', '9').get(choice, FrequencyMap, FrequencyMsg, MostFrequent) match {
+      case x if choice.isQuit(x) => false
+      case x =>
+        val pos = (x - MostFrequent) * FrequencyBlock
+        val end = if (x == LeastFrequent) data.frequencyList.size else pos + FrequencyBlock
+        makeList(data.frequencyList.slice(pos, end), Info.Frequency)
+    }
 
-  private def grade(): Boolean = Range('1', '6').get(choice, GradeMap, "Grade", 's') match {
+  private def grade(): Boolean = Range('1', '6').get(choice, GradeMap, "Grade", GradeS) match {
     case x if choice.isQuit(x) => false
     case x =>
       makeList(data.gradeMap(if (x == GradeS) Grade.S else Grade.fromOrdinal(x - '1')), Info.Grade)
@@ -43,7 +44,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
     case x => makeList(data.levelMap(Level.valueOf("N" + x)), Info.Level)
   }
 
-  private def kyu(): Boolean = Range('1', '9').get(choice, KyuMap, "Kentei Kyu") match {
+  private def kyu(): Boolean = Range('1', '9').get(choice, KyuMap, "Kentei Kyu", K10) match {
     case x if choice.isQuit(x) => false
     case x => makeList(data.kyuMap(x match {
           case K10 => Kyu.K10
@@ -54,10 +55,10 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
   }
 
   private def makeList(entries: Vector[Kanji], exclude: Info) =
-    choice.get(ListOrder, "List order", 'r') match {
-      case FromBeginning => run(entries, exclude)
-      case FromEnd => run(entries.reverse, exclude)
-      case RandomOrder => run(random.shuffle(entries), exclude)
+    choice.get(ListOrderMap, "List order", ListOrder.Beginning.value) match {
+      case ListOrder.Beginning.value => run(entries, exclude)
+      case ListOrder.End.value => run(entries.reverse, exclude)
+      case ListOrder.Random.value => run(random.shuffle(entries), exclude)
       case _ => false
     }
 
@@ -112,11 +113,13 @@ object Quiz {
   private val QuizTypes =
     Map(FrequencyQuiz -> "Frequency", GradeQuiz -> "Grade", LevelQuiz -> "Level", KyuQuiz -> "Kyu")
   // List Order
-  private val FromBeginning = 'b'
-  private val FromEnd = 'e'
-  private val RandomOrder = 'r'
-  private val ListOrder =
-    Map(FromBeginning -> "from beginning", FromEnd -> "from end", RandomOrder -> "random")
+  enum ListOrder(val value: Char) {
+    case Beginning extends ListOrder('b')
+    case End extends ListOrder('e')
+    case Random extends ListOrder('r')
+  }
+  private val ListOrderMap = Map(ListOrder.Beginning.value -> "from beginning",
+    ListOrder.End.value -> "from end", ListOrder.Random.value -> "random")
   // Frequency Quiz
   private val FrequencyBlock = 250
   private val MostFrequent = '0'
@@ -151,7 +154,7 @@ object Quiz {
      *  Kanji being tested (optionally followed by the Kanji meaning depending on `state`)
      */
     def questionMsg(size: Int, k: Kanji): String =
-      s"\nQuestion ${question + 1} of $size (score $score): Kanji " + k.info(exclude) +
+      s"\nQuestion ${question + 1} of $size (score $score): " + k.info(exclude) +
         (if (state == MeaningOn) s" - ${k.meaning}" else "")
 
     /** return a message for flipping meaning based on the current value of `state` */
