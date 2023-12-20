@@ -1,9 +1,10 @@
 package quiz.kanji
 
 import quiz.kanji.Ucd.{LinkType, Sources}
-import quiz.utils.{Code, NoValueEnum, NoValueEnumObject}
+import quiz.utils.{Code, NoValueEnum, NoValueEnumObject, ThrowsDomainException}
 
 import scala.collection.immutable.BitSet
+import scala.util.Try
 
 /** data for an entry from the "ucd.txt" file. Some columns in the file aren't stored like
  *  "Name" and "LinkNames" since these are represented by [[Code]] classes. Also ignore
@@ -88,7 +89,7 @@ object Ucd {
     private val bits = bitSet(sources, joyo, jinmei)
   }
 
-  object Sources {
+  object Sources extends ThrowsDomainException {
     private enum Bits {
       case G, H, J, K, T, V, Joyo, Jinmei
     }
@@ -97,9 +98,11 @@ object Ucd {
 
       def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet = sources
         .foldLeft(if (joyo) {
-          if (jinmei) BitSet(Joyo.ordinal, Jinmei.ordinal) else BitSet(Joyo.ordinal)
+          if (jinmei) error("Sources can't be both joyo and jinmei") else BitSet(Joyo.ordinal)
         } else if (jinmei) BitSet(Jinmei.ordinal)
-          else BitSet())((bits, x) => bits + valueOf(x.toString).ordinal)
+          else BitSet())((bits, x) =>
+          bits + Try(valueOf(x.toString).ordinal)
+            .getOrElse(error(s"Sources got unrecognized region '$x'")))
 
       def sourceString(bits: BitSet): String = sourceValues.filter(x => bits(x.ordinal))
         .foldLeft("")(_ + _.toString)
