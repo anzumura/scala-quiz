@@ -9,6 +9,7 @@
     <option name="testKind" value="All in package" />
     <option name="classBuf">
       <list>
+        <option value="quiz.QuizTest" />
         <option value="quiz.data.UcdDataTest" />
         <option value="quiz.data.KanjiDataTest" />
         <option value="quiz.data.RadicalDataTest" />

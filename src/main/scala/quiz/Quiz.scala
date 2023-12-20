@@ -20,7 +20,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
       case FrequencyQuiz => frequency()
       case GradeQuiz => grade()
       case LevelQuiz => level()
-      case KyuQuiz => frequency()
+      case KyuQuiz => kyu()
       case x => !choice.isQuit(x)
     }) {}
 
@@ -28,7 +28,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
     case x if choice.isQuit(x) => false
     case x =>
       val pos = (x - MostFrequent) * FrequencyBlock
-      val end = if (x == LeastFrequent) data.frequencyList.size else pos + FrequencyBlock + 1
+      val end = if (x == LeastFrequent) data.frequencyList.size else pos + FrequencyBlock
       makeList(data.frequencyList.slice(pos, end), Info.Frequency)
   }
 
@@ -74,7 +74,7 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
     // create array of answers that contains the correct answer plus 3 other answers with different
     // readings - use TreeMap so that answers are sorted in 'reading' order
     val answers = Iterator.iterate(TreeMap(k.reading -> state.question)) { m =>
-      val answer = Random.nextInt(entries.size)
+      val answer = random.nextInt(entries.size)
       m + (entries(answer).reading -> answer)
     }.dropWhile(_.size < ChoicesPerQuestion).next().values.toArray
 
@@ -102,7 +102,7 @@ object Quiz {
 
   private val FlipMeaning = '-'
   private val ChoicesPerQuestion = 4
-  private val QuestionRange = Range('1', ('1' + ChoicesPerQuestion).asInstanceOf[Char])
+  private val QuestionRange = Range('1', ('0' + ChoicesPerQuestion).asInstanceOf[Char])
 
   // Quiz Types
   private val FrequencyQuiz = 'f'
