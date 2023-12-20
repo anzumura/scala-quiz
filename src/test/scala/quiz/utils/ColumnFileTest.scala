@@ -297,7 +297,8 @@ class ColumnTest extends BaseTest {
   "toString returns column name" in { assert(col1.toString == "col1") }
 
   "number is assigned based on creation order" in {
-    cols.iterator.sliding(2).foreach { s => assert(s.head.number + 1 == s.last.number) }
+    val c = (1 to 3).map(x => Column(s"Create-Order-$x"))
+    c.iterator.sliding(2).foreach { s => assert(s.head.number + 1 == s.last.number) }
   }
 
   "number is unique per name" in { cols.foreach { c => assert(c.number == Column(c.name).number) } }
