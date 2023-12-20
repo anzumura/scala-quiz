@@ -96,10 +96,10 @@ object Kanji {
       override val frequency: Int, override val kyu: Kyu)
   extends Kanji(name, radical, strokes) {
     override val link: Option[Kanji] = Option(l)
-    override def meaning: String = link.map(_.meaning).getOrElse("")
-    override def reading: String = link.map(_.reading).getOrElse("")
+    override def meaning: String = l.meaning
+    override def reading: String = l.reading
     override def linkedReadings: LinkedReadings = LinkedReadings.Yes
-    override def newName: Option[String] = link.map(_.name)
+    override def newName: Option[String] = Option(l.name)
   }
 
   /** contains 'meaning' and 'reading' fields loaded from files */
