@@ -9,7 +9,7 @@ import quiz.utils.Choice.Range
 
 import scala.annotation.tailrec
 import scala.collection.immutable.TreeMap
-import scala.language.{dynamics, implicitConversions, reflectiveCalls}
+import scala.language.implicitConversions
 import scala.util.Random
 
 class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
