@@ -179,8 +179,10 @@ extends ThrowsDomainException {
   }
 
   private def load[T <: NoValueEnum[T]](e: NoValueEnumObject[T]): Map[String, T] = {
-    e.defined.map(EnumListFile(path.resolve(e.enumName), _))
+    val result = e.defined.map(EnumListFile(path.resolve(e.enumName), _))
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
+    EnumListFile.clearEntryData()
+    result
   }
 
   private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) = KanjiType.values
