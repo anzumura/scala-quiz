@@ -101,5 +101,5 @@ object KanjiDataSanityTest {
   private val radicalData = RadicalData(dir)
   private val ucdData = UcdData(dir, radicalData)
   class TestKanjiData extends KanjiData(dir, radicalData, ucdData)
-  private val data = TestKanjiData()
+  val data = TestKanjiData()
 }
