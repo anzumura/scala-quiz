@@ -1,13 +1,24 @@
 package quiz.test
 
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.freespec.AnyFreeSpec
 import quiz.kanji.Radical
 import quiz.kanji.Ucd.Sources
-import quiz.utils.DomainException
+import quiz.utils.{DomainException, EnumListFile}
 
-trait BaseTest extends AnyFreeSpec {
+trait BaseTest extends AnyFreeSpec with BeforeAndAfterEach {
   /** attempts to return main class name by removing "Test" from this class */
   def mainClassName: String = getClass.getSimpleName.replaceAll("Test", "")
+
+  override protected def beforeEach(): Unit = {
+    EnumListFile.clearEntryData()
+    super.beforeEach()
+  }
+
+  override protected def afterEach(): Unit = {
+    EnumListFile.clearEntryData()
+    super.afterEach()
+  }
 
   /** assert that `f` throws a DomainException with given `msg` */
   protected def error(f: => Any, msg: String): Unit = {

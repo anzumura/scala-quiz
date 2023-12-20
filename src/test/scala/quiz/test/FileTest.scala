@@ -1,7 +1,7 @@
 package quiz.test
 
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import quiz.test.FileTest.testFileName
 
 import java.nio.file.{Files, Path}
@@ -9,7 +9,7 @@ import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.jdk.StreamConverters.StreamHasToScala
 import scala.util.Try
 
-trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
+trait FileTest extends BaseTest with BeforeAndAfterAll {
   // on Windows tempDir is created in ~/AppData/Local/Temp
   val tempDir: Path = Files.createTempDirectory("tempDir")
   val testFile: Path = tempDir.resolve(testFileName)
@@ -41,10 +41,16 @@ trait FileTest extends BaseTest with BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   // delete all files from 'tempDir' after each test
-  override protected def afterEach(): Unit = { clearDirectory(tempDir) }
+  override protected def afterEach(): Unit = {
+    clearDirectory(tempDir)
+    super.afterEach()
+  }
 
   // delete 'tempDir' after all tests
-  override protected def afterAll(): Unit = { deleteIfExists(tempDir) }
+  override protected def afterAll(): Unit = {
+    deleteIfExists(tempDir)
+    super.afterAll()
+  }
 
   protected def fileMsg(msg: String, file: Option[String]): String =
     s"$msg - file: ${file.getOrElse(testFileName)}"

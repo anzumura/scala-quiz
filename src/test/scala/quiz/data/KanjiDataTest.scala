@@ -4,18 +4,13 @@ import quiz.data.KanjiDataTest.*
 import quiz.kanji.*
 import quiz.kanji.Ucd.{LinkType, Sources}
 import quiz.test.FileTest
+import quiz.utils.Code
 import quiz.utils.FileUtils.*
-import quiz.utils.{Code, EnumListFile}
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}
 
 class KanjiDataTest extends FileTest {
-  override protected def afterEach(): Unit = {
-    EnumListFile.clearEntryData()
-    super.afterEach()
-  }
-
   "dataDir returns a valid data directory" in {
     val result = KanjiData.dataDir()
     assert(isDirectory(result))

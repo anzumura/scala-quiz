@@ -105,11 +105,6 @@ class KanjiListFileTest extends FileTest {
 }
 
 class EnumListFileTest extends FileTest {
-  override protected def afterEach(): Unit = {
-    EnumListFile.clearEntryData()
-    super.afterEach()
-  }
-
   "read entries for a JLPT Level" in {
     Files.writeString(tempDir.resolve("E4.txt"), "一 二 三\n四 五 六")
     val f = EnumListFile(tempDir, EnumA.E4)
