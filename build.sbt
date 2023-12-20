@@ -14,5 +14,6 @@ ThisBuild / scalacOptions ++= Seq(
 lazy val root = (project in file("."))
   .settings(
     name := "scala-quiz",
-    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % Test
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % Test,
+    assembly / mainClass := Some("quiz.main.Main")
   )
