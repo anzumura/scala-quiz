@@ -23,7 +23,7 @@ trait BaseTest extends AnyFreeSpec {
 
   /** calls [[error]] with "[mainClassName]" prepended to `msg` */
   protected def domainError(f: => Any, msg: String): Unit = { error(f, s"[$mainClassName] $msg") }
-  
+
   protected def countString(src: String, s: String, count: Int): Unit = {
     assert(src.sliding(s.length).count(_ == s) == count)
   }

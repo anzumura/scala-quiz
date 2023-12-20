@@ -1,7 +1,6 @@
 package quiz.data
 
 import quiz.data.KanjiDataTest.*
-import quiz.data.{KanjiData, RadicalData, UcdData}
 import quiz.kanji.*
 import quiz.kanji.Ucd.{LinkType, Sources}
 import quiz.test.FileTest
