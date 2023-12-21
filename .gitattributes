@@ -1,5 +1,11 @@
 # run the following command to normalize line endings
 # git add --renormalize .
+
+# run this to force all files to have 'lf' instead of 'crlf'
+# git rm --cached -r .
+# git reset --hard
+
 # run the following command to check line endings
 # git ls-files --eol
+
 * text=auto
