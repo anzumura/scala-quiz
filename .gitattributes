@@ -1,0 +1,5 @@
+# run the following command to normalize line endings
+# git add --renormalize .
+# run the following command to check line endings
+# git ls-files --eol
+* text=auto
