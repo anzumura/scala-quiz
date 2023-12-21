@@ -82,10 +82,10 @@ object FileUtils extends ThrowsDomainException {
   def cwd: Path = Paths.get("").toAbsolutePath
 
   def getFiles(dir: Path): LazyList[Path] = {
-    Files.list(dir).toScala(LazyList).filter(Files.isRegularFile(_))
+    Files.list(dir).toScala(LazyList).filter(Files.isRegularFile(_)).sorted
   }
 
   def getDirectories(dir: Path): LazyList[Path] = {
-    Files.list(dir).toScala(LazyList).filter(Files.isDirectory(_))
+    Files.list(dir).toScala(LazyList).filter(Files.isDirectory(_)).sorted
   }
 }
