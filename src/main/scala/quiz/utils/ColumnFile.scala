@@ -132,7 +132,7 @@ extends ThrowsDomainException {
     if (!lines.hasNext) fileError("missing header row")
     val colsFound = mutable.Set.empty[String]
     var includedColumnPos = 0
-    lines.next().split(sep).zipWithIndex.foreach { case (s, pos) =>
+    lines.next().split(sep).zipWithIndex.foreach { (s, pos) =>
       if (!colsFound.add(s)) fileError(s"duplicate header '$s'")
       colsIn.remove(s) match {
         case Some(c) =>

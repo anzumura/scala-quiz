@@ -219,9 +219,8 @@ class ColumnFileTest extends FileTest {
     "invalid unsigned int" in {
       val f = create(cols.take(2), "col1\tcol2", "bad\t-123")
       f.nextRow()
-      Seq((col1, "bad"), (col2, "-123")).foreach { case (c, s) =>
-        fileError(f.getUInt(c), "convert to UInt failed", 1, c, s)
-      }
+      Seq((col1, "bad"), (col2, "-123"))
+        .foreach((c, s) => fileError(f.getUInt(c), "convert to UInt failed", 1, c, s))
     }
 
     "unsigned int with max value" in {
@@ -236,7 +235,7 @@ class ColumnFileTest extends FileTest {
 
     "unsigned int exceeding max value" in {
       val f = create(List(col1), "col1", "18", "100")
-      Seq((0, "18"), (99, "100")).foreach { case (max, s) =>
+      Seq((0, "18"), (99, "100")).foreach { (max, s) =>
         f.nextRow()
         fileError(f.getUInt(col1, max), s"exceeded max value $max", f.currentRow, col1, s)
       }

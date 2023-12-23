@@ -16,9 +16,7 @@ class FileUtilsTest extends FileTest {
 
   "fileNameStem removes extensions" in {
     Seq("abc.x.y" -> "abc", "def." -> "def", "abc" -> "abc", "." -> ".", ".." -> "..",
-      "..a.b" -> "..a").foreach { case (name, result) =>
-      assert(fileNameStem(Path.of(name)) == result)
-    }
+      "..a.b" -> "..a").foreach((name, result) => assert(fileNameStem(Path.of(name)) == result))
   }
 
   "hasExtension returns true if file has an extension" in { assert(hasExtension(testFile)) }

@@ -82,9 +82,8 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean) {
     @tailrec
     def f(s: State): State = {
       choice.println(s.questionMsg(entries.size, k))
-      answers.zipWithIndex.foreach { case (answer, index) =>
-        choice.println(s"  ${index + 1}: " + entries(answer).reading)
-      }
+      answers.zipWithIndex
+        .foreach((answer, index) => choice.println(s"  ${index + 1}: " + entries(answer).reading))
       QuestionRange.get(choice, Map(FlipMeaning -> s.meaningMsg), "Choose reading") match {
         case FlipMeaning => f(s.flipMeaning)
         case x if choice.isQuit(x) => s.quit

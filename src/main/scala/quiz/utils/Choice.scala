@@ -89,7 +89,7 @@ extends ThrowsDomainException {
     val completeRange =
       () => rangeStart.foreach(c => if (c != prevChoice) prompt ++= s"-$prevChoice")
     // use TreeMap to traverse entries in alphabetical order
-    (choices to TreeMap).foreach { case (choice, description) =>
+    (choices to TreeMap).foreach { (choice, description) =>
       checkChoice(choice, "[Choice] option")
       if (description.isEmpty) {
         if (rangeStart.isEmpty) {
