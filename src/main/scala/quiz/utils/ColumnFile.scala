@@ -1,5 +1,6 @@
 package quiz.utils
 
+import cats.syntax.all.*
 import quiz.utils.ColumnFile.*
 
 import java.io.IOException
@@ -85,7 +86,7 @@ extends ThrowsDomainException {
   /** similar to [[get]], but wraps the return value in a Option (with None for empty string) */
   def getOption(col: Column): Option[String] = {
     val x = get(col)
-    if (x.isEmpty) None else Option(x)
+    if (x.isEmpty) None else x.some
   }
 
   /** @param col column contained in this file

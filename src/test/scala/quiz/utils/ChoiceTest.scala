@@ -1,5 +1,6 @@
 package quiz.utils
 
+import cats.syntax.all.*
 import quiz.test.BaseTest
 import quiz.utils.Choice.*
 

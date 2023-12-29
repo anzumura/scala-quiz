@@ -1,5 +1,6 @@
 package quiz.data
 
+import cats.syntax.all.*
 import quiz.data.KanjiDataSanityTest.{data, ucdData}
 import quiz.kanji.KanjiType.*
 import quiz.kanji.{Grade, KanjiType, Kyu, Level}
@@ -82,7 +83,7 @@ class KanjiDataSanityTest extends BaseTest {
 
   "check Kanji types with non-zero frequency" in {
     val result = data.frequencyList.foldLeft(Map[KanjiType, Int]())((result, k) =>
-      result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(Option(1))))
+      result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(1.some)))
     assert(result.values.sum == data.frequencies.size)
     assert(result(Jouyou) == 2037)
     assert(result(Jinmei) == 326)

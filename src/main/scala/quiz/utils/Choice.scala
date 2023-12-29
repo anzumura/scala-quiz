@@ -1,5 +1,6 @@
 package quiz.utils
 
+import cats.syntax.all.*
 import quiz.utils.Choice.*
 
 import java.io.{BufferedReader, InputStream, InputStreamReader, PrintStream}
@@ -26,9 +27,9 @@ extends ThrowsDomainException {
   def isQuit(q: Char): Boolean = quit.contains(q)
   def hasQuit: Boolean = quit.nonEmpty
   def clearQuit(): Unit = quit = None
-  def setQuit(q: Char): Unit = quit = Option(q)
+  def setQuit(q: Char): Unit = quit = q.some
   def setQuit(q: Char, d: String): Unit = {
-    quit = Option(q)
+    quit = q.some
     quitDescription = d
   }
 
@@ -55,8 +56,8 @@ extends ThrowsDomainException {
   }
 
   // 'get' overloads using 'd' Char for default choice instead of Option[Char]
-  def get(c: Choices, m: String, d: Char): Char = get(c, m, UseQuit.Yes, Option(d))
-  def get(c: Choices, m: String, d: Char, u: UseQuit): Char = get(c, m, u, Option(d))
+  def get(c: Choices, m: String, d: Char): Char = get(c, m, UseQuit.Yes, d.some)
+  def get(c: Choices, m: String, d: Char, u: UseQuit): Char = get(c, m, u, d.some)
   // overloads without 'm' message parameter (defaults to empty string)
   def get(c: Choices, u: UseQuit): Char = get(c, "", u)
   def get(c: Choices, d: Char): Char = get(c, "", d)
@@ -77,7 +78,7 @@ extends ThrowsDomainException {
     os.flush()
     reader.readLine() match {
       case line if line.isEmpty => None
-      case line if line.length == 1 => Option(line(0))
+      case line if line.length == 1 => line(0).some
       case _ => read(prompt)
     }
   }
@@ -95,11 +96,11 @@ extends ThrowsDomainException {
         if (rangeStart.isEmpty) {
           if (prevChoice > 0) prompt ++= ", "
           prompt += choice
-          rangeStart = Option(choice) // start new range
+          rangeStart = choice.some // start new range
         } else if (choice - prevChoice > 1) {
           completeRange() // complete range if jump in option values is > 1
           prompt ++= s", $choice"
-          rangeStart = Option(choice)
+          rangeStart = choice.some
         } // continue processing consecutive values (so don't update rangeStart)
       } else {
         if (rangeStart.nonEmpty) {
@@ -130,7 +131,7 @@ object Choice {
   val DefaultQuitDescription = "quit"
 
   def apply(): Choice = new Choice
-  def apply(q: Char, d: String = DefaultQuitDescription): Choice = new Choice(Option(q), d)
+  def apply(q: Char, d: String = DefaultQuitDescription): Choice = new Choice(q.some, d)
   // used by test code
   def apply(is: InputStream, os: PrintStream): Choice = new Choice(is = is, os = os)
 
@@ -168,7 +169,7 @@ object Choice {
       var result = c
       (start to end).foreach(c =>
         result = result.updatedWith(c) {
-          case None => Option("")
+          case None => "".some
           case _ => domainError(s"option '$c' already in choices")
         })
       result

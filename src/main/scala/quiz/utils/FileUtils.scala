@@ -1,5 +1,7 @@
 package quiz.utils
 
+import cats.syntax.all.*
+
 import java.nio.file.{Files, Path, Paths}
 import scala.annotation.tailrec
 import scala.jdk.StreamConverters.StreamHasToScala
@@ -76,8 +78,7 @@ object FileUtils extends ThrowsDomainException {
   }
 
   /** helper calls [[resolve]] with a string file name and TextFileExtension */
-  def textFile(dir: Path, file: String): Path =
-    resolve(dir, Path.of(file), Option(TextFileExtension))
+  def textFile(dir: Path, file: String): Path = resolve(dir, Path.of(file), TextFileExtension.some)
 
   def cwd: Path = Paths.get("").toAbsolutePath
 

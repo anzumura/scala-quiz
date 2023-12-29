@@ -1,5 +1,7 @@
 package quiz.utils
 
+import cats.syntax.all.*
+
 trait OrderedEnum[T <: OrderedEnum[T]] extends Ordered[T] {
   def ordinal: Int
   override def compare(that: T): Int = ordinal - that.ordinal
@@ -16,7 +18,7 @@ trait NoValueEnum[T <: NoValueEnum[T]](obj: NoValueEnumObject[T]) extends Ordere
   lazy val isDefined: Boolean = toString != "No" + enumName
 
   /** returns this value wrapped in an Option if defined, otherwise None */
-  def toOption: Option[T] = if (isDefined) Option(this.asInstanceOf[T]) else None
+  def toOption: Option[T] = if (isDefined) this.asInstanceOf[T].some else None
 }
 
 /** base class for companion object of `enum` with a "NoXxx" value */

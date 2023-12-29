@@ -1,5 +1,6 @@
 package quiz.kanji
 
+import cats.syntax.all.*
 import quiz.kanji.JinmeiReason.Print
 import quiz.kanji.Kanji.Info
 import quiz.kanji.Kanji.Info.Frequency
@@ -92,7 +93,7 @@ class KanjiTest extends BaseTest {
 
     "create Extra Kanji with a new name" in {
       val newName = "犬"
-      val k = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number, Option(newName))
+      val k = ExtraKanji(name, radical, strokes, meaning, reading, kyu, number, newName.some)
       checkNumberedFields(k)
       assert(k.kanjiType == KanjiType.Extra)
       assert(k.newName.contains(newName))
@@ -213,7 +214,7 @@ class KanjiTest extends BaseTest {
   }
 
   private def checkLinkedFields(k: Kanji, link: Kanji) = {
-    assert(k.link == Option(link))
+    assert(k.link.contains(link))
     assert(k.newName.contains(link.name))
     assert(k.meaning == link.meaning)
     assert(k.reading == link.reading)

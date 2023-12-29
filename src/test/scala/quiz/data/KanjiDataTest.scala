@@ -1,5 +1,6 @@
 package quiz.data
 
+import cats.syntax.all.*
 import quiz.data.KanjiDataTest.*
 import quiz.kanji.*
 import quiz.kanji.Ucd.{LinkType, Sources}
@@ -216,7 +217,7 @@ object KanjiDataTest {
   // test Radical
   private val testRadical = Radical(1, "一", Nil, "", "")
   private val testRadicalData = new RadicalData(Path.of("")) {
-    override def findByName(s: String): Option[Radical] = Option(testRadical)
+    override def findByName(s: String): Option[Radical] = testRadical.some
   }
   // test Ucd
   private val testStrokes = 29
@@ -225,7 +226,7 @@ object KanjiDataTest {
   private val testUcd = Ucd(Code(), testRadical, testStrokes, "", None, Nil,
     Sources("", "", false, false), List(Code("一")), LinkType.Jinmei, testMeaning, testReading)
   private val testUcdData = new UcdData(Path.of(""), testRadicalData) {
-    override def find(s: String): Option[Ucd] = Option(testUcd)
+    override def find(s: String): Option[Ucd] = testUcd.some
     override lazy val data: Map[String, Ucd] = Map("二" -> testUcd)
   }
   // test KanjiData

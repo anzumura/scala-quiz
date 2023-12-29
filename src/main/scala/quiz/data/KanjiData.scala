@@ -1,5 +1,6 @@
 package quiz.data
 
+import cats.syntax.all.*
 import quiz.data.KanjiData.*
 import quiz.kanji.*
 import quiz.kanji.KanjiType.{Jouyou, LinkedJinmei, Ucd}
@@ -187,7 +188,7 @@ extends ThrowsDomainException {
 
   private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) = KanjiType.values
     .takeWhile(_ != t).flatMap(getType).foldLeft(Map[T, Vector[Kanji]]()) { case (result, (_, k)) =>
-      f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Option(Vector(k)))))
+      f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Vector(k).some)))
         .getOrElse(result)
     }
 

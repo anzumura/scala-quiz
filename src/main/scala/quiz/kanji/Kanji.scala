@@ -1,5 +1,6 @@
 package quiz.kanji
 
+import cats.syntax.all.*
 import quiz.kanji.Kanji.*
 import quiz.utils.DomainException
 
@@ -95,11 +96,11 @@ object Kanji {
   sealed abstract class Linked(name: String, radical: Radical, strokes: Int, l: Kanji,
       override val frequency: Int, override val kyu: Kyu)
   extends Kanji(name, radical, strokes) {
-    override val link: Option[Kanji] = Option(l)
+    override val link: Option[Kanji] = l.some
     override def meaning: String = l.meaning
     override def reading: String = l.reading
     override def linkedReadings: LinkedReadings = LinkedReadings.Yes
-    override def newName: Option[String] = Option(l.name)
+    override def newName: Option[String] = l.name.some
   }
 
   /** contains 'meaning' and 'reading' fields loaded from files */

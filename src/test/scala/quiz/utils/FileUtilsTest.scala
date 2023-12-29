@@ -1,5 +1,6 @@
 package quiz.utils
 
+import cats.syntax.all.*
 import quiz.test.FileTest
 import quiz.test.FileTest.{testFileBaseName, testFileName}
 import quiz.utils.FileUtils.*
@@ -44,7 +45,7 @@ class FileUtilsTest extends FileTest {
     "return path+extension if path doesn't exist (but path+extension does)" in {
       val fileWithExtension = tempDir.resolve(name + extension)
       Files.createFile(fileWithExtension)
-      assert(checkExists(tempDir.resolve(name), Option(extension)) == fileWithExtension)
+      assert(checkExists(tempDir.resolve(name), extension.some) == fileWithExtension)
     }
 
     "error thrown if path doesn't exist" in {
@@ -53,8 +54,7 @@ class FileUtilsTest extends FileTest {
 
     "error has path+extension if neither path nor path+extension exists" in {
       val fileWithExtension = tempDir.resolve(name + extension)
-      error(
-        checkExists(tempDir.resolve(name), Option(extension)), s"'$fileWithExtension' not found")
+      error(checkExists(tempDir.resolve(name), extension.some), s"'$fileWithExtension' not found")
     }
   }
 
@@ -67,7 +67,7 @@ class FileUtilsTest extends FileTest {
 
     "adds extension if original file doesn't exist" in {
       Files.createFile(testFile)
-      assert(resolve(tempDir, Path.of(testFileBaseName), Option(TextFileExtension)) == testFile)
+      assert(resolve(tempDir, Path.of(testFileBaseName), TextFileExtension.some) == testFile)
     }
 
     "dir must be a directory" in {
@@ -81,7 +81,7 @@ class FileUtilsTest extends FileTest {
     "file not found" in { error(resolve(tempDir, Path.of(testFileName)), s"'$testFile' not found") }
 
     "file not found after adding extension" in {
-      error(resolve(tempDir, Path.of(name), Option(extension)),
+      error(resolve(tempDir, Path.of(name), extension.some),
         s"'${tempDir.resolve(name + extension)}' not found")
     }
 

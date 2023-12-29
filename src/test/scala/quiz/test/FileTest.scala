@@ -1,5 +1,6 @@
 package quiz.test
 
+import cats.syntax.all.*
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.freespec.AnyFreeSpec
 import quiz.test.FileTest.testFileName
@@ -61,7 +62,7 @@ trait FileTest extends BaseTest with BeforeAndAfterAll {
   protected def fileError(f: => Any, msg: String, line: Int): Unit =
     domainError(f, fileMsg(msg, line, None))
   protected def fileError(f: => Any, msg: String, line: Int, file: String): Unit =
-    domainError(f, fileMsg(msg, line, Option(file)))
+    domainError(f, fileMsg(msg, line, file.some))
 }
 
 object FileTest {

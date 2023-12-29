@@ -1,5 +1,6 @@
 package quiz.utils
 
+import cats.syntax.all.*
 import quiz.test.FileTest.testFileName
 import quiz.test.{BaseTest, FileTest}
 import quiz.utils.ColumnFile.*
@@ -272,7 +273,7 @@ class ColumnFileTest extends FileTest {
       lines: String*) = {
     testColumnFile.foreach(_.closeFile())
     val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols, cols: _*)
-    testColumnFile = Option(f)
+    testColumnFile = f.some
     f
   }
 

@@ -1,5 +1,6 @@
 package quiz.utils
 
+import cats.syntax.all.*
 import quiz.utils.Block.isKanji
 import quiz.utils.FileUtils.*
 import quiz.utils.ListFile.EntriesPerLine
@@ -19,7 +20,7 @@ extends ThrowsDomainException {
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
-    this(path, fileType, Option(name))
+    this(path, fileType, name.some)
 
   /** @return name assigned at construction or if no name was given then return the capitalized
    *         file name (without extensions)
@@ -83,7 +84,7 @@ extends ListFile(path, fileType, nameIn) {
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
-    this(path, fileType, Option(name))
+    this(path, fileType, name.some)
 
   override protected def validate(entry: String): Boolean = isKanji(entry) ||
     error(s"'$entry' is not a recognized Kanji")
