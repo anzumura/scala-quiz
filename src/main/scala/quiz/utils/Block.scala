@@ -2,13 +2,11 @@ package quiz.utils
 
 import scala.util.Try
 
-case class Block(start: Code, end: Code) extends ThrowsDomainException {
-  if (end < start) error(s"end $end is less than start $start")
-
+case class Block(start: Code, end: Code) extends ThrowsDomainException:
+  if end < start then error(s"end $end is less than start $start")
   def apply(x: Code): Boolean = start <= x && x <= end
-}
 
-object Block {
+object Block:
   /** create a block with a single entry of `start` */
   def apply(start: Code): Block = Block(start, start)
 
@@ -52,4 +50,3 @@ object Block {
     block(0x2f800, 0x2fa1f), // CJK Compat. Supp.
     block(0x30000, 0x3134f)  // CJK Extension G
   )
-}

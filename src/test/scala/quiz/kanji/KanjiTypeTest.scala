@@ -2,7 +2,7 @@ package quiz.kanji
 
 import quiz.test.BaseTest
 
-class KanjiTypeTest extends BaseTest {
+class KanjiTypeTest extends BaseTest:
   "KanjiType has expected values" in {
     import KanjiType.*
     assert(
@@ -42,4 +42,3 @@ class KanjiTypeTest extends BaseTest {
     import OldLinks.*
     assert(values sameElements Array(Yes, No))
   }
-}

@@ -10,7 +10,7 @@ import java.io.IOException
 import java.nio.file.{Files, Path}
 import scala.util.Using
 
-class ColumnFileTest extends FileTest {
+class ColumnFileTest extends FileTest:
   // tests below use a derived instance of ColumnFile for testing
   override val mainClassName: String = "TestColumnFile"
 
@@ -74,7 +74,8 @@ class ColumnFileTest extends FileTest {
 
     "exception from op is wrapped in a DomainException including the file name and line" in {
       val f = create(cols.take(1), "col1", "x", "y", "z")
-      fileError(f.processRows(0)(if (f.currentRow != 3) _ else throw new Exception("some error")),
+      fileError(
+        f.processRows(0)(if f.currentRow != 3 then _ else throw new Exception("some error")),
         "some error", 3)
     }
 
@@ -261,39 +262,33 @@ class ColumnFileTest extends FileTest {
     }
   }
 
-  override protected def afterEach(): Unit = {
+  override protected def afterEach(): Unit =
     testColumnFile.foreach(_.closeFile())
     super.afterEach()
-  }
 
   private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
     domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
   private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
-      lines: String*) = {
+      lines: String*) =
     testColumnFile.foreach(_.closeFile())
-    val f = new TestColumnFile(writeTestFile(lines: _*), sep, allowExtraCols, cols: _*)
+    val f = new TestColumnFile(writeTestFile(lines*), sep, allowExtraCols, cols*)
     testColumnFile = f.some
     f
-  }
 
   private def create(
-      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile = {
-    create(DefaultSeparator, allowExtraCols, cols, lines: _*)
-  }
+      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile =
+    create(DefaultSeparator, allowExtraCols, cols, lines*)
 
-  private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile = {
-    create(sep, AllowExtraCols.No, cols, lines: _*)
-  }
+  private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile =
+    create(sep, AllowExtraCols.No, cols, lines*)
 
-  private def create(cols: List[Column], lines: String*): ColumnFile = {
-    create(AllowExtraCols.No, cols, lines: _*)
-  }
+  private def create(cols: List[Column], lines: String*): ColumnFile =
+    create(AllowExtraCols.No, cols, lines*)
 
   private var testColumnFile = none[TestColumnFile]
-}
 
-class ColumnTest extends BaseTest {
+class ColumnTest extends BaseTest:
   "toString returns column name" in { assert(col1.toString == "col1") }
 
   "number is assigned based on creation order" in {
@@ -315,27 +310,22 @@ class ColumnTest extends BaseTest {
   }
 
   "hasCode is based on number" in { assert(col1.hashCode == col1.number.hashCode) }
-}
 
-object ColumnFileTest {
+object ColumnFileTest:
   val cols: List[Column] = (1 to 3).map(c => Column("col" + c)).toList
   val col1 :: col2 :: col3 :: Nil = cols: @unchecked()
 
   private class TestColumnFile(path: Path, sep: Char, allowExtraCols: AllowExtraCols, cols: Column*)
-  extends ColumnFile(path, sep, allowExtraCols, cols: _*) with AutoCloseable {
+  extends ColumnFile(path, sep, allowExtraCols, cols*) with AutoCloseable:
     // allow tests to force close or read to fail
     var closeFailure: Boolean = false
     var readFailure: Boolean = false
 
     // make close public so tests can force closing the underlying file
-    override def closeFile(): Unit = {
+    override def closeFile(): Unit =
       super[ColumnFile].closeFile() // still want to close the real underlying file
-      if (closeFailure) throw new IOException("bad close")
-    }
+      if closeFailure then throw new IOException("bad close")
 
-    override protected def readRow(): String = {
-      if (readFailure) throw new IOException("bad read")
+    override protected def readRow(): String =
+      if readFailure then throw new IOException("bad read")
       super.readRow()
-    }
-  }
-}

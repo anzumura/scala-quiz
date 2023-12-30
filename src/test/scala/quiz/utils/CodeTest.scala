@@ -3,7 +3,7 @@ package quiz.utils
 import quiz.test.BaseTest
 import quiz.utils.Code.UnicodeMax
 
-class CodeTest extends BaseTest {
+class CodeTest extends BaseTest:
   private val dog = Code(0x72ac)    // Kanji in the Basic Multilingual Plane
   private val scold = Code(0x20b9f) // Kanji in a Supplementary Plane
 
@@ -75,4 +75,3 @@ class CodeTest extends BaseTest {
     assert(b.start.value == 0)
     assert(b.end.value == 255)
   }
-}

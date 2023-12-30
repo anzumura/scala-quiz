@@ -16,7 +16,7 @@ import scala.util.{Try, Using}
  *  verified when data is loaded, and entries are stored in-order in a list.
  */
 class ListFile(path: Path, fileType: EntriesPerLine, nameIn: Option[String])
-extends ThrowsDomainException {
+extends ThrowsDomainException:
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
@@ -28,24 +28,22 @@ extends ThrowsDomainException {
   val name: String = nameIn.getOrElse(fileNameStem(path).capitalize)
 
   /** list of all entries in the file */
-  lazy val entries: Vector[String] = {
+  lazy val entries: Vector[String] =
     val result = mutable.ArrayBuffer.empty[String]
     Using(Source.fromFile(path.toFile)) { source =>
       val uniqueEntries = mutable.Set.empty[String]
       source.getLines().zipWithIndex.foreach { case (line, i) =>
         def err(msg: String) = domainError(s"$msg - file: ${fileName(path)}, line: ${i + 1}")
-        def add(entry: String): Unit = {
-          if (!uniqueEntries.add(entry)) err(s"duplicate entry '$entry'")
-          Try(if (validate(entry)) result += entry).failed.foreach(e => err(e.getMessage))
-        }
-        if (fileType == EntriesPerLine.Single) {
-          if (line.contains(' ')) err("line has multiple entries")
+        def add(entry: String): Unit =
+          if !uniqueEntries.add(entry) then err(s"duplicate entry '$entry'")
+          Try(if validate(entry) then result += entry).failed.foreach(e => err(e.getMessage))
+        if fileType == EntriesPerLine.Single then
+          if line.contains(' ') then err("line has multiple entries")
           add(line)
-        } else line.split(' ').foreach(add)
+        else line.split(' ').foreach(add)
       }
     }.failed.foreach(throw _)
     result.toVector
-  }
 
   lazy val indices: Map[String, Int] = entries.zipWithIndex.toMap
 
@@ -70,17 +68,14 @@ extends ThrowsDomainException {
    *  @return true if the entry should be added
    */
   protected def validate(entry: String): Boolean = true
-}
 
-object ListFile {
-  enum EntriesPerLine {
+object ListFile:
+  enum EntriesPerLine:
     case Single, Multiple
-  }
-}
 
 /** derived class of ListFile that ensures each entry is a recognized Kanji */
 class KanjiListFile protected (path: Path, fileType: EntriesPerLine, nameIn: Option[String])
-extends ListFile(path, fileType, nameIn) {
+extends ListFile(path, fileType, nameIn):
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
@@ -88,7 +83,6 @@ extends ListFile(path, fileType, nameIn) {
 
   override protected def validate(entry: String): Boolean = isKanji(entry) ||
     error(s"'$entry' is not a recognized Kanji")
-}
 
 /** derived class of [[KanjiListFile]] that ensures each entry is unique across all files for the
  *  same `enum` type, i.e., an entry can't be in more than one JLPT 'Level' file (file name is
@@ -97,7 +91,7 @@ extends ListFile(path, fileType, nameIn) {
  *  @param value enum value, i.e., Level.N3
  */
 final class EnumListFile[T <: NoValueEnum[T]](dir: Path, val value: T)
-extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPerLine.Multiple) {
+extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPerLine.Multiple):
 
   private val enumEntries = EnumListFile.entries
     .getOrElseUpdate(value.enumName, mutable.Set[String]())
@@ -105,9 +99,8 @@ extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPe
   override protected def validate(
       entry: String): Boolean = super.validate(entry) && enumEntries.add(entry) ||
     error(s"'$entry' already in another ${value.enumName}")
-}
 
-object EnumListFile {
+object EnumListFile:
   /** clear all entry data used to ensure uniqueness per enum */
   def clearEntryData(): Unit = entries.clear()
 
@@ -115,4 +108,3 @@ object EnumListFile {
    *  name' (like "Level" or "Kyu") to a set entries
    */
   private val entries = mutable.Map[String, mutable.Set[String]]()
-}

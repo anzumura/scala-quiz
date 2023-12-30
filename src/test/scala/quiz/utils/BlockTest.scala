@@ -3,7 +3,7 @@ package quiz.utils
 import quiz.test.BaseTest
 import quiz.utils.Block.{isKanji, isOneKanji}
 
-class BlockTest extends BaseTest {
+class BlockTest extends BaseTest:
   "create Unicode block with only one entry" in {
     val b = Block(Code(256))
     assert(b.start.value == 256)
@@ -54,4 +54,3 @@ class BlockTest extends BaseTest {
     assert(isOneKanji("朝"))
     assert(!isOneKanji("朝日"))
   }
-}

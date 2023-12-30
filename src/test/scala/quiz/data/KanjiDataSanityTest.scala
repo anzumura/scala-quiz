@@ -7,7 +7,7 @@ import quiz.kanji.{Grade, KanjiType, Kyu, Level}
 import quiz.test.BaseTest
 
 // use real data files for these tests
-class KanjiDataSanityTest extends BaseTest {
+class KanjiDataSanityTest extends BaseTest:
   "load expected total frequency, level, kyu and ucd data" in {
     assert(data.frequencies.size == 2501)
     assert(data.levels.size == 2222)
@@ -60,14 +60,13 @@ class KanjiDataSanityTest extends BaseTest {
 
   "check Linked Jinmei link totals" in {
     data.getType(LinkedJinmei).foldLeft((0, 0)) { case ((jouyou, jinmei), (name, k)) =>
-      if (k.link.map(_.kanjiType).contains(Jouyou)) (jouyou + 1, jinmei)
-      else if (k.link.map(_.kanjiType).contains(Jinmei)) (jouyou, jinmei + 1)
+      if k.link.map(_.kanjiType).contains(Jouyou) then (jouyou + 1, jinmei)
+      else if k.link.map(_.kanjiType).contains(Jinmei) then (jouyou, jinmei + 1)
       else fail(s"'$name' had invalid or missing link'")
-    } match {
+    } match
       case (jouyou, jinmei) =>
         assert(jouyou == 212)
         assert(jinmei == 18)
-    }
   }
 
   "check Linked Old Kanji" in {
@@ -91,12 +90,10 @@ class KanjiDataSanityTest extends BaseTest {
     assert(result(LinkedOld) == 2)
     assert(result(Frequency) == 124)
   }
-}
 
-object KanjiDataSanityTest {
+object KanjiDataSanityTest:
   private val dir = KanjiData.dataDir()
   private val radicalData = RadicalData(dir)
   private val ucdData = UcdData(dir, radicalData)
   class TestKanjiData extends KanjiData(dir, radicalData, ucdData)
   val data: KanjiData = TestKanjiData()
-}

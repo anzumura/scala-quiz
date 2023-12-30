@@ -8,7 +8,7 @@ import quiz.utils.FileUtilsTest.*
 
 import java.nio.file.{Files, Path}
 
-class FileUtilsTest extends FileTest {
+class FileUtilsTest extends FileTest:
   "fileName returns final component of path" in { assert(fileName(testFile) == testFileName) }
 
   "fileName works for path with single component" in {
@@ -108,9 +108,7 @@ class FileUtilsTest extends FileTest {
     Seq("cc", "dd").foreach(f => Files.createDirectory(tempDir.resolve(f)))
     assert(getDirectories(tempDir).map(fileName) == Seq("cc", "dd"))
   }
-}
 
-object FileUtilsTest {
+object FileUtilsTest:
   private val name = "abc"
   private val extension = ".def"
-}

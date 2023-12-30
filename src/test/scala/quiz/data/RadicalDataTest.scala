@@ -8,7 +8,7 @@ import quiz.test.FileTest
 
 import java.nio.file.Files
 
-class RadicalDataTest extends FileTest {
+class RadicalDataTest extends FileTest:
   private val sampleRadicals = "1\t一\t一部（いちぶ）\tイチ\n2\t丨\t丨部（こんぶ）\tぼう たてぼう"
   private val firstRadical = Radical(1, "一", Nil, "一部（いちぶ）", "イチ")
   private val secondRadical = Radical(2, "丨", Nil, "丨部（こんぶ）", "ぼう たてぼう")
@@ -60,16 +60,14 @@ class RadicalDataTest extends FileTest {
     domainError(create("1\t一\t\t").findByName("一"), "loaded 1, but expected 214")
   }
 
-  private def create(skipVerifyLoaded: Boolean, lines: String*): RadicalData = {
+  private def create(skipVerifyLoaded: Boolean, lines: String*): RadicalData =
     Files.writeString(tempDir.resolve(RadicalFileName),
-      if (lines.isEmpty) header else header + lines.mkString("\n"))
-    if (skipVerifyLoaded) new RadicalData(tempDir) {
-      override def verifyDataSize(x: Int): Unit = {}
-    }
+      if lines.isEmpty then header else header + lines.mkString("\n"))
+    if skipVerifyLoaded then
+      new RadicalData(tempDir):
+        override def verifyDataSize(x: Int): Unit = {}
     else RadicalData(tempDir)
-  }
 
-  private def create(lines: String*): RadicalData = create(false, lines: _*)
+  private def create(lines: String*): RadicalData = create(false, lines*)
 
   private val header = "Number\tName\tLongName\tReading\n"
-}

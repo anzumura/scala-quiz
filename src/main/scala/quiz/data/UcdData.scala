@@ -11,11 +11,11 @@ import java.nio.file.Path
 import scala.collection.mutable
 import scala.util.{Success, Try}
 
-class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException {
+class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException:
   def find(s: String): Option[Ucd] = data.get(s)
   inline def size: Int = data.size
 
-  lazy val data: Map[String, Ucd] = {
+  lazy val data: Map[String, Ucd] =
     val f = ColumnFile(
       dir.resolve(UcdFileName), AllowExtraCols.Yes, codeCol, radicalCol, strokesCol, pinyinCol,
       morohashiIdCol, nelsonIdsCol, sourcesCol, jSourceCol, joyoCol, jinmeiCol, linkCodesCol,
@@ -29,26 +29,22 @@ class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException
         f.getOption(linkTypeCol).map(x => LinkType.valueOf(x.replace("*", "_R")))
           .getOrElse(LinkType.NoLinkType), f.get(meaningCol), f.get(japaneseCol)))
       .map(x => x.code.toUTF16 -> x).toMap
-  }
 
-  private def nelsonIds(s: String): List[Int] = {
-    if (s.isEmpty) Nil
-    else Try(s.split(",").map(Integer.parseInt)) match {
-      case Success(x) => x.toList
-      case _ => throw DomainException(s"invalid NelsonIds '$s'")
-    }
-  }
+  private def nelsonIds(s: String): List[Int] =
+    if s.isEmpty then Nil
+    else
+      Try(s.split(",").map(Integer.parseInt)) match
+        case Success(x) => x.toList
+        case _ => throw DomainException(s"invalid NelsonIds '$s'")
 
-  private def links(s: String): List[Code] = {
-    if (s.isEmpty) Nil
-    else Try(s.split(",").map(Code.fromHex)) match {
-      case Success(x) => x.toList
-      case _ => throw DomainException(s"invalid LinkCodes '$s'")
-    }
-  }
-}
+  private def links(s: String): List[Code] =
+    if s.isEmpty then Nil
+    else
+      Try(s.split(",").map(Code.fromHex)) match
+        case Success(x) => x.toList
+        case _ => throw DomainException(s"invalid LinkCodes '$s'")
 
-object UcdData {
+object UcdData:
   val UcdFileName = "ucd.txt"
 
   private val codeCol = Column("Code")
@@ -65,4 +61,3 @@ object UcdData {
   private val linkTypeCol = Column("LinkType")
   private val meaningCol = Column("Meaning")
   private val japaneseCol = Column("Japanese")
-}

@@ -7,15 +7,13 @@ import quiz.utils.Choice.*
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, PrintStream}
 import scala.language.implicitConversions
 
-trait BaseChoiceTest extends BaseTest {
-  protected def create(input: String = ""): (Choice, ByteArrayOutputStream) = {
+trait BaseChoiceTest extends BaseTest:
+  protected def create(input: String = ""): (Choice, ByteArrayOutputStream) =
     val is = new ByteArrayInputStream((input + '\n').getBytes())
     val os = new ByteArrayOutputStream()
     (Choice(is, new PrintStream(os)), os)
-  }
-}
 
-class ChoiceTest extends BaseChoiceTest {
+class ChoiceTest extends BaseChoiceTest:
   "create with default options" in {
     val c = Choice()
     assert(c.quit.isEmpty)
@@ -178,9 +176,8 @@ class ChoiceTest extends BaseChoiceTest {
       domainError(c.get(Map(('a', ""))), "quit option 'a' already in choices")
     }
   }
-}
 
-class RangeTest extends BaseChoiceTest {
+class RangeTest extends BaseChoiceTest:
   "get" - {
     val a2c = Range('a', 'c')
 
@@ -278,4 +275,3 @@ class RangeTest extends BaseChoiceTest {
         Range('a', 'f').get(c, Map(overlap -> "")), s"option '$overlap' already in choices")
     }
   }
-}

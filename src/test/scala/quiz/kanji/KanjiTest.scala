@@ -9,7 +9,7 @@ import quiz.test.BaseTest
 
 import scala.language.implicitConversions
 
-class KanjiTest extends BaseTest {
+class KanjiTest extends BaseTest:
   import KanjiTest.*
 
   "Numbered Kanji" - {
@@ -69,7 +69,7 @@ class KanjiTest extends BaseTest {
     "Jinmei Kanji suffix depends on JLPT Level" in Level.values.foreach { l =>
       val k = JinmeiKanji(
         name, radical, strokes, meaning, reading, kyu, number, l, frequency, year, oldNames, Print)
-      assert(k.suffix == (if (l.isDefined) '\'' else '^'))
+      assert(k.suffix == (if l.isDefined then '\'' else '^'))
     }
 
     "error for Jinmei Kanji with no reason" in {
@@ -168,7 +168,7 @@ class KanjiTest extends BaseTest {
 
     "Kentei suffix depends on kyu" in Kyu.defined.foreach { x =>
       val k = KenteiKanji(name, radical, strokes, meaning, reading, OldLinks.No, Nil, No, x)
-      assert(k.suffix == (if (x == Kyu.K1) '#' else '@'))
+      assert(k.suffix == (if x == Kyu.K1 then '#' else '@'))
     }
 
     "error for Kentei Kanji with no kyu" in {
@@ -207,13 +207,12 @@ class KanjiTest extends BaseTest {
     }
   }
 
-  private def checkFields(k: Kanji) = {
+  private def checkFields(k: Kanji) =
     assert(k.name == name)
     assert(k.radical == radical)
     assert(k.strokes == strokes)
-  }
 
-  private def checkLinkedFields(k: Kanji, link: Kanji) = {
+  private def checkLinkedFields(k: Kanji, link: Kanji) =
     assert(k.link.contains(link))
     assert(k.newName.contains(link.name))
     assert(k.meaning == link.meaning)
@@ -228,32 +227,27 @@ class KanjiTest extends BaseTest {
     assert(!k.hasNumber)
     assert(!k.hasYear)
     assert(!k.hasOldNames)
-  }
 
-  private def checkLoadedFields(k: Kanji) = {
+  private def checkLoadedFields(k: Kanji) =
     assert(k.meaning == meaning)
     assert(k.reading == reading)
     assert(!k.hasLink)
     checkFields(k)
-  }
 
-  private def checkNumberedFields(k: Kanji) = {
+  private def checkNumberedFields(k: Kanji) =
     assert(k.kyu == kyu)
     assert(k.number == number)
     assert(!k.linkedReadings)
     checkLoadedFields(k)
-  }
 
-  private def checkOfficialFields(k: Kanji) = {
+  private def checkOfficialFields(k: Kanji) =
     assert(k.level == level)
     assert(k.frequency == frequency)
     assert(k.year == year)
     assert(!k.hasNewName)
     checkNumberedFields(k)
-  }
-}
 
-object KanjiTest {
+object KanjiTest:
   // sample Kanji fields
   private val name = "海"
   private val radical = Radical(85, "水", List("氵", "氺"), "水部（すいぶ）", "みず さんずい したみず")
@@ -268,4 +262,3 @@ object KanjiTest {
   private val frequency = 200
   private val differentFrequency = 2489
   private val year = 2023
-}

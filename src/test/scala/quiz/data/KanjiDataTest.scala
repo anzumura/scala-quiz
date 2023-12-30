@@ -11,7 +11,7 @@ import quiz.utils.FileUtils.*
 import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}
 
-class KanjiDataTest extends FileTest {
+class KanjiDataTest extends FileTest:
   "dataDir returns a valid data directory" in {
     val result = KanjiData.dataDir()
     assert(isDirectory(result))
@@ -169,9 +169,8 @@ class KanjiDataTest extends FileTest {
     createEmptyFiles()
     val noLinkUcd = Ucd(Code(), testRadical, 0, "", None, Nil, Sources("", "", false, false), Nil,
       LinkType.Jinmei, "", "")
-    val badUcdData = new UcdData(Path.of(""), testRadicalData) {
+    val badUcdData = new UcdData(Path.of(""), testRadicalData):
       override lazy val data: Map[String, Ucd] = Map("二" -> noLinkUcd)
-    }
     val data = new TestKanjiData(tempDir, badUcdData)
     error(data.getType(KanjiType.LinkedJinmei), _.contains("Ucd entry '二' has no link"))
   }
@@ -201,42 +200,38 @@ class KanjiDataTest extends FileTest {
     assert(k.flatMap(_.link).map(_.name).contains("弁"))
   }
 
-  private def createEmptyFiles(): Unit = {
+  private def createEmptyFiles(): Unit =
     val jouyou = tempDir.resolve("jouyou.txt")
-    if (!Files.exists(jouyou)) Files.writeString(jouyou,
-      """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
+    if !Files.exists(jouyou) then
+      Files.writeString(jouyou,
+        """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
         |""".stripMargin)
     val jinmei = tempDir.resolve("jinmei.txt")
-    if (!Files.exists(jinmei)) Files.writeString(jinmei,
-      """Number	Name	Radical	OldNames	Year	Reason	Reading
+    if !Files.exists(jinmei) then
+      Files.writeString(jinmei,
+        """Number	Name	Radical	OldNames	Year	Reason	Reading
         |""".stripMargin)
-  }
-}
 
-object KanjiDataTest {
+object KanjiDataTest:
   // test Radical
   private val testRadical = Radical(1, "一", Nil, "", "")
-  private val testRadicalData = new RadicalData(Path.of("")) {
+  private val testRadicalData = new RadicalData(Path.of("")):
     override def findByName(s: String): Option[Radical] = testRadical.some
-  }
   // test Ucd
   private val testStrokes = 29
   private val testMeaning = "testMeaning"
   private val testReading = "testReading"
   private val testUcd = Ucd(Code(), testRadical, testStrokes, "", None, Nil,
     Sources("", "", false, false), List(Code("一")), LinkType.Jinmei, testMeaning, testReading)
-  private val testUcdData = new UcdData(Path.of(""), testRadicalData) {
+  private val testUcdData = new UcdData(Path.of(""), testRadicalData):
     override def find(s: String): Option[Ucd] = testUcd.some
     override lazy val data: Map[String, Ucd] = Map("二" -> testUcd)
-  }
   // test KanjiData
   private val testLevel = Level.N2
   private val testKyu = Kyu.KJ1
   private val testFrequency = 1234
   private class TestKanjiData(path: Path, ucdData: UcdData = testUcdData)
-  extends KanjiData(path, testRadicalData, ucdData) {
+  extends KanjiData(path, testRadicalData, ucdData):
     override def level(s: String): Level = testLevel
     override def kyu(s: String): Kyu = testKyu
     override def frequency(s: String): Int = testFrequency
-  }
-}

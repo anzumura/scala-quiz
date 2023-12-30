@@ -5,16 +5,15 @@ import quiz.data.KanjiDataSanityTest.data
 import quiz.kanji.{Grade, Kyu, Level}
 import quiz.utils.BaseChoiceTest
 
-class QuizTest extends BaseChoiceTest {
+class QuizTest extends BaseChoiceTest:
   private val firstQuestion = "Question 1 of 250 (score 0):"
 
-  private def quiz(input: String) = {
+  private def quiz(input: String) =
     val (choice, os) = create(input)
     new Quiz(data, choice, false).start()
     os.toString
-  }
   private def questionPrompt(showMeanings: Boolean = true) =
-    s"Choose reading (-=${if (showMeanings) "show" else "hide"} meanings, 1-4, q=quit): "
+    s"Choose reading (-=${if showMeanings then "show" else "hide"} meanings, 1-4, q=quit): "
 
   "prompt for choosing quiz type" in {
     assert(quiz("q") == "Quiz Type (f=Frequency, g=Grade, k=Kyu, l=Level, q=quit) def 'f': ")
@@ -59,29 +58,29 @@ class QuizTest extends BaseChoiceTest {
         |${questionPrompt()}""".stripMargin))
   }
 
-  "Frequency buckets 0-8 have 250 entries and bucket 9 has 251" in (0 to 9)
-    .foreach(x => assert(quiz(s"\n$x\nb\nq").contains("Question 1 of 25" + (if (x == 9) 1 else 0))))
+  "Frequency buckets 0-8 have 250 entries and bucket 9 has 251" in (0 to 9).foreach(x =>
+    assert(quiz(s"\n$x\nb\nq").contains("Question 1 of 25" + (if x == 9 then 1 else 0))))
 
   "Grades have expected sizes" in Grade.defined.foreach(x =>
-    assert(quiz(s"g\n${if (x == Grade.S) 's' else x.toString.last}\nb\nq")
+    assert(quiz(s"g\n${if x == Grade.S then 's' else x.toString.last}\nb\nq")
         .contains("Question 1 of " + data.gradeMap(x).size)))
 
   "Levels have expected sizes" in Level.defined.foreach(x =>
     assert(quiz(s"l\n${x.toString.last}\nb\nq").contains("Question 1 of " + data.levelMap(x).size)))
 
   "Kyus have expected sizes" in Kyu.defined.foreach(x =>
-    assert(quiz(s"k\n${x match {
+    assert(quiz(s"k\n${x match
         case Kyu.K10 => '0'
         case Kyu.KJ2 => 'j'
         case Kyu.KJ1 => 'k'
         case _ => x.toString.last
-      }}\nb\nq").contains("Question 1 of " + data.kyuMap(x).size)))
+      }\nb\nq").contains("Question 1 of " + data.kyuMap(x).size)))
 
   "correct answer increases score" in {
     val correct = 2 // can rely on this since random seed is constant for test code
     (1 to 4).foreach(x =>
-      assert(
-        quiz(s"\n\n\n$x\nq").contains(s"Question 2 of 250 (score ${if (x == correct) 1 else 0})")))
+      assert(quiz(s"\n\n\n$x\nq")
+          .contains(s"Question 2 of 250 (score ${if x == correct then 1 else 0})")))
   }
 
   "incorrect answer results in a message to the user containing the correct answer" in {
@@ -107,4 +106,3 @@ class QuizTest extends BaseChoiceTest {
     countString(result, questionPrompt(), 2)         // expect 'show meaning' prompt 2 times
     countString(result, questionPrompt(false), 1)    // expect 'hide meaning' prompt 1 time
   }
-}

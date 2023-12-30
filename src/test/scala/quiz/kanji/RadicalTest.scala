@@ -3,7 +3,7 @@ package quiz.kanji
 import quiz.test.BaseTest
 import quiz.test.BaseTest.testRadical
 
-class RadicalTest extends BaseTest {
+class RadicalTest extends BaseTest:
   "toString returns name followed by number in brackets" in {
     assert(testRadical.toString == testRadical.name + s"(${testRadical.number})")
   }
@@ -36,4 +36,3 @@ class RadicalTest extends BaseTest {
   "each alternative name must be a single Kanji" in Seq("二三", "A", "ア", "あ").foreach(altName =>
     error(Radical(1, "一", List("二", altName, "三"), "", ""),
       s"Radical altName '$altName' is not a single Kanji"))
-}

@@ -5,17 +5,15 @@ import quiz.utils.ListFile.EntriesPerLine.Multiple
 
 import java.nio.file.Files
 
-enum EnumA extends NoValueEnum[EnumA](EnumA) {
+enum EnumA extends NoValueEnum[EnumA](EnumA):
   case E1, E2, E3, E4, NoEnumA
-}
 object EnumA extends NoValueEnumObject[EnumA] {}
 
-enum EnumB extends NoValueEnum[EnumB](EnumB) {
+enum EnumB extends NoValueEnum[EnumB](EnumB):
   case E1, E2, E3, E4, NoEnumB
-}
 object EnumB extends NoValueEnumObject[EnumB] {}
 
-class ListFileTest extends FileTest {
+class ListFileTest extends FileTest:
   "name is capitalized file name stem by default" in {
     assert(ListFile(writeTestFile()).name == "Test")
   }
@@ -75,9 +73,8 @@ class ListFileTest extends FileTest {
   "error for duplicate entry" in {
     fileError(ListFile(writeTestFile("北\n東\n北\n西")).entries, "duplicate entry '北'", 3)
   }
-}
 
-class KanjiListFileTest extends FileTest {
+class KanjiListFileTest extends FileTest:
   "entries contains list of entries for OnePerLine file" in {
     val f = KanjiListFile(writeTestFile("北\n東\n南\n西"))
     assert(f.entries == Seq("北", "東", "南", "西"))
@@ -102,9 +99,8 @@ class KanjiListFileTest extends FileTest {
     fileError(KanjiListFile(writeTestFile("北\n東\n南乾\n西")).entries,
       "'南乾' has more than one Unicode letter", 3)
   }
-}
 
-class EnumListFileTest extends FileTest {
+class EnumListFileTest extends FileTest:
   "read entries for a JLPT Level" in {
     Files.writeString(tempDir.resolve("E4.txt"), "一 二 三\n四 五 六")
     val f = EnumListFile(tempDir, EnumA.E4)
@@ -135,4 +131,3 @@ class EnumListFileTest extends FileTest {
     Files.writeString(tempDir.resolve(fileName), "百 千\n万 八")
     fileError(EnumListFile(tempDir, EnumB.E4).size, s"'八' already in another EnumB", 2, fileName)
   }
-}

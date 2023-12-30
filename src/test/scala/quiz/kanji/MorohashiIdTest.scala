@@ -4,7 +4,7 @@ import quiz.kanji.MorohashiId.IndexType.*
 import quiz.kanji.MorohashiId.{IndexType, MaxIndex, MaxSupplementalIndex}
 import quiz.test.BaseTest
 
-class MorohashiIdTest extends BaseTest {
+class MorohashiIdTest extends BaseTest:
   "create" - {
     "plain id" in {
       val m = MorohashiId(12345)
@@ -105,4 +105,3 @@ class MorohashiIdTest extends BaseTest {
       assert(MorohashiId(12, Supplemental).toString.startsWith("H012"))
     }
   }
-}

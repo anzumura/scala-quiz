@@ -11,7 +11,7 @@ import quiz.utils.Code
 
 import java.nio.file.{Files, Path}
 
-class UcdDataTest extends FileTest {
+class UcdDataTest extends FileTest:
   "file with just a header doesn't load any data" in { assert(create().size == 0) }
 
   "file with one row loads expected data" in {
@@ -66,18 +66,14 @@ class UcdDataTest extends FileTest {
     }.orElse(fail("find failed"))
   }
 
-  private def create(lines: String*) = {
+  private def create(lines: String*) =
     Files.writeString(
-      tempDir.resolve(UcdFileName), if (lines.isEmpty) header else header + lines.mkString("\n"))
+      tempDir.resolve(UcdFileName), if lines.isEmpty then header else header + lines.mkString("\n"))
     UcdData(tempDir, testRadicalData)
-  }
-}
 
-object UcdDataTest {
-  private val testRadicalData = new RadicalData(Path.of("")) {
+object UcdDataTest:
+  private val testRadicalData = new RadicalData(Path.of("")):
     override def findByNumber(i: Int): Radical = testRadical
-  }
   private val header =
     "Code\tRadical\tStrokes\tPinyin\tMorohashiId\tNelsonIds\tSources\tJSource\tJoyo\tJinmei\t" +
       "LinkCodes\tLinkType\tMeaning\tJapanese\n"
-}

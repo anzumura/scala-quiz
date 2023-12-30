@@ -17,30 +17,26 @@ import quiz.utils.{NoValueEnum, NoValueEnumObject}
  *  <li>Ucd: loaded from 'ucd.txt' and not one of the above types
  *  </ul>
  */
-enum KanjiType {
+enum KanjiType:
   case Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency, Extra, Kentei, Ucd
-}
 
 /** represents the official school grade for all Jouyou Kanji */
-enum Grade extends NoValueEnum[Grade](Grade) {
+enum Grade extends NoValueEnum[Grade](Grade):
   case G1, G2, G3, G4, G5, G6, S, NoGrade
-}
 object Grade extends NoValueEnumObject[Grade] {}
 
 /** JLPT (Japanese Language Proficiency Test) Levels covers 2,222 total Kanji (including 1,971
  *  Jouyou and 251 Jinmei)
  */
-enum Level extends NoValueEnum[Level](Level) {
+enum Level extends NoValueEnum[Level](Level):
   case N5, N4, N3, N2, N1, NoLevel
-}
 object Level extends NoValueEnumObject[Level] {}
 
 /** Kanji Kentei (漢字検定) Kyū (級), K = Kanken (漢検), J=Jun (準)
  *  @see <a href="https://en.wikipedia.org/wiki/Kanji_Kentei"></a>
  */
-enum Kyu extends NoValueEnum[Kyu](Kyu) {
+enum Kyu extends NoValueEnum[Kyu](Kyu):
   case K10, K9, K8, K7, K6, K5, K4, K3, KJ2, K2, KJ1, K1, NoKyu
-}
 object Kyu extends NoValueEnumObject[Kyu] {}
 
 /** official reason Kanji was added to Jinmeiyō list:
@@ -54,23 +50,18 @@ object Kyu extends NoValueEnumObject[Kyu] {}
  *  <li>NoJinmeiReason: not a Jinmei type Kanji
  *  </ul>
  */
-enum JinmeiReason extends NoValueEnum[JinmeiReason](JinmeiReason) {
+enum JinmeiReason extends NoValueEnum[JinmeiReason](JinmeiReason):
   case Names, Print, Variant, Moved, Simple, Other, NoJinmeiReason
-}
 object JinmeiReason extends NoValueEnumObject[JinmeiReason]
 
-enum LinkedReadings {
+enum LinkedReadings:
   case Yes, No
-}
-object LinkedReadings {
-  def apply(x: Boolean): LinkedReadings = if (x) LinkedReadings.Yes else LinkedReadings.No
+object LinkedReadings:
+  def apply(x: Boolean): LinkedReadings = if x then LinkedReadings.Yes else LinkedReadings.No
   given Conversion[LinkedReadings, Boolean] = (x: LinkedReadings) => x eq LinkedReadings.Yes
-}
 
-enum OldLinks {
+enum OldLinks:
   case Yes, No
-}
-object OldLinks {
-  def apply(x: Boolean): OldLinks = if (x) OldLinks.Yes else OldLinks.No
+object OldLinks:
+  def apply(x: Boolean): OldLinks = if x then OldLinks.Yes else OldLinks.No
   given Conversion[OldLinks, Boolean] = (x: OldLinks) => x eq OldLinks.Yes
-}

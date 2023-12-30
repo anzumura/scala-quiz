@@ -14,7 +14,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 class KanjiData protected (path: Path, radicalData: RadicalData, ucdData: UcdData)
-extends ThrowsDomainException {
+extends ThrowsDomainException:
   /** returns the Kanji for the string value `s`, i.e., find("空") returns a [[JouyouKanji]]
    *  representing "空" (with strokes, meaning, readings, etc.) or `None` if no Kanji is found.
    *
@@ -58,7 +58,7 @@ extends ThrowsDomainException {
   lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, _.level)
   lazy val kyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, _.kyu)
 
-  private def loadType(t: KanjiType) = t match {
+  private def loadType(t: KanjiType) = t match
     case KanjiType.Jouyou => loadJouyouKanji()
     case KanjiType.Jinmei => loadJinmeiKanji()
     case KanjiType.LinkedJinmei => loadLinkedJinmeiKanji()
@@ -67,9 +67,8 @@ extends ThrowsDomainException {
     case KanjiType.Extra => loadExtraKanji()
     case KanjiType.Kentei => loadKenteiKanji()
     case KanjiType.Ucd => loadUcdKanji()
-  }
 
-  private def loadJouyouKanji() = {
+  private def loadJouyouKanji() =
     val gradeCol = Column("Grade")
     val f = ColumnFile(textFile(path, "jouyou"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, strokesCol, gradeCol, meaningCol, readingCol)
@@ -81,12 +80,12 @@ extends ThrowsDomainException {
         (name -> JouyouKanji(
           name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol), f.get(meaningCol),
           f.get(readingCol), kyu(name), f.getUInt(numberCol), level(name), frequency(name),
-          f.getUIntDefault(yearCol, 0), if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
-          Grade.valueOf(if (grade != "S") s"G$grade" else grade)))
+          f.getUIntDefault(yearCol, 0),
+          if oldNames.isEmpty then Nil else oldNames.split(",").toList,
+          Grade.valueOf(if grade != "S" then s"G$grade" else grade)))
     }.toMap
-  }
 
-  private def loadJinmeiKanji() = {
+  private def loadJinmeiKanji() =
     val reasonCol = Column("Reason")
     val f = ColumnFile(textFile(path, "jinmei"), numberCol, nameCol, radicalCol, oldNamesCol,
       yearCol, reasonCol, readingCol)
@@ -98,12 +97,12 @@ extends ThrowsDomainException {
         (name -> JinmeiKanji(
           name, getRadical(f.get(radicalCol)), ucd.strokes, ucd.meaning, f.get(readingCol),
           kyu(name), f.getUInt(numberCol), level(name), frequency(name),
-          f.getUIntDefault(yearCol, 0), if (oldNames.isEmpty) Nil else oldNames.split(",").toList,
+          f.getUIntDefault(yearCol, 0),
+          if oldNames.isEmpty then Nil else oldNames.split(",").toList,
           JinmeiReason.valueOf(f.get(reasonCol))))
     }
-  }
 
-  private def loadExtraKanji() = {
+  private def loadExtraKanji() =
     val f = ColumnFile(
       textFile(path, "extra"), numberCol, nameCol, radicalCol, strokesCol, meaningCol, readingCol)
     f.processRows(Map[String, Kanji]()) { result =>
@@ -112,9 +111,8 @@ extends ThrowsDomainException {
         (name -> ExtraKanji(name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol),
           f.get(meaningCol), f.get(readingCol), kyu(name), f.getUInt(numberCol)))
     }
-  }
 
-  private def loadLinkedJinmeiKanji() = {
+  private def loadLinkedJinmeiKanji() =
     val jouyou = getType(KanjiType.Jouyou)
     val jinmei = getType(KanjiType.Jinmei)
     ucdData.data.foldLeft(Map[String, Kanji]()) {
@@ -128,9 +126,8 @@ extends ThrowsDomainException {
             name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
       case (result, _) => result
     }
-  }
 
-  private def loadLinkedOldKanji() = {
+  private def loadLinkedOldKanji() =
     val linkedJinmei = getType(KanjiType.LinkedJinmei)
     getType(KanjiType.Jouyou).foldLeft(Map[String, Kanji]()) { case (result, (_, linkKanji)) =>
       linkKanji.oldNames.filterNot(linkedJinmei.contains).foldLeft(result) { (result, name) =>
@@ -140,9 +137,8 @@ extends ThrowsDomainException {
             LinkedOldKanji(name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
       }
     }
-  }
 
-  private def loadFrequencyKanji() = {
+  private def loadFrequencyKanji() =
     // create a FrequencyKanji for any entries in `frequencies` that don't already have an existing
     // Kanji in the first four types (Jouyou, Jinmei, LinkedJinmei and LinkedOld)
     val skip = KanjiType.values.takeWhile(_ != KanjiType.Frequency).map(getType)
@@ -153,9 +149,8 @@ extends ThrowsDomainException {
           (name -> FrequencyKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading,
             ucd.oldLinks, ucd.linkNames, ucd.linkedReadings, kyu(name), freq))
     }
-  }
 
-  private def loadKenteiKanji() = {
+  private def loadKenteiKanji() =
     // create a KenteiKanji for any entries in `kyus` that don't already have an existing Kanji in
     // the first six types (Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency and Extra)
     val skip = KanjiType.values.takeWhile(_ != KanjiType.Kentei).map(getType)
@@ -166,9 +161,8 @@ extends ThrowsDomainException {
           (name -> KenteiKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading,
             ucd.oldLinks, ucd.linkNames, ucd.linkedReadings, kyu))
     }
-  }
 
-  private def loadUcdKanji() = {
+  private def loadUcdKanji() =
     // create a UcdKanji for any entries in `ucdData` that don't already have an existing Kanji
     val skip = KanjiType.values.filter(_ != KanjiType.Ucd).map(getType)
     ucdData.data.filterNot((s, _) => skip.exists(_.contains(s))).foldLeft(
@@ -177,14 +171,12 @@ extends ThrowsDomainException {
         (name -> UcdKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading, ucd.oldLinks,
           ucd.linkNames, ucd.linkedReadings))
     }
-  }
 
-  private def load[T <: NoValueEnum[T]](e: NoValueEnumObject[T]): Map[String, T] = {
+  private def load[T <: NoValueEnum[T]](e: NoValueEnumObject[T]): Map[String, T] =
     val result = e.defined.map(EnumListFile(path.resolve(e.enumName), _))
       .flatMap(f => f.entries.map(_ -> f.value)).toMap
     EnumListFile.clearEntryData()
     result
-  }
 
   private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) = KanjiType.values
     .takeWhile(_ != t).flatMap(getType).foldLeft(Map[T, Vector[Kanji]]()) { case (result, (_, k)) =>
@@ -198,37 +190,33 @@ extends ThrowsDomainException {
     .getOrElse(error(s"couldn't find Radical '$s'"))
 
   private lazy val types = mutable.Map[KanjiType, Map[String, Kanji]]()
-}
 
-object KanjiData {
-  def apply(dir: Path): KanjiData = {
+object KanjiData:
+  def apply(dir: Path): KanjiData =
     val radicalData = RadicalData(dir)
     new KanjiData(dir, radicalData, UcdData(dir, radicalData))
-  }
 
   /** returns a path to a "data" directory if a suitable directory can be found in current
    *  working directory or any of it's parent directories
    *  @throws DomainException if a suitable directory isn't found
    */
   @tailrec
-  def dataDir(path: Path = cwd): Path = {
+  def dataDir(path: Path = cwd): Path =
     val dir = path.resolve("data")
-    if (isDirectory(dir) && fileName(dir) == "data" && hasDataFiles(dir)) dir
+    if isDirectory(dir) && fileName(dir) == "data" && hasDataFiles(dir) then dir
     else {
       val parent = path.getParent
-      if (parent == path.getRoot) throw DomainException("couldn't find 'data' directory")
+      if parent == path.getRoot then throw DomainException("couldn't find 'data' directory")
       dataDir(path.getParent)
     }
-  }
 
-  private def hasDataFiles(dir: Path) = {
+  private def hasDataFiles(dir: Path) =
     // make sure there are at least 5 ".txt" files
     getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
       val dirs = getDirectories(dir).map(fileName).toSet
       // make sure dir contains "Level" and "Kyu" subdirectories
       dirs(Level.enumName) && dirs(Kyu.enumName)
     }
-  }
 
   // common columns used for loading Kanji from text files
   private val numberCol = Column("Number")
@@ -239,4 +227,3 @@ object KanjiData {
   private val meaningCol = Column("Meaning")
   private val yearCol = Column("Year")
   private val oldNamesCol = Column("OldNames")
-}
