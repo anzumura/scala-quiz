@@ -144,7 +144,6 @@ object Kanji {
 final class ExtraKanji(name: String, radical: Radical, strokes: Int, meaning: String,
     reading: String, kyu: Kyu, number: Int, override val newName: Option[String] = None)
 extends Numbered(name, radical, strokes, meaning, reading, kyu, number) {
-
   override def kanjiType: KanjiType = KanjiType.Extra
   override def suffix: Char = '+'
 }
@@ -159,7 +158,6 @@ extends Official(name, radical, strokes, meaning, reading, kyu, number, level, f
   // it's non-zero to prevent the case of constructing without a year
   if (year == 0) error("must have a valid year")
   if (!reason.isDefined) error("must have a valid reason")
-
   override def kanjiType: KanjiType = KanjiType.Jinmei
   override def suffix: Char = if (hasLevel) '\'' else '^'
 }
@@ -169,7 +167,6 @@ final class JouyouKanji(name: String, radical: Radical, strokes: Int, meaning: S
     override val oldNames: List[String], override val grade: Grade)
 extends Official(name, radical, strokes, meaning, reading, kyu, number, level, frequency, year) {
   if (!grade.isDefined) error("must have a valid grade")
-
   override def kanjiType: KanjiType = KanjiType.Jouyou
   override def suffix: Char = '.'
 }
@@ -179,7 +176,6 @@ extends Official(name, radical, strokes, meaning, reading, kyu, number, level, f
 final class UcdKanji(name: String, radical: Radical, strokes: Int, meaning: String, reading: String,
     oldLinks: OldLinks, linkNames: List[String], linkedReadings: LinkedReadings)
 extends Other(name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings) {
-
   override def kanjiType: KanjiType = KanjiType.Ucd
   override def suffix: Char = '*'
 }
@@ -192,7 +188,6 @@ final class FrequencyKanji(name: String, radical: Radical, strokes: Int, meaning
 extends Standard(
   name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings, kyu) {
   if (frequency <= 0) error("frequency must be greater than zero")
-
   override def kanjiType: KanjiType = KanjiType.Frequency
   override def suffix: Char = '"'
 }
@@ -203,7 +198,6 @@ final class KenteiKanji(name: String, radical: Radical, strokes: Int, meaning: S
 extends Standard(
   name, radical, strokes, meaning, reading, oldLinks, linkNames, linkedReadings, kyu) {
   if (!kyu.isDefined) error("must have a valid kyu")
-
   override def kanjiType: KanjiType = KanjiType.Kentei
   override def suffix: Char = if (kyu == Kyu.K1) '#' else '@'
 }
@@ -222,7 +216,6 @@ final class LinkedJinmeiKanji(name: String, radical: Radical, strokes: Int, link
     frequency: Int, kyu: Kyu)
 extends Linked(name, radical, strokes, link, frequency, kyu) {
   if (!link.isInstanceOf[Official]) error("link must be JouyouKanji or JinmeiKanji")
-
   override def kanjiType: KanjiType = KanjiType.LinkedJinmei
   override def suffix: Char = '~'
 }
@@ -234,7 +227,6 @@ final class LinkedOldKanji(name: String, radical: Radical, strokes: Int, link: K
     frequency: Int, kyu: Kyu)
 extends Linked(name, radical, strokes, link, frequency, kyu) {
   if (!link.isInstanceOf[JouyouKanji]) error("link must be JouyouKanji")
-
   override def kanjiType: KanjiType = KanjiType.LinkedOld
   override def suffix: Char = '%'
 }
