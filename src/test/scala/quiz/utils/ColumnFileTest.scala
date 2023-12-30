@@ -290,7 +290,7 @@ class ColumnFileTest extends FileTest {
     create(AllowExtraCols.No, cols, lines: _*)
   }
 
-  private var testColumnFile = Option.empty[TestColumnFile]
+  private var testColumnFile = none[TestColumnFile]
 }
 
 class ColumnTest extends BaseTest {

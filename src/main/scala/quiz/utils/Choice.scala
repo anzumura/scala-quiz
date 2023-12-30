@@ -85,7 +85,7 @@ extends ThrowsDomainException {
 
   private def getPrompt(msg: String, choices: Choices, d: Option[Char]) = {
     val prompt = StringBuilder(if (msg.isEmpty) "(" else s"$msg (")
-    var rangeStart = Option.empty[Char]
+    var rangeStart = none[Char]
     var prevChoice: Char = 0
     val completeRange =
       () => rangeStart.foreach(c => if (c != prevChoice) prompt ++= s"-$prevChoice")
