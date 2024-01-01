@@ -123,14 +123,12 @@ object Quiz:
   private val KJ1 = 'k'
   private val KyuMap = Map(K10 -> "k10", KJ2 -> "Jun-K2", KJ1 -> "Jun-K1")
 
-  private object State:
-    def apply(exclude: Info): State = new State(exclude)
+  private enum States:
+    case MeaningOff, MeaningOn, Quit
 
-    enum States:
-      case MeaningOff, MeaningOn, Quit
-  import State.States
-  import State.States.*
-  private final class State private (exclude: Info, val question: Int = 0,
+  import States.*
+
+  private case class State private (exclude: Info, question: Int = 0,
       mistakes: Vector[String] = Vector[String](), state: States = States.MeaningOff):
     /** return string that includes the current score and list of mistakes */
     override def toString: String = s"$score/${if state == Quit then question else question + 1}" +
@@ -147,24 +145,26 @@ object Quiz:
     def meaningMsg: String = (if state == MeaningOn then "hide" else "show") + " meanings"
 
     /** return a State instance for the next question */
-    def correct: State = new State(exclude, question + 1, mistakes, state)
+    def correct: State = copy(question = question + 1)
 
     /** return a State instance for the next question
      *  @param mistake the Kanji for the current question that was answered incorrectly
      */
     def incorrect(mistake: String): State =
-      new State(exclude, question + 1, mistakes :+ mistake, state)
+      copy(question = question + 1, mistakes = mistakes :+ mistake)
 
     /** return a copy of this State instance with 'meaning' flipped, i.e., if state is `MeaningOn`
      *  then set it to `MeaningOff` and vice versa
      */
-    def flipMeaning: State =
-      new State(exclude, question, mistakes, if state == MeaningOn then MeaningOff else MeaningOn)
+    def flipMeaning: State = copy(state = if state == MeaningOn then MeaningOff else MeaningOn)
 
     /** return a copy of this State instance with state set to `Quit` */
-    def quit: State = new State(exclude, question, mistakes, Quit)
+    def quit: State = copy(state = Quit)
 
     /** return true if `state` is `Quit` */
     def isQuit: Boolean = state == Quit
 
     private def score = question - mistakes.size
+
+  private object State:
+    def apply(exclude: Info): State = new State(exclude)
