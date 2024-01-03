@@ -22,6 +22,13 @@ class KanjiDataTest extends FileTest:
     assert(dirs(Kyu.enumName))
   }
 
+  "error if data directory isn't found" in {
+    val dataParent = KanjiData.dataDir().getParent
+    // find the data dir within this project and then try to find a data dir for the parent
+    // directory which currently should fail since dataDir function searches up the tree
+    error(KanjiData.dataDir(dataParent.getParent), "couldn't find 'data' directory")
+  }
+
   "get JLPT level" in {
     val p = tempDir.resolve("Level")
     Files.createDirectory(p)
