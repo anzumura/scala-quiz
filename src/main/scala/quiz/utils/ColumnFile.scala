@@ -153,7 +153,7 @@ extends ThrowsDomainException:
     vals.length match
       case l if l < numColumns => fileError("not enough columns")
       case l if l > numColumns => fileError("too many columns")
-      case _ => vals.zipWithIndex.foreach { case (s, i) => rowValues(i) = s }
+      case _ => vals.zipWithIndex.foreach((s, i) => rowValues(i) = s)
   } match
     case Failure(e: IOException) => fileError(s"failed to read row: ${e.getMessage}")
     case Failure(e) => throw e

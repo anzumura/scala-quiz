@@ -50,9 +50,8 @@ class KanjiDataTest extends FileTest:
     val sampleKanji = "一二三四五六七八九十百千"
     val p = tempDir.resolve("Kyu")
     Files.createDirectory(p)
-    Kyu.defined.zip(sampleKanji).foreach { case (k, c) =>
-      Files.writeString(p.resolve(s"$k.txt"), c.toString)
-    }
+    Kyu.defined.zip(sampleKanji)
+      .foreach((k, c) => Files.writeString(p.resolve(s"$k.txt"), c.toString))
     val data = KanjiData(tempDir)
     assert(data.kyu("一") == Kyu.K10)
     assert(data.kyu("千") == Kyu.K1)

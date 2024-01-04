@@ -32,8 +32,8 @@ extends ThrowsDomainException:
     val result = mutable.ArrayBuffer.empty[String]
     Using(Source.fromFile(path.toFile)) { source =>
       val uniqueEntries = mutable.Set.empty[String]
-      source.getLines().zipWithIndex.foreach { case (line, i) =>
-        def err(msg: String) = domainError(s"$msg - file: ${fileName(path)}, line: ${i + 1}")
+      source.getLines().zip(LazyList.from(1)).foreach { (line, i) =>
+        def err(msg: String) = domainError(s"$msg - file: ${fileName(path)}, line: $i")
         def add(entry: String): Unit =
           if !uniqueEntries.add(entry) then err(s"duplicate entry '$entry'")
           Try(if validate(entry) then result += entry).failed.foreach(e => err(e.getMessage))

@@ -176,10 +176,9 @@ extends ThrowsDomainException:
     result
 
   private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) = KanjiType.values
-    .takeWhile(_ != t).flatMap(getType).foldLeft(Map[T, Vector[Kanji]]()) { case (result, (_, k)) =>
+    .takeWhile(_ != t).flatMap(getType).map(_(1)).foldLeft(Map[T, Vector[Kanji]]())((result, k) =>
       f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Vector(k).some)))
-        .getOrElse(result)
-    }
+        .getOrElse(result))
 
   private def getUcd(s: String, f: String => Nothing = error) = ucdData.find(s)
     .getOrElse(f(s"couldn't find Ucd for '$s'"))
