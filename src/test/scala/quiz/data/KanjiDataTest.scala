@@ -172,16 +172,6 @@ class KanjiDataTest extends FileTest:
     assert(k.link.map(_.name).contains("一"))
   }
 
-  "error if Linked Jinmei doesn't have a link field" in {
-    createEmptyFiles()
-    val noLinkUcd = Ucd(Code(), testRadical, 0, "", None, Nil, Sources("", "", false, false), Nil,
-      LinkType.Jinmei, "", "")
-    val badUcdData = new UcdData(Path.of(""), testRadicalData):
-      override lazy val data: Map[String, Ucd] = Map("二" -> noLinkUcd)
-    val data = new TestKanjiData(tempDir, badUcdData)
-    error(data.getType(KanjiType.LinkedJinmei), _.contains("Ucd entry '二' has no link"))
-  }
-
   "error if Linked Jinmei can't find link Kanji" in {
     // need to create both Jouyou and Jinmei files since LinkedJinmeiKanji will check both
     // of these types when trying to find a link

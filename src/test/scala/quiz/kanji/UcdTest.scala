@@ -8,25 +8,28 @@ import quiz.test.BaseTest.{emptySources, testRadical}
 import quiz.utils.Code
 
 class UcdTest extends BaseTest:
-  "name returns UTF16 value of code" in {
-    val ucd = Ucd(dog, testRadical, 0, "", None, Nil, emptySources, Nil, NoLinkType, "", "")
-    assert(ucd.name == "犬")
+  private val ucd = Ucd(dog, testRadical, 0, "", None, Nil, emptySources, Nil, NoLinkType, "", "")
+  private val links = List(Code(1))
+
+  "name returns UTF16 value of code" in { assert(ucd.name == "犬") }
+
+  "oldLinks is Yes if linkType is Traditional or Traditional_R" in defined.foreach { lt =>
+    val x = ucd.copy(linkType = lt, links = links)
+    val expected = if lt == Traditional || lt == Traditional_R then OldLinks.Yes else OldLinks.No
+    assert(x.oldLinks == expected)
   }
 
-  "oldLinks is Yes if linkType is Traditional or Traditional_R" in {
-    values.foreach { lt =>
-      val ucd = Ucd(dog, testRadical, 0, "", None, Nil, emptySources, Nil, lt, "", "")
-      val expected = if lt == Traditional || lt == Traditional_R then OldLinks.Yes else OldLinks.No
-      assert(ucd.oldLinks == expected)
-    }
+  "linkedReadings is Yes if linkType ends in _R" in defined.foreach { lt =>
+    val x = ucd.copy(linkType = lt, links = links)
+    val expected = if lt.toString.endsWith("_R") then LinkedReadings.Yes else LinkedReadings.No
+    assert(x.linkedReadings == expected)
   }
 
-  "linkedReadings is Yes if linkType ends in _R" in {
-    values.foreach { lt =>
-      val ucd = Ucd(dog, testRadical, 0, "", None, Nil, emptySources, Nil, lt, "", "")
-      val expected = if lt.toString.endsWith("_R") then LinkedReadings.Yes else LinkedReadings.No
-      assert(ucd.linkedReadings == expected)
-    }
+  "error for linkType with no links" in
+    LinkType.defined.foreach(lt => error(ucd.copy(linkType = lt), "LinkType without links"))
+
+  "error for links with no linkType" in {
+    error(ucd.copy(links = List(Code(1))), "links without LinkType")
   }
 
   "create joyo source" in {

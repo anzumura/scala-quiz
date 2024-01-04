@@ -34,7 +34,7 @@ class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException
     if s.isEmpty then Nil
     else
       Try(s.split(",").map(Integer.parseInt)) match
-        case Success(x) => x.toList
+        case Success(x) if x.forall(v => v > 0 && v <= MaxNelsonId) => x.toList
         case _ => throw DomainException(s"invalid NelsonIds '$s'")
 
   private def links(s: String): List[Code] =
@@ -46,6 +46,7 @@ class UcdData(dir: Path, radicalData: RadicalData) extends ThrowsDomainException
 
 object UcdData:
   val UcdFileName = "ucd.txt"
+  val MaxNelsonId = 5446
 
   private val codeCol = Column("Code")
   private val radicalCol = Column("Radical")

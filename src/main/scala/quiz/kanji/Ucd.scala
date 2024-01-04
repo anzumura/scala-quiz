@@ -26,7 +26,12 @@ import scala.util.Try
  */
 case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
     morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Sources, links: List[Code],
-    linkType: LinkType, meaning: String, reading: String):
+    linkType: LinkType, meaning: String, reading: String)
+extends ThrowsDomainException:
+  // ensure there are links if LinkType not set to NoLinkType
+  if linkType.isDefined then
+    if links.isEmpty then error("LinkType without links")
+  else if links.nonEmpty then error("links without LinkType")
   // convert names to standard strings
   def name: String = code.toUTF16
   def linkNames: List[String] = links.map(_.toUTF16)
@@ -34,11 +39,12 @@ case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
   def jSource: String = source.jSource
   def joyo: Boolean = source.isJoyo
   def jinmei: Boolean = source.isJinmei
-  // helper methods for `linkType`
+  // helper methods for working with links
   import LinkType.*
   def linkedReadings: LinkedReadings = LinkedReadings(linkType < Compatibility)
   def oldLinks: OldLinks = OldLinks(linkType == Traditional || linkType == Traditional_R)
-  def linkedJinmei: Boolean = linkType == Jinmei || linkType == Jinmei_R
+  def linkedJinmei: Option[Code] = links.headOption
+    .filter(_ => linkType == Jinmei || linkType == Jinmei_R)
 
 object Ucd:
   /** represents the XML property from which the link was loaded. '_R' means the link was also

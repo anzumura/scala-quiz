@@ -115,16 +115,15 @@ extends ThrowsDomainException:
   private def loadLinkedJinmeiKanji() =
     val jouyou = getType(KanjiType.Jouyou)
     val jinmei = getType(KanjiType.Jinmei)
-    ucdData.data.foldLeft(Map[String, Kanji]()) {
-      case (result, (name, ucd)) if ucd.linkedJinmei =>
-        val linkName = ucd.links.headOption.map(_.toUTF16)
-          .getOrElse(domainError(s"Ucd entry '$name' has no link"))
+    ucdData.data.foldLeft(Map[String, Kanji]()) { case (result, (name, ucd)) =>
+      ucd.linkedJinmei.map { link =>
+        val linkName = link.toUTF16
         val linkKanji = jouyou.get(linkName).orElse(jinmei.get(linkName))
           .getOrElse(domainError(s"can't find Kanji for link name '$linkName'"))
         result +
           (name -> LinkedJinmeiKanji(
             name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
-      case (result, _) => result
+      }.getOrElse(result)
     }
 
   private def loadLinkedOldKanji() =
@@ -204,11 +203,10 @@ object KanjiData:
   def dataDir(path: Path = cwd): Path =
     val dir = path.resolve("data")
     if isDirectory(dir) && fileName(dir) == "data" && hasDataFiles(dir) then dir
-    else {
+    else
       val parent = path.getParent
       if parent == path.getRoot then throw DomainException("couldn't find 'data' directory")
       dataDir(path.getParent)
-    }
 
   private def hasDataFiles(dir: Path) =
     // make sure there are at least 5 ".txt" files
