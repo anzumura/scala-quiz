@@ -94,13 +94,12 @@ extends ThrowsDomainException:
           prompt ++= s", $choice"
           rangeStart = choice.some
         // continue processing consecutive values (so don't update rangeStart)
-      else {
+      else
         if rangeStart.nonEmpty then
           completeRange()
           rangeStart = None
         if prevChoice > 0 then prompt ++= ", "
         prompt ++= s"$choice=$description"
-      }
       prevChoice = choice
     }
     completeRange()
