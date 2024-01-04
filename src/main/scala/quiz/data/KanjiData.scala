@@ -128,14 +128,12 @@ extends ThrowsDomainException:
 
   private def loadLinkedOldKanji() =
     val linkedJinmei = getType(KanjiType.LinkedJinmei)
-    getType(KanjiType.Jouyou).foldLeft(Map[String, Kanji]()) { case (result, (_, linkKanji)) =>
-      linkKanji.oldNames.filterNot(linkedJinmei.contains).foldLeft(result) { (result, name) =>
+    getType(KanjiType.Jouyou).foldLeft(Map[String, Kanji]())((result, l) =>
+      l(1).oldNames.filterNot(linkedJinmei.contains).foldLeft(result) { (result, name) =>
         val ucd = getUcd(name, domainError)
         result +
-          (name ->
-            LinkedOldKanji(name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
-      }
-    }
+          (name -> LinkedOldKanji(name, ucd.radical, ucd.strokes, l(1), frequency(name), kyu(name)))
+      })
 
   private def loadFrequencyKanji() =
     // create a FrequencyKanji for any entries in `frequencies` that don't already have an existing
