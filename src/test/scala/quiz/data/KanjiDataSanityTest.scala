@@ -59,10 +59,11 @@ class KanjiDataSanityTest extends BaseTest:
   }
 
   "check Linked Jinmei link totals" in {
-    data.getType(LinkedJinmei).foldLeft((0, 0)) { case ((jouyou, jinmei), (name, k)) =>
-      if k.link.map(_.kanjiType).contains(Jouyou) then (jouyou + 1, jinmei)
-      else if k.link.map(_.kanjiType).contains(Jinmei) then (jouyou, jinmei + 1)
-      else fail(s"'$name' had invalid or missing link'")
+    data.getType(LinkedJinmei).foldLeft((0, 0)) {
+      case ((jouyou, jinmei), (name, k)) =>
+        if k.link.map(_.kanjiType).contains(Jouyou) then (jouyou + 1, jinmei)
+        else if k.link.map(_.kanjiType).contains(Jinmei) then (jouyou, jinmei + 1)
+        else fail(s"'$name' had invalid or missing link'")
     } match
       case (jouyou, jinmei) =>
         assert(jouyou == 212)
@@ -81,8 +82,9 @@ class KanjiDataSanityTest extends BaseTest:
   }
 
   "check Kanji types with non-zero frequency" in {
-    val result = data.frequencyList.foldLeft(Map[KanjiType, Int]())((result, k) =>
-      result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(1.some)))
+    val result =
+      data.frequencyList.foldLeft(Map[KanjiType, Int]())((result, k) =>
+        result.updatedWith(k.kanjiType)(_.map(_ + 1).orElse(1.some)))
     assert(result.values.sum == data.frequencies.size)
     assert(result(Jouyou) == 2037)
     assert(result(Jinmei) == 326)

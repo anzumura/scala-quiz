@@ -27,8 +27,8 @@ extends ThrowsDomainException:
   if cols.isEmpty then domainError("must specify at least one column")
 
   def this(path: Path, cols: Column*) = this(path, DefaultSeparator, AllowExtraCols.No, cols*)
-  def this(path: Path, allowExtraCols: AllowExtraCols, cols: Column*) =
-    this(path, DefaultSeparator, allowExtraCols, cols*)
+  def this(path: Path, allowExtraCols: AllowExtraCols, cols: Column*) = this(
+    path, DefaultSeparator, allowExtraCols, cols*)
 
   /** returns number of columns for this file */
   def numColumns: Int = rowValues.length
@@ -104,65 +104,71 @@ extends ThrowsDomainException:
    *  @return true for "Y" or "T", false for "N", "F" or ""
    *  @throws DomainException if [[get]] fails or value is unrecognized
    */
-  def getBool(col: Column): Boolean = get(col) match
-    case "Y" | "T" => true
-    case "N" | "F" | "" => false
-    case s => fileError("convert to bool failed", col, s)
+  def getBool(col: Column): Boolean =
+    get(col) match
+      case "Y" | "T" => true
+      case "N" | "F" | "" => false
+      case s => fileError("convert to bool failed", col, s)
 
   // methods to help support testing
   protected def readRow(): String = lines.next()
   protected def closeFile(): Unit = source.close()
 
   private def fileError(msg: String) = domainError(errorMsg(msg))
-  private def fileError(msg: String, column: Column, s: String) =
-    domainError(errorMsg(msg) + s", column: '$column', value: '$s'")
+  private def fileError(msg: String, column: Column, s: String) = domainError(
+    errorMsg(msg) + s", column: '$column', value: '$s'")
 
   private def errorMsg(msg: String) =
     val result = s"$msg - file: $fileName"
     if currentRow > 0 then s"$result, line: $currentRow" else result
 
-  private def processHeaderRow(source: Source, colsIn: mutable.Map[String, Column]) = Try {
-    val lines = source.getLines()
-    if !lines.hasNext then fileError("missing header row")
-    val colsFound = mutable.Set.empty[String]
-    var includedColumnPos = 0
-    lines.next().split(sep).zipWithIndex.foreach { (s, pos) =>
-      if !colsFound.add(s) then fileError(s"duplicate header '$s'")
-      colsIn.remove(s) match
-        case Some(c) =>
-          columnToPos(c.number) = includedColumnPos
-          includedColumnPos += 1
-        case _ if allowExtraCols eq AllowExtraCols.Yes => skipColumnPos.add(pos)
-        case _ => fileError(s"unrecognized header '$s'")
-    }
-    colsIn.size match
-      case 0 => (source, lines)
-      case 1 => fileError(s"column '${colsIn.keys.mkString}' not found")
-      case s =>
-        fileError(colsIn.keys.toIndexedSeq.sorted.mkString(s"$s columns not found: '", "', '", "'"))
-  } match
-    case Failure(e) =>
-      source.close
-      throw e
-    case Success(x) => x
+  private def processHeaderRow(source: Source, colsIn: mutable.Map[String, Column]) =
+    Try {
+      val lines = source.getLines()
+      if !lines.hasNext then fileError("missing header row")
+      val colsFound = mutable.Set.empty[String]
+      var includedColumnPos = 0
+      lines.next().split(sep).zipWithIndex.foreach { (s, pos) =>
+        if !colsFound.add(s) then fileError(s"duplicate header '$s'")
+        colsIn.remove(s) match
+          case Some(c) =>
+            columnToPos(c.number) = includedColumnPos
+            includedColumnPos += 1
+          case _ if allowExtraCols eq AllowExtraCols.Yes => skipColumnPos.add(pos)
+          case _ => fileError(s"unrecognized header '$s'")
+      }
+      colsIn.size match
+        case 0 => (source, lines)
+        case 1 => fileError(s"column '${colsIn.keys.mkString}' not found")
+        case s =>
+          fileError(
+            colsIn.keys.toIndexedSeq.sorted.mkString(s"$s columns not found: '", "', '", "'"))
+    } match
+      case Failure(e) =>
+        source.close
+        throw e
+      case Success(x) => x
 
-  private def processNextRow(): Unit = Try {
-    val vals = readRow().split(splitRegex, -1).zipWithIndex
-      .collect { case (s, i) if !skipColumnPos(i) => s }
-    _currentRow += 1
-    vals.length match
-      case l if l < numColumns => fileError("not enough columns")
-      case l if l > numColumns => fileError("too many columns")
-      case _ => vals.zipWithIndex.foreach((s, i) => rowValues(i) = s)
-  } match
-    case Failure(e: IOException) => fileError(s"failed to read row: ${e.getMessage}")
-    case Failure(e) => throw e
-    case _ =>
+  private def processNextRow(): Unit =
+    Try {
+      val vals = readRow().split(splitRegex, -1).zipWithIndex.collect {
+        case (s, i) if !skipColumnPos(i) => s
+      }
+      _currentRow += 1
+      vals.length match
+        case l if l < numColumns => fileError("not enough columns")
+        case l if l > numColumns => fileError("too many columns")
+        case _ => vals.zipWithIndex.foreach((s, i) => rowValues(i) = s)
+    } match
+      case Failure(e: IOException) => fileError(s"failed to read row: ${e.getMessage}")
+      case Failure(e) => throw e
+      case _ =>
 
-  private def processUInt(s: String, col: Column, max: Int) = Try(Integer.parseUnsignedInt(s)) match
-    case Failure(_) => fileError("convert to UInt failed", col, s)
-    case Success(x) if max >= 0 && max < x => fileError(s"exceeded max value $max", col, s)
-    case Success(x) => x
+  private def processUInt(s: String, col: Column, max: Int) =
+    Try(Integer.parseUnsignedInt(s)) match
+      case Failure(_) => fileError("convert to UInt failed", col, s)
+      case Success(x) if max >= 0 && max < x => fileError(s"exceeded max value $max", col, s)
+      case Success(x) => x
 
   private val fileName = path.getFileName.toString
   private val rowValues = new Array[String](cols.size)
@@ -194,8 +200,9 @@ object ColumnFile:
    */
   final class Column(val name: String):
     val number: Int = allColumns.getOrElseUpdate(name, allColumns.size)
-    override def equals(rhs: Any): Boolean = rhs match
-      case c: Column => number == c.number
-      case _ => false
+    override def equals(rhs: Any): Boolean =
+      rhs match
+        case c: Column => number == c.number
+        case _ => false
     override def hashCode: Int = number.hashCode
     override def toString: String = name

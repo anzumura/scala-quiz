@@ -7,12 +7,13 @@ import quiz.utils.ThrowsDomainException
 import scala.util.{Success, Try}
 
 case class MorohashiId private (index: Int, indexType: IndexType):
-  override def toString: String = (indexType match
-    case Plain => "%05d"
-    case Prime => "%05dP"
-    case DoublePrime => "%05dPP"
-    case Supplemental => "H%03d"
-  ).formatted(index)
+  override def toString: String =
+    (indexType match
+      case Plain => "%05d"
+      case Prime => "%05dP"
+      case DoublePrime => "%05dPP"
+      case Supplemental => "H%03d"
+    ).formatted(index)
 
 object MorohashiId extends ThrowsDomainException:
   val MaxIndex: Int = 99999

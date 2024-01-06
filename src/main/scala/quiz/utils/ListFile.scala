@@ -19,8 +19,8 @@ class ListFile(path: Path, fileType: EntriesPerLine, nameIn: Option[String])
 extends ThrowsDomainException:
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
-  def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
-    this(path, fileType, name.some)
+  def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) = this(
+    path, fileType, name.some)
 
   /** @return name assigned at construction or if no name was given then return the capitalized
    *         file name (without extensions)
@@ -78,11 +78,11 @@ class KanjiListFile protected (path: Path, fileType: EntriesPerLine, nameIn: Opt
 extends ListFile(path, fileType, nameIn):
   def this(path: Path) = this(path, EntriesPerLine.Single, None)
   def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
-  def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) =
-    this(path, fileType, name.some)
+  def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) = this(
+    path, fileType, name.some)
 
-  override protected def validate(entry: String): Boolean = isKanji(entry) ||
-    error(s"'$entry' is not a recognized Kanji")
+  override protected def validate(entry: String): Boolean =
+    isKanji(entry) || error(s"'$entry' is not a recognized Kanji")
 
 /** derived class of [[KanjiListFile]] that ensures each entry is unique across all files for the
  *  same `enum` type, i.e., an entry can't be in more than one JLPT 'Level' file (file name is
@@ -96,9 +96,9 @@ extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPe
   private val enumEntries = EnumListFile.entries
     .getOrElseUpdate(value.enumName, mutable.Set[String]())
 
-  override protected def validate(
-      entry: String): Boolean = super.validate(entry) && enumEntries.add(entry) ||
-    error(s"'$entry' already in another ${value.enumName}")
+  override protected def validate(entry: String): Boolean =
+    super.validate(entry) && enumEntries.add(entry) ||
+      error(s"'$entry' already in another ${value.enumName}")
 
 object EnumListFile:
   /** clear all entry data used to ensure uniqueness per enum */

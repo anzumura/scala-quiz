@@ -266,8 +266,8 @@ class ColumnFileTest extends FileTest:
     testColumnFile.foreach(_.closeFile())
     super.afterEach()
 
-  private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit =
-    domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
+  private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit = domainError(
+    f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
   private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
       lines: String*) =
@@ -277,14 +277,14 @@ class ColumnFileTest extends FileTest:
     f
 
   private def create(
-      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile =
-    create(DefaultSeparator, allowExtraCols, cols, lines*)
+      allowExtraCols: AllowExtraCols, cols: List[Column], lines: String*): ColumnFile = create(
+    DefaultSeparator, allowExtraCols, cols, lines*)
 
-  private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile =
-    create(sep, AllowExtraCols.No, cols, lines*)
+  private def create(sep: Char, cols: List[Column], lines: String*): ColumnFile = create(
+    sep, AllowExtraCols.No, cols, lines*)
 
-  private def create(cols: List[Column], lines: String*): ColumnFile =
-    create(AllowExtraCols.No, cols, lines*)
+  private def create(
+      cols: List[Column], lines: String*): ColumnFile = create(AllowExtraCols.No, cols, lines*)
 
   private var testColumnFile = none[TestColumnFile]
 

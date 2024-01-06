@@ -51,10 +51,10 @@ trait FileTest extends BaseTest with BeforeAndAfterAll:
     s"${fileMsg(msg, file)}, line: $line"
 
   protected def fileError(f: => Any, msg: String): Unit = domainError(f, fileMsg(msg, None))
-  protected def fileError(f: => Any, msg: String, line: Int): Unit =
-    domainError(f, fileMsg(msg, line, None))
-  protected def fileError(f: => Any, msg: String, line: Int, file: String): Unit =
-    domainError(f, fileMsg(msg, line, file.some))
+  protected def fileError(
+      f: => Any, msg: String, line: Int): Unit = domainError(f, fileMsg(msg, line, None))
+  protected def fileError(f: => Any, msg: String, line: Int, file: String): Unit = domainError(
+    f, fileMsg(msg, line, file.some))
 
 object FileTest:
   val testFileBaseName: String = "test"

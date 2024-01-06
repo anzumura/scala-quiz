@@ -155,8 +155,8 @@ class KanjiTest extends BaseTest:
           LinkedReadings.No, kyu, f), "FrequencyKanji: frequency must be greater than zero"))
 
     "create Kentei Kanji" in LinkedReadings.values.foreach { linkedReadings =>
-      val k =
-        KenteiKanji(name, radical, strokes, meaning, reading, OldLinks.No, Nil, linkedReadings, kyu)
+      val k = KenteiKanji(
+        name, radical, strokes, meaning, reading, OldLinks.No, Nil, linkedReadings, kyu)
       checkLoadedFields(k)
       assert(k.kanjiType == KanjiType.Kentei)
       assert(!k.hasOldNames)

@@ -13,9 +13,10 @@ extends ThrowsDomainException:
   altNames.foreach(x => if !isOneKanji(x) then error(s"Radical altName '$x' is not a single Kanji"))
 
   override def toString: String = s"$name($number)"
-  override def equals(obj: Any): Boolean = obj match
-    case that: Radical => number == that.number
-    case _ => false
+  override def equals(obj: Any): Boolean =
+    obj match
+      case that: Radical => number == that.number
+      case _ => false
 
   override def hashCode(): Int = number.##
 

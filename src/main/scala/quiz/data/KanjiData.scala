@@ -21,8 +21,9 @@ extends ThrowsDomainException:
    *  The method searches for a Kanji from most common to least common [[KanjiType]] and internally
    *  uses a `view` to avoid calling [[getType]] unnecessarily (forcing all types to be loaded)
    */
-  def find(s: String): Option[Kanji] = KanjiType.values.view.map(getType(_).get(s))
-    .collectFirst { case Some(k) => k }
+  def find(s: String): Option[Kanji] = KanjiType.values.view.map(getType(_).get(s)).collectFirst {
+    case Some(k) => k
+  }
 
   /** get all Kanji for type `t` - this method has the side effect of loading Kanji the first time
    *  each type is requested (via the [[loadType]] method)
@@ -49,8 +50,10 @@ extends ThrowsDomainException:
     .map((k, v) => (k, v + 1))
 
   /** vector of all Kanji with a non-zero frequency in ascending order */
-  lazy val frequencyList: Vector[Kanji] = KanjiType.values.takeWhile(_ != KanjiType.Extra)
-    .flatMap(getType(_).collect { case (_, k) if k.hasFrequency => k }).sortBy(_.frequency).toVector
+  lazy val frequencyList: Vector[Kanji] =
+    KanjiType.values.takeWhile(_ != KanjiType.Extra).flatMap(getType(_).collect {
+      case (_, k) if k.hasFrequency => k
+    }).sortBy(_.frequency).toVector
 
   // The following three maps of 'enum type' to 'Vector[Kanji]' are used as quiz types by the main
   // app. For example, a JLPT level 'N2' quiz uses the vector returned from 'levelMap(Level.N2)'
@@ -58,15 +61,16 @@ extends ThrowsDomainException:
   lazy val levelMap: Map[Level, Vector[Kanji]] = enumMap(KanjiType.LinkedJinmei, _.level)
   lazy val kyuMap: Map[Kyu, Vector[Kanji]] = enumMap(KanjiType.Ucd, _.kyu)
 
-  private def loadType(t: KanjiType) = t match
-    case KanjiType.Jouyou => loadJouyouKanji()
-    case KanjiType.Jinmei => loadJinmeiKanji()
-    case KanjiType.LinkedJinmei => loadLinkedJinmeiKanji()
-    case KanjiType.LinkedOld => loadLinkedOldKanji()
-    case KanjiType.Frequency => loadFrequencyKanji()
-    case KanjiType.Extra => loadExtraKanji()
-    case KanjiType.Kentei => loadKenteiKanji()
-    case KanjiType.Ucd => loadUcdKanji()
+  private def loadType(t: KanjiType) =
+    t match
+      case KanjiType.Jouyou => loadJouyouKanji()
+      case KanjiType.Jinmei => loadJinmeiKanji()
+      case KanjiType.LinkedJinmei => loadLinkedJinmeiKanji()
+      case KanjiType.LinkedOld => loadLinkedOldKanji()
+      case KanjiType.Frequency => loadFrequencyKanji()
+      case KanjiType.Extra => loadExtraKanji()
+      case KanjiType.Kentei => loadKenteiKanji()
+      case KanjiType.Ucd => loadUcdKanji()
 
   private def loadJouyouKanji() =
     val gradeCol = Column("Grade")
@@ -115,15 +119,16 @@ extends ThrowsDomainException:
   private def loadLinkedJinmeiKanji() =
     val jouyou = getType(KanjiType.Jouyou)
     val jinmei = getType(KanjiType.Jinmei)
-    ucdData.data.foldLeft(Map[String, Kanji]()) { case (result, (name, ucd)) =>
-      ucd.linkedJinmei.map { link =>
-        val linkName = link.toUTF16
-        val linkKanji = jouyou.get(linkName).orElse(jinmei.get(linkName))
-          .getOrElse(domainError(s"can't find Kanji for link name '$linkName'"))
-        result +
-          (name -> LinkedJinmeiKanji(
-            name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
-      }.getOrElse(result)
+    ucdData.data.foldLeft(Map[String, Kanji]()) {
+      case (result, (name, ucd)) =>
+        ucd.linkedJinmei.map { link =>
+          val linkName = link.toUTF16
+          val linkKanji = jouyou.get(linkName).orElse(jinmei.get(linkName))
+            .getOrElse(domainError(s"can't find Kanji for link name '$linkName'"))
+          result +
+            (name -> LinkedJinmeiKanji(
+              name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
+        }.getOrElse(result)
     }
 
   private def loadLinkedOldKanji() =
@@ -162,23 +167,25 @@ extends ThrowsDomainException:
   private def loadUcdKanji() =
     // create a UcdKanji for any entries in `ucdData` that don't already have an existing Kanji
     val skip = KanjiType.values.filter(_ != KanjiType.Ucd).map(getType)
-    ucdData.data.filterNot((s, _) => skip.exists(_.contains(s))).foldLeft(
-      Map[String, Kanji]()) { case (result, (name, ucd)) =>
-      result +
-        (name -> UcdKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading, ucd.oldLinks,
-          ucd.linkNames, ucd.linkedReadings))
+    ucdData.data.filterNot((s, _) => skip.exists(_.contains(s))).foldLeft(Map[String, Kanji]()) {
+      case (result, (name, ucd)) =>
+        result +
+          (name -> UcdKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading, ucd.oldLinks,
+            ucd.linkNames, ucd.linkedReadings))
     }
 
   private def load[T <: NoValueEnum[T]](e: NoValueEnumObject[T]): Map[String, T] =
-    val result = e.defined.map(EnumListFile(path.resolve(e.enumName), _))
-      .flatMap(f => f.entries.map(_ -> f.value)).toMap
+    val result =
+      e.defined.map(EnumListFile(path.resolve(e.enumName), _))
+        .flatMap(f => f.entries.map(_ -> f.value)).toMap
     EnumListFile.clearEntryData()
     result
 
-  private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) = KanjiType.values
-    .takeWhile(_ != t).flatMap(getType).map(_(1)).foldLeft(Map[T, Vector[Kanji]]())((result, k) =>
-      f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Vector(k).some)))
-        .getOrElse(result))
+  private def enumMap[T <: NoValueEnum[T]](t: KanjiType, f: Kanji => T) =
+    KanjiType.values.takeWhile(_ != t).flatMap(getType).map(_(1))
+      .foldLeft(Map[T, Vector[Kanji]]())((result, k) =>
+        f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Vector(k).some)))
+          .getOrElse(result))
 
   private def getUcd(s: String, f: String => Nothing = error) = ucdData.find(s)
     .getOrElse(f(s"couldn't find Ucd for '$s'"))

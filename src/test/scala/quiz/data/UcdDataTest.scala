@@ -89,8 +89,9 @@ class UcdDataTest extends FileTest:
     UcdData(tempDir, testRadicalData)
 
 object UcdDataTest:
-  private val testRadicalData = new RadicalData(Path.of("")):
-    override def findByNumber(i: Int): Radical = testRadical
+  private val testRadicalData =
+    new RadicalData(Path.of("")):
+      override def findByNumber(i: Int): Radical = testRadical
   private val header =
     "Code\tRadical\tStrokes\tPinyin\tMorohashiId\tNelsonIds\tSources\tJSource\tJoyo\tJinmei\t" +
       "LinkCodes\tLinkType\tMeaning\tJapanese\n"

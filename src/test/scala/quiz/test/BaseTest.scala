@@ -31,8 +31,8 @@ trait BaseTest extends AnyFreeSpec with BeforeAndAfterEach:
   /** calls [[error]] with "[mainClassName]" prepended to `msg` */
   protected def domainError(f: => Any, msg: String): Unit = error(f, s"[$mainClassName] $msg")
 
-  protected def countString(src: String, s: String, count: Int): Unit =
-    assert(src.sliding(s.length).count(_ == s) == count)
+  protected def countString(src: String, s: String, count: Int): Unit = assert(
+    src.sliding(s.length).count(_ == s) == count)
 
 object BaseTest:
   val testRadical: Radical = Radical(1, "一", Nil, "", "")

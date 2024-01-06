@@ -16,13 +16,14 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean):
   private val random = Random(if randomize then System.currentTimeMillis else 0)
   choice.setQuit('q')
 
-  def start(): Unit = while choice.get(QuizTypes, "Quiz Type", FrequencyQuiz) match
-      case FrequencyQuiz => frequency()
-      case GradeQuiz => grade()
-      case LevelQuiz => level()
-      case KyuQuiz => kyu()
-      case x => !choice.isQuit(x)
-  do {}
+  def start(): Unit =
+    while choice.get(QuizTypes, "Quiz Type", FrequencyQuiz) match
+        case FrequencyQuiz => frequency()
+        case GradeQuiz => grade()
+        case LevelQuiz => level()
+        case KyuQuiz => kyu()
+        case x => !choice.isQuit(x)
+    do {}
 
   private def frequency(): Boolean =
     Range('1', '9').get(choice, FrequencyMap, FrequencyMsg, MostFrequent) match
@@ -32,23 +33,28 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean):
         val end = if x == LeastFrequent then data.frequencyList.size else pos + FrequencyBlock
         makeList(data.frequencyList.slice(pos, end), Info.Frequency)
 
-  private def grade(): Boolean = Range('1', '6').get(choice, GradeMap, "Grade", GradeS) match
-    case x if choice.isQuit(x) => false
-    case x => makeList(
-        data.gradeMap(if x == GradeS then Grade.S else Grade.fromOrdinal(x - '1')), Info.Grade)
+  private def grade(): Boolean =
+    Range('1', '6').get(choice, GradeMap, "Grade", GradeS) match
+      case x if choice.isQuit(x) => false
+      case x =>
+        makeList(
+          data.gradeMap(if x == GradeS then Grade.S else Grade.fromOrdinal(x - '1')), Info.Grade)
 
-  private def level(): Boolean = choice.get(Range('1', '5'), "JLPT Level", '1') match
-    case x if choice.isQuit(x) => false
-    case x => makeList(data.levelMap(Level.valueOf("N" + x)), Info.Level)
+  private def level(): Boolean =
+    choice.get(Range('1', '5'), "JLPT Level", '1') match
+      case x if choice.isQuit(x) => false
+      case x => makeList(data.levelMap(Level.valueOf("N" + x)), Info.Level)
 
-  private def kyu(): Boolean = Range('1', '9').get(choice, KyuMap, "Kentei Kyu", K10) match
-    case x if choice.isQuit(x) => false
-    case x => makeList(data.kyuMap(x match
-          case K10 => Kyu.K10
-          case KJ2 => Kyu.KJ2
-          case KJ1 => Kyu.KJ1
-          case _ => Kyu.valueOf("K" + x)
-        ), Info.Kyu)
+  private def kyu(): Boolean =
+    Range('1', '9').get(choice, KyuMap, "Kentei Kyu", K10) match
+      case x if choice.isQuit(x) => false
+      case x =>
+        makeList(data.kyuMap(x match
+            case K10 => Kyu.K10
+            case KJ2 => Kyu.KJ2
+            case KJ1 => Kyu.KJ1
+            case _ => Kyu.valueOf("K" + x)
+          ), Info.Kyu)
 
   private def makeList(entries: Vector[Kanji], exclude: Info) =
     choice.get(ListOrderMap, "List order", ListOrder.Beginning.value) match
@@ -58,20 +64,22 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean):
       case _ => false
 
   private def run(entries: Vector[Kanji], exclude: Info) =
-    val state = entries.foldLeft(State(exclude)) {
-      case (r, _) if r.isQuit => r // once quit has been set don't modify result anymore
-      case (r, k) => question(entries, k, r)
-    }
+    val state =
+      entries.foldLeft(State(exclude)) {
+        case (r, _) if r.isQuit => r // once quit has been set don't modify result anymore
+        case (r, k) => question(entries, k, r)
+      }
     choice.println(s"\n>>> Final score: $state\n")
     !state.isQuit
 
   private def question(entries: Vector[Kanji], k: Kanji, state: State) =
     // create array of answers that contains the correct answer plus 3 other answers with different
     // readings - use TreeMap so that answers are sorted in 'reading' order
-    val answers = Iterator.iterate(TreeMap(k.reading -> state.question)) { m =>
-      val answer = random.nextInt(entries.size)
-      m + (entries(answer).reading -> answer)
-    }.dropWhile(_.size < ChoicesPerQuestion).next().values.toArray
+    val answers =
+      Iterator.iterate(TreeMap(k.reading -> state.question)) { m =>
+        val answer = random.nextInt(entries.size)
+        m + (entries(answer).reading -> answer)
+      }.dropWhile(_.size < ChoicesPerQuestion).next().values.toArray
 
     @tailrec
     def f(s: State): State =
@@ -99,8 +107,8 @@ object Quiz:
   private val GradeQuiz = 'g'
   private val LevelQuiz = 'l'
   private val KyuQuiz = 'k'
-  private val QuizTypes =
-    Map(FrequencyQuiz -> "Frequency", GradeQuiz -> "Grade", LevelQuiz -> "Level", KyuQuiz -> "Kyu")
+  private val QuizTypes = Map(
+    FrequencyQuiz -> "Frequency", GradeQuiz -> "Grade", LevelQuiz -> "Level", KyuQuiz -> "Kyu")
   // List Order
   enum ListOrder(val value: Char):
     case Beginning extends ListOrder('b')
@@ -131,8 +139,9 @@ object Quiz:
   private case class State private (exclude: Info, question: Int = 0,
       mistakes: Vector[String] = Vector[String](), state: States = States.MeaningOff):
     /** return string that includes the current score and list of mistakes */
-    override def toString: String = s"$score/${if state == Quit then question else question + 1}" +
-      (if mistakes.isEmpty then "" else mistakes.mkString(" mistakes: ", ", ", ""))
+    override def toString: String =
+      s"$score/${if state == Quit then question else question + 1}" +
+        (if mistakes.isEmpty then "" else mistakes.mkString(" mistakes: ", ", ", ""))
 
     /** return a message for a quiz question that includes the question number, current score and
      *  Kanji being tested (optionally followed by the Kanji meaning depending on `state`)
@@ -150,8 +159,8 @@ object Quiz:
     /** return a State instance for the next question
      *  @param mistake the Kanji for the current question that was answered incorrectly
      */
-    def incorrect(mistake: String): State =
-      copy(question = question + 1, mistakes = mistakes :+ mistake)
+    def incorrect(
+        mistake: String): State = copy(question = question + 1, mistakes = mistakes :+ mistake)
 
     /** return a copy of this State instance with 'meaning' flipped, i.e., if state is `MeaningOn`
      *  then set it to `MeaningOff` and vice versa

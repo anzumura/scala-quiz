@@ -98,12 +98,13 @@ object Ucd:
     private object Bits:
       private lazy val sourceValues = values.takeWhile(_ != Joyo)
 
-      def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet = sources.foldLeft(if joyo
-        then if jinmei then error("Sources can't be both joyo and jinmei") else BitSet(Joyo.ordinal)
-        else if jinmei then BitSet(Jinmei.ordinal)
-        else BitSet())((bits, x) =>
-        bits + Try(valueOf(x.toString).ordinal)
-          .getOrElse(error(s"Sources got unrecognized region '$x'")))
+      def bitSet(sources: String, joyo: Boolean, jinmei: Boolean): BitSet =
+        sources.foldLeft(if joyo then
+            if jinmei then error("Sources can't be both joyo and jinmei") else BitSet(Joyo.ordinal)
+          else if jinmei then BitSet(Jinmei.ordinal)
+          else BitSet())((bits, x) =>
+          bits + Try(valueOf(x.toString).ordinal)
+            .getOrElse(error(s"Sources got unrecognized region '$x'")))
 
-      def sourceString(bits: BitSet): String = sourceValues.filter(x => bits(x.ordinal))
-        .foldLeft("")(_ + _.toString)
+      def sourceString(bits: BitSet): String =
+        sourceValues.filter(x => bits(x.ordinal)).foldLeft("")(_ + _.toString)

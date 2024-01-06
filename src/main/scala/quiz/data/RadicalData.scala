@@ -25,16 +25,17 @@ class RadicalData(dir: Path) extends ThrowsDomainException:
 
   private lazy val data =
     val f = ColumnFile(dir.resolve(RadicalFileName), numberCol, nameCol, longNameCol, readingCol)
-    val d = f.processRows(Map.empty[String, Radical])(result =>
-      f.get(nameCol).split(" ").toList match
-        case name :: altNames if name.nonEmpty =>
-          val number = f.getUInt(numberCol, MaxRadical)
-          verifyRadicalNumber(number)
-          val radical = Radical(number, name, altNames, f.get(longNameCol), f.get(readingCol))
-          radicals(number - 1) = radical
-          result + (name -> radical)
-        case _ => error("Radical name can't be empty")
-    )
+    val d =
+      f.processRows(Map.empty[String, Radical])(result =>
+        f.get(nameCol).split(" ").toList match
+          case name :: altNames if name.nonEmpty =>
+            val number = f.getUInt(numberCol, MaxRadical)
+            verifyRadicalNumber(number)
+            val radical = Radical(number, name, altNames, f.get(longNameCol), f.get(readingCol))
+            radicals(number - 1) = radical
+            result + (name -> radical)
+          case _ => error("Radical name can't be empty")
+      )
     verifyDataSize(d.size)
     d
   private val radicals = new Array[Radical](MaxRadical)

@@ -211,17 +211,19 @@ class KanjiDataTest extends FileTest:
 object KanjiDataTest:
   // test Radical
   private val testRadical = Radical(1, "一", Nil, "", "")
-  private val testRadicalData = new RadicalData(Path.of("")):
-    override def findByName(s: String): Option[Radical] = testRadical.some
+  private val testRadicalData =
+    new RadicalData(Path.of("")):
+      override def findByName(s: String): Option[Radical] = testRadical.some
   // test Ucd
   private val testStrokes = 29
   private val testMeaning = "testMeaning"
   private val testReading = "testReading"
   private val testUcd = Ucd(Code(), testRadical, testStrokes, "", None, Nil,
     Sources("", "", false, false), List(Code("一")), LinkType.Jinmei, testMeaning, testReading)
-  private val testUcdData = new UcdData(Path.of(""), testRadicalData):
-    override def find(s: String): Option[Ucd] = testUcd.some
-    override lazy val data: Map[String, Ucd] = Map("二" -> testUcd)
+  private val testUcdData =
+    new UcdData(Path.of(""), testRadicalData):
+      override def find(s: String): Option[Ucd] = testUcd.some
+      override lazy val data: Map[String, Ucd] = Map("二" -> testUcd)
   // test KanjiData
   private val testLevel = Level.N2
   private val testKyu = Kyu.KJ1

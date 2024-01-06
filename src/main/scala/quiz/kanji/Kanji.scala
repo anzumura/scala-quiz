@@ -8,9 +8,10 @@ import scala.language.implicitConversions
 
 sealed abstract class Kanji(val name: String, val radical: Radical, val strokes: Int):
   override def toString: String = name
-  override def equals(obj: Any): Boolean = obj match
-    case k: Kanji => name == k.name
-    case _ => false
+  override def equals(obj: Any): Boolean =
+    obj match
+      case k: Kanji => name == k.name
+      case _ => false
 
   /** @param exclude info to exclude from the result
    *  @return string containing info about this instance

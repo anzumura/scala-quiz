@@ -61,10 +61,11 @@ extends ThrowsDomainException:
   def get(c: Choices, d: Char, u: UseQuit): Char = get(c, "", d, u)
 
   @tailrec
-  private def getChoice(prompt: String, c: Choices, d: Option[Char]): Char = (read(prompt), d) match
-    case (Some(choice), _) if c.contains(choice) => choice
-    case (None, Some(choice)) => choice
-    case _ => getChoice(prompt, c, d)
+  private def getChoice(prompt: String, c: Choices, d: Option[Char]): Char =
+    (read(prompt), d) match
+      case (Some(choice), _) if c.contains(choice) => choice
+      case (None, Some(choice)) => choice
+      case _ => getChoice(prompt, c, d)
 
   @tailrec
   private def read(prompt: String): Option[Char] =
@@ -153,10 +154,11 @@ object Choice:
     private def merge(c: Choices) =
       var result = c
       (start to end).foreach(c =>
-        result = result.updatedWith(c) {
-          case None => "".some
-          case _ => domainError(s"option '$c' already in choices")
-        })
+        result =
+          result.updatedWith(c) {
+            case None => "".some
+            case _ => domainError(s"option '$c' already in choices")
+          })
       result
 
   // implicit conversion to allow calling 'Choice.get' with 'Range' instead of 'Choices'
