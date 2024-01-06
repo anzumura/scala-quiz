@@ -67,6 +67,16 @@ class KanjiDataTest extends FileTest:
     assert(data.frequency("四") == 0)
   }
 
+  "error if Ucd isn't found" in {
+    val data = TestKanjiData(tempDir)
+    error(data.getUcd(""), "couldn't find Ucd for ''")
+  }
+
+  "error if Radical isn't found" in {
+    val data = TestKanjiData(tempDir)
+    error(data.getRadical(""), "couldn't find Radical ''")
+  }
+
   "load jouyou Kanji" in {
     Files.writeString(
       tempDir.resolve("jouyou.txt"),
@@ -213,7 +223,8 @@ object KanjiDataTest:
   private val testRadical = Radical(1, "一", Nil, "", "")
   private val testRadicalData =
     new RadicalData(Path.of("")):
-      override def findByName(s: String): Option[Radical] = testRadical.some
+      override def findByName(s: String): Option[Radical] =
+        if s.isEmpty then None else testRadical.some
   // test Ucd
   private val testStrokes = 29
   private val testMeaning = "testMeaning"
@@ -222,7 +233,7 @@ object KanjiDataTest:
     Sources("", "", false, false), List(Code("一")), LinkType.Jinmei, testMeaning, testReading)
   private val testUcdData =
     new UcdData(Path.of(""), testRadicalData):
-      override def find(s: String): Option[Ucd] = testUcd.some
+      override def find(s: String): Option[Ucd] = if s.isEmpty then None else testUcd.some
       override lazy val data: Map[String, Ucd] = Map("二" -> testUcd)
   // test KanjiData
   private val testLevel = Level.N2
