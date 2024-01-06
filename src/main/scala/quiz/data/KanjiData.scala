@@ -14,7 +14,15 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 class KanjiData protected (path: Path, radicalData: RadicalData, ucdData: UcdData)
-extends ThrowsDomainException:
+extends BaseKanjiData with ThrowsDomainException:
+  override def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
+  override def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.NoKyu)
+  override def frequency(s: String): Int = frequencies.getOrElse(s, 0)
+  override def getUcd(s: String): Ucd = ucdData.find(s)
+    .getOrElse(error(s"couldn't find Ucd for '$s'"))
+  override def getRadical(s: String): Radical = radicalData.findByName(s)
+    .getOrElse(error(s"couldn't find Radical '$s'"))
+
   /** returns the Kanji for the string value `s`, i.e., find("空") returns a [[JouyouKanji]]
    *  representing "空" (with strokes, meaning, readings, etc.) or `None` if no Kanji is found.
    *
@@ -29,15 +37,6 @@ extends ThrowsDomainException:
    *  each type is requested (via the [[loadType]] method)
    */
   def getType(t: KanjiType): Map[String, Kanji] = types.getOrElseUpdate(t, loadType(t))
-
-  // 'level', 'kyu' and 'frequency' methods are used during Kanji creation by the 'load' methods
-
-  /** JLPT level of `s` or "NoLevel" if it doesn't have a level */
-  def level(s: String): Level = levels.getOrElse(s, Level.NoLevel)
-  /** Kentei kyu of `s` or "NoKyu" if it doesn't have a kyu */
-  def kyu(s: String): Kyu = kyus.getOrElse(s, Kyu.NoKyu)
-  /** frequency of `s` starting at 1 or 0 if it doesn't have a frequency */
-  def frequency(s: String): Int = frequencies.getOrElse(s, 0)
 
   // lazy val maps used by the above three methods
 
@@ -82,9 +81,8 @@ extends ThrowsDomainException:
       val oldNames = f.get(oldNamesCol)
       result +=
         (name -> JouyouKanji(
-          name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol), f.get(meaningCol),
-          f.get(readingCol), kyu(name), f.getUInt(numberCol), level(name), frequency(name),
-          f.getUIntDefault(yearCol, 0),
+          params(name), f.get(radicalCol), f.getUInt(strokesCol), f.get(meaningCol),
+          f.get(readingCol), f.getUInt(numberCol), f.getUIntDefault(yearCol, 0),
           if oldNames.isEmpty then Nil else oldNames.split(",").toList,
           Grade.valueOf(if grade != "S" then s"G$grade" else grade)))
     }.toMap
@@ -95,12 +93,10 @@ extends ThrowsDomainException:
       yearCol, reasonCol, readingCol)
     f.processRows(Map[String, Kanji]()) { result =>
       val name = f.get(nameCol)
-      val ucd = getUcd(name)
       val oldNames = f.get(oldNamesCol)
       result +
         (name -> JinmeiKanji(
-          name, getRadical(f.get(radicalCol)), ucd.strokes, ucd.meaning, f.get(readingCol),
-          kyu(name), f.getUInt(numberCol), level(name), frequency(name),
+          params(name), f.get(radicalCol), f.get(readingCol), f.getUInt(numberCol),
           f.getUIntDefault(yearCol, 0),
           if oldNames.isEmpty then Nil else oldNames.split(",").toList,
           JinmeiReason.valueOf(f.get(reasonCol))))
@@ -112,8 +108,8 @@ extends ThrowsDomainException:
     f.processRows(Map[String, Kanji]()) { result =>
       val name = f.get(nameCol)
       result +
-        (name -> ExtraKanji(name, getRadical(f.get(radicalCol)), f.getUInt(strokesCol),
-          f.get(meaningCol), f.get(readingCol), kyu(name), f.getUInt(numberCol)))
+        (name -> ExtraKanji(params(name), f.get(radicalCol), f.getUInt(strokesCol),
+          f.get(meaningCol), f.get(readingCol), f.getUInt(numberCol)))
     }
 
   private def loadLinkedJinmeiKanji() =
@@ -125,31 +121,22 @@ extends ThrowsDomainException:
           val linkName = link.toUTF16
           val linkKanji = jouyou.get(linkName).orElse(jinmei.get(linkName))
             .getOrElse(domainError(s"can't find Kanji for link name '$linkName'"))
-          result +
-            (name -> LinkedJinmeiKanji(
-              name, ucd.radical, ucd.strokes, linkKanji, frequency(name), kyu(name)))
+          result + (name -> LinkedJinmeiKanji(params(name, ucd), linkKanji))
         }.getOrElse(result)
     }
 
   private def loadLinkedOldKanji() =
     val linkedJinmei = getType(KanjiType.LinkedJinmei)
     getType(KanjiType.Jouyou).foldLeft(Map[String, Kanji]())((result, l) =>
-      l(1).oldNames.filterNot(linkedJinmei.contains).foldLeft(result) { (result, name) =>
-        val ucd = getUcd(name, domainError)
-        result +
-          (name -> LinkedOldKanji(name, ucd.radical, ucd.strokes, l(1), frequency(name), kyu(name)))
-      })
+      l(1).oldNames.filterNot(linkedJinmei.contains)
+        .foldLeft(result)((result, name) => result + (name -> LinkedOldKanji(params(name), l(1)))))
 
   private def loadFrequencyKanji() =
     // create a FrequencyKanji for any entries in `frequencies` that don't already have an existing
     // Kanji in the first four types (Jouyou, Jinmei, LinkedJinmei and LinkedOld)
     val skip = KanjiType.values.takeWhile(_ != KanjiType.Frequency).map(getType)
     frequencies.filterNot((s, _) => skip.exists(_.contains(s))).foldLeft(Map[String, Kanji]()) {
-      case (result, (name, freq)) =>
-        val ucd = getUcd(name, domainError)
-        result +
-          (name -> FrequencyKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading,
-            ucd.oldLinks, ucd.linkNames, ucd.linkedReadings, kyu(name), freq))
+      case (result, (name, freq)) => result + (name -> FrequencyKanji(params(name), freq))
     }
 
   private def loadKenteiKanji() =
@@ -157,21 +144,14 @@ extends ThrowsDomainException:
     // the first six types (Jouyou, Jinmei, LinkedJinmei, LinkedOld, Frequency and Extra)
     val skip = KanjiType.values.takeWhile(_ != KanjiType.Kentei).map(getType)
     kyus.filterNot((s, _) => skip.exists(_.contains(s))).foldLeft(Map[String, Kanji]()) {
-      case (result, (name, kyu)) =>
-        val ucd = getUcd(name, domainError)
-        result +
-          (name -> KenteiKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading,
-            ucd.oldLinks, ucd.linkNames, ucd.linkedReadings, kyu))
+      case (result, (name, kyu)) => result + (name -> KenteiKanji(params(name), kyu))
     }
 
   private def loadUcdKanji() =
     // create a UcdKanji for any entries in `ucdData` that don't already have an existing Kanji
     val skip = KanjiType.values.filter(_ != KanjiType.Ucd).map(getType)
     ucdData.data.filterNot((s, _) => skip.exists(_.contains(s))).foldLeft(Map[String, Kanji]()) {
-      case (result, (name, ucd)) =>
-        result +
-          (name -> UcdKanji(name, ucd.radical, ucd.strokes, ucd.meaning, ucd.reading, ucd.oldLinks,
-            ucd.linkNames, ucd.linkedReadings))
+      case (result, (name, ucd)) => result + (name -> UcdKanji(params(name, ucd)))
     }
 
   private def load[T <: NoValueEnum[T]](e: NoValueEnumObject[T]): Map[String, T] =
@@ -186,11 +166,6 @@ extends ThrowsDomainException:
       .foldLeft(Map[T, Vector[Kanji]]())((result, k) =>
         f(k).toOption.map(result.updatedWith(_)(_.map(_ :+ k).orElse(Vector(k).some)))
           .getOrElse(result))
-
-  private def getUcd(s: String, f: String => Nothing = error) = ucdData.find(s)
-    .getOrElse(f(s"couldn't find Ucd for '$s'"))
-  private def getRadical(s: String) = radicalData.findByName(s)
-    .getOrElse(error(s"couldn't find Radical '$s'"))
 
   private lazy val types = mutable.Map[KanjiType, Map[String, Kanji]]()
 

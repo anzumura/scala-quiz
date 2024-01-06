@@ -228,6 +228,7 @@ object KanjiDataTest:
   private val testLevel = Level.N2
   private val testKyu = Kyu.KJ1
   private val testFrequency = 1234
+
   private class TestKanjiData(path: Path, ucdData: UcdData = testUcdData)
   extends KanjiData(path, testRadicalData, ucdData):
     override def level(s: String): Level = testLevel
