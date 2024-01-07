@@ -3,8 +3,8 @@ package quiz.utils
 import scala.util.Try
 
 case class Block(start: Code, end: Code) extends ThrowsDomainException:
-  if end < start then error(s"end $end is less than start $start")
-  def apply(x: Code): Boolean = start <= x && x <= end
+  if end < start then error(s"end ${end.toUnicode} is less than start ${start.toUnicode}")
+  inline def apply(x: Code): Boolean = start <= x && x <= end
 
 object Block:
   /** create a block with a single entry of `start` */

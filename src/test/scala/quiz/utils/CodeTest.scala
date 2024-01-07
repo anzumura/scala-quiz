@@ -8,12 +8,12 @@ class CodeTest extends BaseTest:
   private val scold = Code(0x20b9f) // Kanji in a Supplementary Plane
 
   "toString returns the standard Unicode representation" in {
-    assert(Code().toString == "U+0000")
-    assert(Code(62).toString == "U+003E")
-    assert(Code(0xfff).toString == "U+0FFF")
-    assert(Code(0xffff).toString == "U+FFFF")
-    assert(Code(0x10000).toString == "U+10000")
-    assert(Code(UnicodeMax).toString == "U+10FFFF")
+    assert(Code().toUnicode == "U+0000")
+    assert(Code(62).toUnicode == "U+003E")
+    assert(Code(0xfff).toUnicode == "U+0FFF")
+    assert(Code(0xffff).toUnicode == "U+FFFF")
+    assert(Code(0x10000).toUnicode == "U+10000")
+    assert(Code(UnicodeMax).toUnicode == "U+10FFFF")
   }
 
   "toUTF16 returns the code point as a standard Java (UTF-16) String" in {
@@ -36,11 +36,11 @@ class CodeTest extends BaseTest:
   }
 
   "create from string value" in {
-    assert(Code("犬").value == dog.value)
-    assert(Code("𠮟").value == scold.value)
+    assert(Code("犬") == dog)
+    assert(Code("𠮟") == scold)
   }
 
-  "create from longer string value" in { assert(Code("犬猫", sizeOne = false).value == 0x72ac) }
+  "create from longer string value" in { assert(Code("犬猫", sizeOne = false) == dog) }
 
   "can't create from empty string" in {
     error(Code(""), "cannot create Unicode Code from empty string")
@@ -52,7 +52,7 @@ class CodeTest extends BaseTest:
 
   "create from hex value" in {
     val c = Code.fromHex("72ac")
-    assert(c.toString == "U+72AC")
+    assert(c.toUnicode == "U+72AC")
     assert(c.toUTF16 == "犬")
   }
 
@@ -71,7 +71,9 @@ class CodeTest extends BaseTest:
   }
 
   "create Unicode block" in {
-    val b = Block(Code(0), Code(255))
-    assert(b.start.value == 0)
-    assert(b.end.value == 255)
+    val start = Code(0)
+    val end = Code(256)
+    val b = Block(start, end)
+    assert(b.start == start)
+    assert(b.end == end)
   }

@@ -5,9 +5,10 @@ import quiz.utils.Block.{isKanji, isOneKanji}
 
 class BlockTest extends BaseTest:
   "create Unicode block with only one entry" in {
-    val b = Block(Code(256))
-    assert(b.start.value == 256)
-    assert(b.start == b.end)
+    val start = Code(256)
+    val b = Block(start)
+    assert(b.start == start)
+    assert(b.end == start)
   }
 
   "block end cannot be less than start" in {

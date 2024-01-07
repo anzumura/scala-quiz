@@ -19,7 +19,7 @@ class UcdDataTest extends FileTest:
   "file with one row loads expected data" in {
     val data = create(dogFields.mkString("\t"))
     data.find("犬").map { ucd =>
-      assert(ucd.code.value == 0x72ac)
+      assert(ucd.code == Code(0x72ac))
       assert(ucd.name == ucd.code.toUTF16)
       assert(ucd.radical == testRadical)
       assert(ucd.strokes == dogFields(2).toInt)
@@ -40,11 +40,11 @@ class UcdDataTest extends FileTest:
   "file with two rows" in {
     val data = create(dogFields.mkString("\t"), "732B\t94\t11" + "\t".repeat(11))
     data.find("犬").map { ucd =>
-      assert(ucd.code.value == 0x72ac)
+      assert(ucd.code == Code(0x72ac))
       assert(ucd.strokes == 4)
     }.orElse(fail("find failed"))
     data.find("猫").map { ucd =>
-      assert(ucd.code.value == 0x732b)
+      assert(ucd.code == Code(0x732b))
       assert(ucd.strokes == 11)
     }.orElse(fail("find failed"))
   }
