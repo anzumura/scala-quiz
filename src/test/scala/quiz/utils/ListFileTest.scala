@@ -66,6 +66,13 @@ class ListFileTest extends FileTest:
     assert(!ListFile(writeTestFile("赤\n青\n黄")).exists("白"))
   }
 
+  "entry is skipped if validation fails" in {
+    val f = new ListFile(writeTestFile("北 東 南 西"), Multiple):
+      override protected def validate(entry: String): Boolean = entry != "東"
+    assert(f.size == 3)
+    assert(!f.exists("東"))
+  }
+
   "error for multiple entries per line" in {
     fileError(ListFile(writeTestFile("北 東 南 西")).entries, "line has multiple entries", 1)
   }
@@ -83,12 +90,6 @@ class KanjiListFileTest extends FileTest:
   "entries contains list of entries for MultiplePerLine file" in {
     val f = KanjiListFile(writeTestFile("北 東 南 西"), Multiple)
     assert(f.entries == Seq("北", "東", "南", "西"))
-  }
-
-  "file with multiple entries per line with overridden name" in {
-    val expected = "def"
-    val f = KanjiListFile(writeTestFile("北 東 南 西"), expected, Multiple)
-    assert(f.name == expected)
   }
 
   "error for non-Kanji entry" in {

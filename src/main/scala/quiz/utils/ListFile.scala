@@ -74,12 +74,9 @@ object ListFile:
     case Single, Multiple
 
 /** derived class of ListFile that ensures each entry is a recognized Kanji */
-class KanjiListFile protected (path: Path, fileType: EntriesPerLine, nameIn: Option[String])
-extends ListFile(path, fileType, nameIn):
-  def this(path: Path) = this(path, EntriesPerLine.Single, None)
-  def this(path: Path, fileType: EntriesPerLine) = this(path, fileType, None)
-  def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) = this(
-    path, fileType, name.some)
+class KanjiListFile(path: Path, fileType: EntriesPerLine)
+extends ListFile(path, fileType):
+  def this(path: Path) = this(path, EntriesPerLine.Single)
 
   override protected def validate(entry: String): Boolean =
     isKanji(entry) || error(s"'$entry' is not a recognized Kanji")
