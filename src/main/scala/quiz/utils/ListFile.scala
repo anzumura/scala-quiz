@@ -74,8 +74,7 @@ object ListFile:
     case Single, Multiple
 
 /** derived class of ListFile that ensures each entry is a recognized Kanji */
-class KanjiListFile(path: Path, fileType: EntriesPerLine)
-extends ListFile(path, fileType):
+class KanjiListFile(path: Path, fileType: EntriesPerLine) extends ListFile(path, fileType):
   def this(path: Path) = this(path, EntriesPerLine.Single)
 
   override protected def validate(entry: String): Boolean =

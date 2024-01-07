@@ -49,7 +49,7 @@ object Code extends ThrowsDomainException:
 
   inline private def checkEmpty(s: String): Unit =
     if s.isEmpty then error("cannot create Unicode Code from empty string")
-  
+
   extension (x: Code)
     /** returns standard Unicode code point format, i.e., U+'hex value' */
     def toUnicode: String = (if x <= 0xfff then "U+%04X" else "U+%X").format(x)

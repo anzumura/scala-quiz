@@ -67,8 +67,9 @@ class ListFileTest extends FileTest:
   }
 
   "entry is skipped if validation fails" in {
-    val f = new ListFile(writeTestFile("北 東 南 西"), Multiple):
-      override protected def validate(entry: String): Boolean = entry != "東"
+    val f =
+      new ListFile(writeTestFile("北 東 南 西"), Multiple):
+        override protected def validate(entry: String): Boolean = entry != "東"
     assert(f.size == 3)
     assert(!f.exists("東"))
   }
