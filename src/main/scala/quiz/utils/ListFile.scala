@@ -1,7 +1,7 @@
 package quiz.utils
 
 import cats.syntax.all.*
-import quiz.utils.Block.isKanji
+import quiz.utils.Code.isKanji
 import quiz.utils.FileUtils.*
 import quiz.utils.ListFile.EntriesPerLine
 

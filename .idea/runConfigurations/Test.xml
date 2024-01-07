@@ -1,13 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Test" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
     <module name="scala-quiz" />
-    <extension name="coverage">
-      <pattern>
-        <option name="PATTERN" value="quiz.main.*" />
-        <option name="ENABLED" value="true" />
-        <option name="INCLUDE" value="false" />
-      </pattern>
-    </extension>
     <option name="allowRunningInParallel" value="false" />
     <option name="projectPathOnTarget" />
     <option name="selectedOptions">
@@ -22,7 +15,6 @@
         <option value="quiz.data.RadicalDataTest" />
         <option value="quiz.data.KanjiDataSanityTest" />
         <option value="quiz.utils.CodeTest" />
-        <option value="quiz.utils.BlockTest" />
         <option value="quiz.utils.ChoiceTest" />
         <option value="quiz.utils.RangeTest" />
         <option value="quiz.utils.ListFileTest" />

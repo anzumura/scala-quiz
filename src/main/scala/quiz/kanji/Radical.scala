@@ -1,7 +1,7 @@
 package quiz.kanji
 
 import quiz.kanji.Radical.MaxRadical
-import quiz.utils.Block.isOneKanji
+import quiz.utils.Code.isOneKanji
 import quiz.utils.ThrowsDomainException
 
 final class Radical(val number: Int, val name: String, val altNames: List[String],
