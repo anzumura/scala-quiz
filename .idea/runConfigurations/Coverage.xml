@@ -5,9 +5,9 @@
     <option name="selectedOptions">
       <list />
     </option>
-    <option name="tasks" value="libs/clean coverage libs/test libs/coverageReport coverageOff" />
-    <option name="useSbtShell" value="true" />
-    <option name="vmparams" value="-Xms512M -Xmx1024M -Xss1M -XX:+CMSClassUnloadingEnabled" />
+    <option name="tasks" value="libs/clean coverage libs/test libs/coverageReport coverageOff exit" />
+    <option name="useSbtShell" value="false" />
+    <option name="vmparams" value="" />
     <option name="workingDir" value="$PROJECT_DIR$" />
     <method v="2" />
   </configuration>
