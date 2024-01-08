@@ -14,11 +14,18 @@ class QuizTest extends BaseChoiceTest:
     os.toString
   private def questionPrompt(showMeanings: Boolean = true) =
     s"Choose reading (-=${if showMeanings then "show" else "hide"} meanings, 1-4, q=quit): "
+  private val quizTypePrompt = "Quiz Type (f=Frequency, g=Grade, k=Kyu, l=Level, q=quit) def 'f': "
 
   "create quiz with default parameters" in { assert(Quiz().getClass.getSimpleName == "Quiz") }
 
-  "prompt for choosing quiz type" in {
-    assert(quiz("q") == "Quiz Type (f=Frequency, g=Grade, k=Kyu, l=Level, q=quit) def 'f': ")
+  "prompt for choosing quiz type" in { assert(quiz("q") == quizTypePrompt) }
+
+  "prompt to choose quiz type is shown again once a quiz is completed" in {
+    // there are 80 Grade 1 Kanji so choose answer '1' 80 times in order to complete a quiz
+    val out = quiz(s"g\n1\nb\n${"1\n".repeat(80)}q")
+    assert(out.startsWith(quizTypePrompt))
+    assert(out.matches("(?s).*>>> Final score: [0-9]*/80.*"))
+    assert(out.endsWith(quizTypePrompt))
   }
 
   "prompt for Frequency quiz" in {
@@ -106,7 +113,7 @@ class QuizTest extends BaseChoiceTest:
   }
 
   "final score should be 0/1 and show mistakes after answering a question incorrectly" in {
-    assert(quiz("\n\n\n1\nq").contains(">>> Final score: 0/1 mistakes: 日\n"))
+    assert(quiz("\n\n\n1\nq").contains(">>> Final score: 0/1, mistakes: 日\n"))
   }
 
   "show and hide meanings" in {

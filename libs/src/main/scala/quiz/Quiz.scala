@@ -139,8 +139,8 @@ object Quiz:
       mistakes: Vector[String] = Vector[String](), state: States = States.MeaningOff):
     /** return string that includes the current score and list of mistakes */
     override def toString: String =
-      s"$score/${if state == Quit then question else question + 1}" +
-        (if mistakes.isEmpty then "" else mistakes.mkString(" mistakes: ", ", ", ""))
+      s"$score/$question" +
+        (if mistakes.isEmpty then "" else mistakes.mkString(", mistakes: ", ", ", ""))
 
     /** return a message for a quiz question that includes the question number, current score and
      *  Kanji being tested (optionally followed by the Kanji meaning depending on `state`)
