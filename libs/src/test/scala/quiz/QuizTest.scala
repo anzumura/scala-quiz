@@ -21,10 +21,11 @@ class QuizTest extends BaseChoiceTest:
   "prompt for choosing quiz type" in { assert(quiz("q") == quizTypePrompt) }
 
   "prompt to choose quiz type is shown again once a quiz is completed" in {
-    // there are 80 Grade 1 Kanji so choose answer '1' 80 times in order to complete a quiz
-    val out = quiz(s"g\n1\nb\n${"1\n".repeat(80)}q")
+    val kanjiInGradeOne = data.gradeMap(Grade.G1).size
+    // choose answer '1' for each question to complete the quiz
+    val out = quiz(s"g\n1\nb\n${"1\n".repeat(kanjiInGradeOne)}q")
     assert(out.startsWith(quizTypePrompt))
-    assert(out.matches("(?s).*>>> Final score: [0-9]*/80.*"))
+    assert(out.matches(s"(?s).*>>> Final score: [0-9]*/$kanjiInGradeOne.*"))
     assert(out.endsWith(quizTypePrompt))
   }
 
