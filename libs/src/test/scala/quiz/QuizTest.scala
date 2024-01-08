@@ -8,12 +8,14 @@ import quiz.utils.BaseChoiceTest
 class QuizTest extends BaseChoiceTest:
   private val firstQuestion = "Question 1 of 250 (score 0):"
 
-  private def quiz(input: String) =
+  private def quiz(input: String, random: Boolean = false) =
     val (choice, os) = create(input)
-    new Quiz(data, choice, false).start()
+    Quiz(data, choice, random).start()
     os.toString
   private def questionPrompt(showMeanings: Boolean = true) =
     s"Choose reading (-=${if showMeanings then "show" else "hide"} meanings, 1-4, q=quit): "
+
+  "create quiz with default parameters" in { assert(Quiz().getClass.getSimpleName == "Quiz") }
 
   "prompt for choosing quiz type" in {
     assert(quiz("q") == "Quiz Type (f=Frequency, g=Grade, k=Kyu, l=Level, q=quit) def 'f': ")
@@ -45,9 +47,17 @@ class QuizTest extends BaseChoiceTest:
   private val randomQuestion = s"$firstQuestion 安. Rad 宀(40), Strokes 6, G3, N5, K8"
 
   "list order is changed based on choice" in
-    ListOrder.values.zip(Array(beginQuestion, endQuestion, randomQuestion)).foreach {
-      case (x, msg) => assert(quiz(s"\n\n${x.value}\nq").contains(msg), s" -- testing $x")
-    }
+    ListOrder.values.zip(Array(beginQuestion, endQuestion, randomQuestion))
+      .foreach((x, msg) => assert(quiz(s"\n\n${x.value}\nq").contains(msg), s" -- testing $x"))
+
+  "list order is random when random is seed not constant" in {
+    val quizInput = "\n\nr\nq"
+    // run with questions in random order, but constant seed should produce expected result
+    assert(quiz(quizInput).contains(randomQuestion))
+    // run large number of times with random seed should produce at least some different results
+    val out = Array.fill(50)(quiz(quizInput, random = true))
+    assert(out.exists(!_.contains(randomQuestion)))
+  }
 
   "question contains 4 choices followed by a prompt" in {
     assert(quiz("\n\n\nq").contains(s"""

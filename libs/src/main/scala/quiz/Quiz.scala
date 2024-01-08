@@ -12,7 +12,8 @@ import scala.collection.immutable.TreeMap
 import scala.language.implicitConversions
 import scala.util.Random
 
-class Quiz(data: KanjiData, choice: Choice, randomize: Boolean):
+class Quiz(data: KanjiData = KanjiData(KanjiData.dataDir()), choice: Choice = Choice(),
+    randomize: Boolean = true):
   private val random = Random(if randomize then System.currentTimeMillis else 0)
   choice.setQuit('q')
 
@@ -96,8 +97,6 @@ class Quiz(data: KanjiData, choice: Choice, randomize: Boolean):
     f(state)
 
 object Quiz:
-  def apply(): Quiz = new Quiz(KanjiData(KanjiData.dataDir()), Choice(), true)
-
   private val FlipMeaning = '-'
   private val ChoicesPerQuestion = 4
   private val QuestionRange = Range('1', ('0' + ChoicesPerQuestion).asInstanceOf[Char])
