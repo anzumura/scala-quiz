@@ -99,8 +99,7 @@ final class Quiz(data: KanjiData = KanjiData(KanjiData.dataDir()), choice: Choic
 object Quiz:
   private val FlipMeaning = '-'
   private val ChoicesPerQuestion = 4
-  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
-  private val QuestionRange = Range('1', ('0' + ChoicesPerQuestion).asInstanceOf[Char])
+  private val QuestionRange = Range('1', ('0' + ChoicesPerQuestion).toChar)
 
   // Quiz Types
   private val FrequencyQuiz = 'f'
