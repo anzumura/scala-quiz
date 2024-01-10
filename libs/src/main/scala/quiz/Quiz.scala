@@ -12,7 +12,7 @@ import scala.collection.immutable.TreeMap
 import scala.language.implicitConversions
 import scala.util.Random
 
-class Quiz(data: KanjiData = KanjiData(KanjiData.dataDir()), choice: Choice = Choice(),
+final class Quiz(data: KanjiData = KanjiData(KanjiData.dataDir()), choice: Choice = Choice(),
     randomize: Boolean = true):
   private val random = Random(if randomize then System.currentTimeMillis else 0)
   choice.setQuit('q')
@@ -136,7 +136,7 @@ object Quiz:
 
   import States.*
 
-  private case class State private (exclude: Info, question: Int = 0,
+  private final case class State private (exclude: Info, question: Int = 0,
       mistakes: Vector[String] = Vector[String](), state: States = States.MeaningOff):
     /** return string that includes the current score and list of mistakes */
     override def toString: String =

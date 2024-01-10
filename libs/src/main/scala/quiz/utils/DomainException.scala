@@ -2,7 +2,7 @@ package quiz.utils
 
 import cats.syntax.all.*
 
-class DomainException(msg: String, fromClass: Option[String] = None)
+final class DomainException(msg: String, fromClass: Option[String] = None)
 extends Exception(fromClass.map(c => s"[$c] $msg").getOrElse(msg)) {}
 
 trait ThrowsDomainException:

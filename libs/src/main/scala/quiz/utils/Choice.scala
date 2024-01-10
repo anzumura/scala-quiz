@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 import scala.collection.immutable.TreeMap
 import scala.language.implicitConversions
 
-class Choice private (private var _quit: Option[Char] = None,
+final class Choice private (private var _quit: Option[Char] = None,
     var quitDescription: String = DefaultQuitDescription, val is: InputStream = System.in,
     private val os: PrintStream = System.out)
 extends ThrowsDomainException:
