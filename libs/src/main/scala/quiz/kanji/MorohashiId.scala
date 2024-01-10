@@ -6,7 +6,7 @@ import quiz.utils.ThrowsDomainException
 
 import scala.util.{Success, Try}
 
-case class MorohashiId private (index: Int, indexType: IndexType):
+final case class MorohashiId private (index: Int, indexType: IndexType):
   override def toString: String =
     (indexType match
       case Plain => "%05d"

@@ -2,6 +2,9 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.4.0-RC1"
 ThisBuild / scalacOptions ++= Seq("-deprecation", "-explain", "-explain-types", "-feature",
   "-print-lines", "-unchecked", "-Xfatal-warnings", "-Xmigration")
+ThisBuild / wartremoverErrors ++= Warts.allBut(
+  Wart.Any, Wart.DefaultArguments, Wart.Equals, Wart.ImplicitConversion, Wart.MutableDataStructures,
+  Wart.Overloading, Wart.SeqApply, Wart.StringPlusAny, Wart.Throw, Wart.Var, Wart.While)
 
 lazy val libs = project.settings(
   name := "libs",

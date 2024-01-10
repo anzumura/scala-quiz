@@ -14,9 +14,11 @@ trait NoValueEnum[T <: NoValueEnum[T]](obj: NoValueEnumObject[T]) extends Ordere
   val enumName: String = obj.enumName
 
   /** returns true if this enum value is not the "NoXxx" value */
+  @SuppressWarnings(Array("org.wartremover.warts.ToString")) // wartremover doesn't understand enums
   lazy val isDefined: Boolean = toString != "No" + enumName
 
   /** returns this value wrapped in an Option if defined, otherwise None */
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   def toOption: Option[T] = if isDefined then this.asInstanceOf[T].some else None
 
 /** base class for companion object of `enum` with a "NoXxx" value */

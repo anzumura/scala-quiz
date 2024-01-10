@@ -10,7 +10,7 @@ object FileUtils extends ThrowsDomainException:
   val TextFileExtension = ".txt"
 
   // return string name of last component of path
-  def fileName(path: Path): String = path.getFileName.toString
+  def fileName(path: Path): String = path.getFileName.toFile.getName
 
   /** removes everything after first '.' that follows a non-dot character. The following table shows
    *  return values for sample file names:

@@ -24,7 +24,7 @@ import scala.util.Try
  *  @param meaning meaning of the character in English
  *  @param reading Japanese readings in 'Kana' (仮名)
  */
-case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
+final case class Ucd(code: Code, radical: Radical, strokes: Int, pinyin: String,
     morohashiId: Option[MorohashiId], nelsonIds: List[Int], source: Sources, links: List[Code],
     linkType: LinkType, meaning: String, reading: String)
 extends ThrowsDomainException:
@@ -79,7 +79,7 @@ object Ucd:
    *  <li>V: Vietnam
    *  </ul>
    */
-  class Sources(val jSource: String, sources: String, joyo: Boolean, jinmei: Boolean):
+  final class Sources(val jSource: String, sources: String, joyo: Boolean, jinmei: Boolean):
     import Sources.Bits.*
     /** returns a string containing source country letters (can be empty) */
     override def toString: String = sourceString(bits)
@@ -93,8 +93,10 @@ object Ucd:
     private val bits = bitSet(sources, joyo, jinmei)
 
   object Sources extends ThrowsDomainException:
+    // noinspection ALL: Intellij thinks this enum is unused
     private enum Bits:
       case G, H, J, K, T, V, Joyo, Jinmei
+
     private object Bits:
       private lazy val sourceValues = values.takeWhile(_ != Joyo)
 
@@ -107,4 +109,4 @@ object Ucd:
             .getOrElse(error(s"Sources got unrecognized region '$x'")))
 
       def sourceString(bits: BitSet): String =
-        sourceValues.filter(x => bits(x.ordinal)).foldLeft("")(_ + _.toString)
+        sourceValues.filter(x => bits(x.ordinal)).foldLeft("")(_ + _)

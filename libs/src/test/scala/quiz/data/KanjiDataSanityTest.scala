@@ -9,23 +9,23 @@ import quiz.test.BaseTest
 // use real data files for these tests
 class KanjiDataSanityTest extends BaseTest:
   "load expected total frequency, level, kyu and ucd data" in {
-    assert(data.frequencies.size == 2501)
-    assert(data.levels.size == 2222)
-    assert(data.kyus.size == 5859)
-    assert(ucdData.data.size == 52212)
+    assert(data.frequencies.sizeIs == 2501)
+    assert(data.levels.sizeIs == 2222)
+    assert(data.kyus.sizeIs == 5859)
+    assert(ucdData.data.sizeIs == 52212)
   }
 
   "load expected number of each Kanji type" in {
     // the following totals should stay the same even when updating Unicode versions
     Seq(Jouyou -> 2136, Jinmei -> 633, LinkedJinmei -> 230, LinkedOld -> 163, Frequency -> 124)
-      .foreach((t, expected) => assert(data.getType(t).size == expected))
+      .foreach((t, expected) => assert(data.getType(t).sizeIs == expected))
     // Extra total could change if Kanji are added or removed from 'extra.txt'
-    assert(data.getType(Extra).size == 136)
+    assert(data.getType(Extra).sizeIs == 136)
     // Kentei can change if Extra is changed
-    assert(data.getType(Kentei).size == 2822)
+    assert(data.getType(Kentei).sizeIs == 2822)
     // Ucd can change if Extra is changed, if the parse script is changed or if a new version of
     // Unicode XML data is used (current total is based on Unicode 15.1)
-    assert(data.getType(Ucd).size == 45968)
+    assert(data.getType(Ucd).sizeIs == 45968)
   }
 
   "load expected total for each Grade" in {

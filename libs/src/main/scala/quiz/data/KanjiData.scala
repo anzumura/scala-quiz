@@ -189,7 +189,7 @@ object KanjiData:
 
   private def hasDataFiles(dir: Path) =
     // make sure there are at least 5 ".txt" files
-    getFiles(dir).count(_.toString.endsWith(TextFileExtension)) >= 5 && {
+    getFiles(dir).count(fileName(_).endsWith(TextFileExtension)) >= 5 && {
       val dirs = getDirectories(dir).map(fileName).toSet
       // make sure dir contains "Level" and "Kyu" subdirectories
       dirs(Level.enumName) && dirs(Kyu.enumName)

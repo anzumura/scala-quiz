@@ -30,10 +30,10 @@ extends ThrowsDomainException:
   /** list of all entries in the file */
   lazy val entries: Vector[String] =
     val result = mutable.ArrayBuffer.empty[String]
-    Using(Source.fromFile(path.toFile)) { source =>
+    Using(Source.fromFile(path.toFile, "UTF-8")) { source =>
       val uniqueEntries = mutable.Set.empty[String]
       source.getLines().zip(LazyList.from(1)).foreach { (line, i) =>
-        def err(msg: String) = domainError(s"$msg - file: ${fileName(path)}, line: $i")
+        def err(msg: String): Nothing = domainError(s"$msg - file: ${fileName(path)}, line: $i")
         def add(entry: String): Unit =
           if !uniqueEntries.add(entry) then err(s"duplicate entry '$entry'")
           Try(if validate(entry) then result += entry).failed.foreach(e => err(e.getMessage))
@@ -86,6 +86,7 @@ class KanjiListFile(path: Path, fileType: EntriesPerLine) extends ListFile(path,
  *  @param dir the directory containing the enum file
  *  @param value enum value, i.e., Level.N3
  */
+@SuppressWarnings(Array("org.wartremover.warts.ToString")) // wartremover doesn't understand enums
 final class EnumListFile[T <: NoValueEnum[T]](dir: Path, val value: T)
 extends KanjiListFile(dir.resolve(value.toString + TextFileExtension), EntriesPerLine.Multiple):
 

@@ -80,7 +80,7 @@ class Quiz(data: KanjiData = KanjiData(KanjiData.dataDir()), choice: Choice = Ch
       Iterator.iterate(TreeMap(k.reading -> state.question)) { m =>
         val answer = random.nextInt(entries.size)
         m + (entries(answer).reading -> answer)
-      }.dropWhile(_.size < ChoicesPerQuestion).next().values.toArray
+      }.dropWhile(_.sizeIs < ChoicesPerQuestion).next().values.toArray
 
     @tailrec
     def f(s: State): State =
@@ -99,6 +99,7 @@ class Quiz(data: KanjiData = KanjiData(KanjiData.dataDir()), choice: Choice = Ch
 object Quiz:
   private val FlipMeaning = '-'
   private val ChoicesPerQuestion = 4
+  @SuppressWarnings(Array("org.wartremover.warts.AsInstanceOf"))
   private val QuestionRange = Range('1', ('0' + ChoicesPerQuestion).asInstanceOf[Char])
 
   // Quiz Types

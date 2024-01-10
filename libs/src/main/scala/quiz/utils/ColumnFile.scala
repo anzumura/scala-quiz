@@ -2,6 +2,7 @@ package quiz.utils
 
 import cats.syntax.all.*
 import quiz.utils.ColumnFile.*
+import quiz.utils.FileUtils.fileName
 
 import java.io.IOException
 import java.nio.file.Path
@@ -44,7 +45,7 @@ extends ThrowsDomainException:
    *  @throws DomainException if reading the next row fails or has incorrect number of columns
    */
   def nextRow(): Boolean =
-    if _closed then domainError(s"file: '$fileName' has been closed")
+    if _closed then domainError(s"file: '$file' has been closed")
     val hasNext = lines.hasNext
     if hasNext then processNextRow() else close()
     hasNext
@@ -114,12 +115,12 @@ extends ThrowsDomainException:
   protected def readRow(): String = lines.next()
   protected def closeFile(): Unit = source.close()
 
-  private def fileError(msg: String) = domainError(errorMsg(msg))
-  private def fileError(msg: String, column: Column, s: String) = domainError(
+  private def fileError(msg: String): Nothing = domainError(errorMsg(msg))
+  private def fileError(msg: String, column: Column, s: String): Nothing = domainError(
     errorMsg(msg) + s", column: '$column', value: '$s'")
 
   private def errorMsg(msg: String) =
-    val result = s"$msg - file: $fileName"
+    val result = s"$msg - file: $file"
     if currentRow > 0 then s"$result, line: $currentRow" else result
 
   private def processHeaderRow(source: Source, colsIn: mutable.Map[String, Column]) =
@@ -170,7 +171,7 @@ extends ThrowsDomainException:
       case Success(x) if max >= 0 && max < x => fileError(s"exceeded max value $max", col, s)
       case Success(x) => x
 
-  private val fileName = path.getFileName.toString
+  private val file = fileName(path)
   private val rowValues = new Array[String](cols.size)
   private val skipColumnPos = mutable.Set[Int]()
   private val columnToPos = Array.fill(allColumns.size)(ColumnNotFound)

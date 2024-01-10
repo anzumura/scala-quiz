@@ -95,7 +95,7 @@ class FileUtilsTest extends FileTest:
     assert(textFile(tempDir, testFileBaseName) == testFile)
   }
 
-  "get current working directory" in { assert(cwd.toString.nonEmpty) }
+  "get current working directory" in { assert(cwd.getNameCount > 0) }
 
   "get all files in a directory" in {
     Seq("aa", "bb").foreach(f => Files.createFile(tempDir.resolve(f)))

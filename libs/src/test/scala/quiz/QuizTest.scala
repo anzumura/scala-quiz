@@ -8,6 +8,7 @@ import quiz.utils.BaseChoiceTest
 class QuizTest extends BaseChoiceTest:
   private val firstQuestion = "Question 1 of 250 (score 0):"
 
+  @SuppressWarnings(Array("org.wartremover.warts.ToString"))
   private def quiz(input: String, random: Boolean = false) =
     val (choice, os) = create(input)
     Quiz(data, choice, random).start()

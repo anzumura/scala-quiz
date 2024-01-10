@@ -206,7 +206,9 @@ final class KenteiKanji(params: Params, kyu: Kyu) extends Standard(params, kyu):
  *  </ul>
  */
 final class LinkedJinmeiKanji(params: Params, link: Kanji) extends Linked(params, link):
-  if !link.isInstanceOf[Official] then error("link must be JouyouKanji or JinmeiKanji")
+  link match
+    case _: Official =>
+    case _ => error("link must be JouyouKanji or JinmeiKanji")
   override def kanjiType: KanjiType = KanjiType.LinkedJinmei
   override def suffix: Char = '~'
 
@@ -214,6 +216,8 @@ final class LinkedJinmeiKanji(params: Params, link: Kanji) extends Linked(params
  *  already included in the 230 Jinmeiyō 'official variants'.
  */
 final class LinkedOldKanji(params: Params, link: Kanji) extends Linked(params, link):
-  if !link.isInstanceOf[JouyouKanji] then error("link must be JouyouKanji")
+  link match
+    case _: JouyouKanji =>
+    case _ => error("link must be JouyouKanji")
   override def kanjiType: KanjiType = KanjiType.LinkedOld
   override def suffix: Char = '%'

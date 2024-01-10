@@ -6,7 +6,7 @@ import scala.util.{Success, Try}
 
 opaque type Code = Int
 
-case class Block(start: Code, end: Code) extends ThrowsDomainException:
+final case class Block(start: Code, end: Code) extends ThrowsDomainException:
   if end < start then error(s"end ${end.toUnicode} is less than start ${start.toUnicode}")
   inline def apply(x: Code): Boolean = start <= x && x <= end
 

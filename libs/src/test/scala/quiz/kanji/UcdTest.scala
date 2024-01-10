@@ -21,6 +21,7 @@ class UcdTest extends BaseTest:
 
   "linkedReadings is Yes if linkType ends in _R" in defined.foreach { lt =>
     val x = ucd.copy(linkType = lt, links = links)
+    @SuppressWarnings(Array("org.wartremover.warts.ToString"))
     val expected = if lt.toString.endsWith("_R") then LinkedReadings.Yes else LinkedReadings.No
     assert(x.linkedReadings == expected)
   }
