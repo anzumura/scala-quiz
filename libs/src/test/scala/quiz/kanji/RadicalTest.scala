@@ -4,6 +4,20 @@ import quiz.test.BaseTest
 import quiz.test.BaseTest.testRadical
 
 class RadicalTest extends BaseTest:
+  "fields are set as expected" in {
+    val number = 9
+    val name = "人"
+    val altNames = List("亻")
+    val longName = "人部（じんぶ）"
+    val reading = "ひと にんべん ひとがしら ひとやね"
+    val r = Radical(number, name, altNames, longName, reading)
+    assert(r.number == number)
+    assert(r.name == name)
+    assert(r.altNames == altNames)
+    assert(r.longName == longName)
+    assert(r.reading == reading)
+  }
+
   "toString returns name followed by number in brackets" in {
     assert(testRadical.toString == testRadical.name + s"(${testRadical.number})")
   }
