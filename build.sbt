@@ -7,11 +7,9 @@ ThisBuild / wartremoverErrors ++= Warts.allBut(
   Wart.Overloading, Wart.SeqApply, Wart.StringPlusAny, Wart.Throw, Wart.Var, Wart.While)
 
 lazy val libs = project.settings(
-  name := "libs",
-  // a lot of tests use temp files which can cause problems when run in parallel
+  // some tests use temp files which can cause problems when run in parallel
   Test / parallelExecution := false,
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-core" % "2.10.0", "org.scalatest" %% "scalatest" % "3.2.17" % Test))
 
-lazy val quiz = project.dependsOn(libs)
-  .settings(name := "quiz", assembly / mainClass := Some("quiz.Main"))
+lazy val quiz = project.dependsOn(libs).settings(assembly / mainClass := Some("quiz.Main"))
