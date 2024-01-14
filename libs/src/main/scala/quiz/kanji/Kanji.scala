@@ -212,8 +212,8 @@ final class LinkedJinmeiKanji(params: Params, link: Kanji) extends Linked(params
   override def kanjiType: KanjiType = KanjiType.LinkedJinmei
   override def suffix: Char = '~'
 
-/** 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants that aren't
- *  already included in the 230 Jinmeiyō 'official variants'.
+/** 163 Kanji that link to a JouyouKanji. These are the published Jōyō variants that aren't already
+ *  included in the 230 Jinmeiyō 'official variants'.
  */
 final class LinkedOldKanji(params: Params, link: Kanji) extends Linked(params, link):
   link match

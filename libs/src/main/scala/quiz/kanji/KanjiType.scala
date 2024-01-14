@@ -2,8 +2,8 @@ package quiz.kanji
 
 import quiz.utils.{NoValueEnum, NoValueEnumObject}
 
-/** used to identify which official group (Jouyou or Jinmei) a Kanji belongs to (or has a link
- *  to) as well as a few more groups for less common Kanji
+/** used to identify which official group (Jouyou or Jinmei) a Kanji belongs to (or has a link to)
+ *  as well as a few more groups for less common Kanji
  *
  *  The current types are:
  *  <ul>

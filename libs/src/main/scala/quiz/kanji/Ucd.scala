@@ -6,11 +6,11 @@ import quiz.utils.{Code, NoValueEnum, NoValueEnumObject, ThrowsDomainException}
 import scala.collection.immutable.BitSet
 import scala.util.Try
 
-/** data for an entry from the "ucd.txt" file. Some columns in the file aren't stored like
- *  "Name" and "LinkNames" since these are represented by [[Code]] classes. Also ignore
- *  "VStrokes" (and maybe modify the parse script to stop calculating it). "On" and "Kun"
- *  columns used to be the only sources for Japanese (Rōmaji) readings, but the "kJapanese"
- *  field was added in Unicode 15.1 that can be used instead (it's also populated with 'Kana')
+/** data for an entry from the "ucd.txt" file. Some columns in the file aren't stored like "Name"
+ *  and "LinkNames" since these are represented by [[Code]] classes. Also ignore "VStrokes" (and
+ *  maybe modify the parse script to stop calculating it). "On" and "Kun" columns used to be the
+ *  only sources for Japanese (Rōmaji) readings, but the "kJapanese" field was added in Unicode 15.1
+ *  that can be used instead (it's also populated with 'Kana')
  *
  *  @param code Unicode code point
  *  @param radical official radical
@@ -47,9 +47,9 @@ extends ThrowsDomainException:
     .filter(_ => linkType == Jinmei || linkType == Jinmei_R)
 
 object Ucd:
-  /** represents the XML property from which the link was loaded. '_R' means the link was also
-   *  used to pull in readings. '_R' come first in the enum to allow '<' comparison to find all
-   *  reading links. Note, there is no non '_R' type for 'Semantic' links by design.
+  /** represents the XML property from which the link was loaded. '_R' means the link was also used
+   *  to pull in readings. '_R' come first in the enum to allow '<' comparison to find all reading
+   *  links. Note, there is no non '_R' type for 'Semantic' links by design.
    */
   enum LinkType extends NoValueEnum[LinkType](LinkType):
     case Compatibility_R // *kCompatibilityVariant* link also used for 'reading'
@@ -66,10 +66,10 @@ object Ucd:
     case NoLinkType      // no link
   object LinkType extends NoValueEnumObject[LinkType]
 
-  /** set of sources for a Ucd entry plus info on whether the entry is a 'Joyo' or 'Jinmei' Kanji
-   *  (officially an entry can't be both 'joyo' and 'jinmei', but these are distinct properties
-   *  in the raw data so keep them separate here as well). The letters in `sources` represent
-   *  'country/region' where there's source data. The top six 'countries' are currently supported:
+  /** set of sources for a Ucd entry plus whether it is a 'Joyo' or 'Jinmei' Kanji (officially an
+   *  entry can't be both 'joyo' and 'jinmei', but these are distinct properties in the raw data so
+   *  keep them separate here as well). The letters in `sources` represent 'country/region' where
+   *  there's source data. The top six 'countries' are currently supported:
    *  <ul>
    *  <li>G: People’s Republic of China and Singapore
    *  <li>H: Hong Kong

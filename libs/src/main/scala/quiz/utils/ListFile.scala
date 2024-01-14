@@ -10,10 +10,9 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.util.{Try, Using}
 
-/** holds data loaded from a file with Kanji string entries
- *
- *  Entries can be either one per line or multiple per line separated by space. Uniqueness is
- *  verified when data is loaded, and entries are stored in-order in a list.
+/** Holds data loaded from a file with Kanji string entries. Entries can be either one per line or
+ *  multiple per line separated by space. Uniqueness is verified when data is loaded, and entries
+ *  are stored in-order in a list.
  */
 class ListFile(path: Path, fileType: EntriesPerLine, nameIn: Option[String])
 extends ThrowsDomainException:
@@ -22,8 +21,8 @@ extends ThrowsDomainException:
   def this(path: Path, name: String, fileType: EntriesPerLine = EntriesPerLine.Single) = this(
     path, fileType, name.some)
 
-  /** @return name assigned at construction or if no name was given then return the capitalized
-   *         file name (without extensions)
+  /** @return name assigned at construction or if not given then return the capitalized file name
+   *          (without extensions)
    */
   val name: String = nameIn.getOrElse(fileNameStem(path).capitalize)
 
@@ -101,7 +100,7 @@ object EnumListFile:
   /** clear all entry data used to ensure uniqueness per enum */
   def clearEntryData(): Unit = entries.clear()
 
-  /** `entries` is used to ensure file entries are unique per enum type. It is a map of 'enum
-   *  name' (like "Level" or "Kyu") to a set entries
+  /** `entries` is used to ensure file entries are unique per enum type. It is a map of 'enum name'
+   *  (like "Level" or "Kyu") to a set entries
    */
   private val entries = mutable.Map[String, mutable.Set[String]]()

@@ -174,8 +174,8 @@ object KanjiData:
     val radicalData = RadicalData(dir)
     new KanjiData(dir, radicalData, UcdData(dir, radicalData))
 
-  /** returns a path to a "data" directory if a suitable directory can be found in current
-   *  working directory or any of it's parent directories
+  /** returns a path to a "data" directory if a suitable directory can be found in current working
+   *  directory or any of it's parent directories
    *  @throws DomainException if a suitable directory isn't found
    */
   @tailrec

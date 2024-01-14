@@ -17,11 +17,10 @@ object Block:
   // used to create official Unicode Blocks (see below)
   private def block(start: Int, end: Int) = Block(Code(start), Code(end))
 
-  /** blocks containing all common Japanese Kanji (plus many non-Japanese Kanji)
-   *  Most Japanese Kanji are in 'CJK Unified Ideographs', but 'Extension A' has
-   *  a Kentei Kanji and 'Extension B' has a Jouyou Kanji '𠮟' (U+20B9F) which
-   *  used to be '叱' (U+53F1). 'Compatibility' contains many 'single grapheme'
-   *  versions of old/variant Kanji that used to require two graphemes, i.e., a
+  /** blocks containing all common Japanese Kanji (plus many non-Japanese Kanji) Most Japanese Kanji
+   *  are in 'CJK Unified Ideographs', but 'Extension A' has a Kentei Kanji and 'Extension B' has a
+   *  Jouyou Kanji '𠮟' (U+20B9F) which used to be '叱' (U+53F1). 'Compatibility' contains many
+   *  'single grapheme' versions of old/variant Kanji that used to require two graphemes, i.e., a
    *  base character plus a variation selector.
    */
   val CommonKanjiBlocks: Array[Block] = Array(
@@ -31,8 +30,8 @@ object Block:
     block(0x20000, 0x2a6df) // CJK Extension B, ver 3.1 Mar 2001
   )
 
-  /** blocks that contain rare Kanji. Extensions C, D, E and F are contiguous so
-   *  combine into one block (for efficient lookup). Here are the actual ranges:
+  /** blocks that contain rare Kanji. Extensions C, D, E and F are contiguous so combine into one
+   *  block (for efficient lookup). Here are the actual ranges:
    *  <ul>
    *  <li>U+2A700 to U+2B73F : CJK Extension C, ver 5.2 Oct 2009
    *  <li>U+2B740 to U+2B81F : CJK Extension D, ver 6.0 Oct 2010
@@ -55,12 +54,12 @@ object Code extends ThrowsDomainException:
 
   val UnicodeMax: Int = 0x10ffff
 
-  /** @param s      string value to construct Unicode Code
-   *  @param sizeOne if true then string can contain only one Unicode 'letter'
-   *                if false then the first Unicode letter is converted
+  /** @param s string value to construct Unicode Code
+   *  @param sizeOne if true then string can contain only one Unicode 'letter'  if false then the
+   *                 first Unicode letter is converted
    *  @return unicode Code
-   *  @throws DomainException if `value` is empty or value contains more than
-   *                         one Unicode letter when `sizeOne` is set to true
+   *  @throws DomainException if `value` is empty or value contains more than one Unicode letter
+   *                          when `sizeOne` is set to true
    */
   def apply(s: String, sizeOne: Boolean = true): Code =
     checkEmpty(s)
