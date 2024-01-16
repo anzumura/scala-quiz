@@ -1,6 +1,6 @@
 package quiz.test
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatest.freespec.AnyFreeSpec
 import quiz.kanji.Radical
 import quiz.kanji.Ucd.Sources
@@ -19,19 +19,19 @@ trait BaseTest extends AnyFreeSpec with BeforeAndAfterEach:
     super.afterEach()
 
   /** assert that `f` throws a DomainException with given `msg` */
-  protected def error(f: => Any, msg: String): Unit =
+  protected def error(f: => Any, msg: String): Assertion =
     val e = intercept[DomainException] { f }
     assert(e.getMessage == s"$msg")
 
   /** assert that `f` throws a DomainException and test the message using `t` */
-  protected def error(f: => Any, t: String => Boolean): Unit =
+  protected def error(f: => Any, t: String => Boolean): Assertion =
     val e = intercept[DomainException] { f }
     assert(t(e.getMessage), " --- for message: " + e.getMessage)
 
   /** calls [[error]] with "[mainClassName]" prepended to `msg` */
-  protected def domainError(f: => Any, msg: String): Unit = error(f, s"[$mainClassName] $msg")
+  protected def domainError(f: => Any, msg: String): Assertion = error(f, s"[$mainClassName] $msg")
 
-  protected def countString(src: String, s: String, count: Int): Unit = assert(
+  protected def countString(src: String, s: String, count: Int): Assertion = assert(
     src.sliding(s.length).count(_ == s) == count)
 
 object BaseTest:

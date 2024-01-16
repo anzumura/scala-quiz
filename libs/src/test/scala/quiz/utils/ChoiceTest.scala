@@ -1,6 +1,7 @@
 package quiz.utils
 
 import cats.syntax.all.*
+import org.scalatest.Assertion
 import quiz.test.BaseTest
 import quiz.utils.Choice.*
 
@@ -15,7 +16,7 @@ trait BaseChoiceTest extends BaseTest:
 
   @SuppressWarnings(Array("org.wartremover.warts.ToString"))
   protected def checkOutput(
-      os: ByteArrayOutputStream, expected: String): Unit = assert(os.toString == expected)
+      os: ByteArrayOutputStream, expected: String): Assertion = assert(os.toString == expected)
 
 class ChoiceTest extends BaseChoiceTest:
   "create with default options" in {

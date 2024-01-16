@@ -10,6 +10,7 @@ import quiz.utils.FileUtils.*
 
 import java.nio.file.Files.isDirectory
 import java.nio.file.{Files, Path}
+import scala.annotation.nowarn
 
 class KanjiDataTest extends FileTest:
   "dataDir returns a valid data directory" in {
@@ -211,12 +212,12 @@ class KanjiDataTest extends FileTest:
     if !Files.exists(jouyou) then
       Files.writeString(jouyou,
         """Number	Name	Radical	OldNames	Year	Strokes	Grade	Meaning	Reading
-        |""".stripMargin)
+        |""".stripMargin): @nowarn("msg=discarded non-Unit")
     val jinmei = tempDir.resolve("jinmei.txt")
     if !Files.exists(jinmei) then
       Files.writeString(jinmei,
         """Number	Name	Radical	OldNames	Year	Reason	Reading
-        |""".stripMargin)
+        |""".stripMargin): @nowarn("msg=discarded non-Unit")
 
 object KanjiDataTest:
   // test Radical

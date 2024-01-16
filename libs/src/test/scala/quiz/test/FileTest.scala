@@ -1,8 +1,8 @@
 package quiz.test
 
 import cats.syntax.all.*
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.{Assertion, BeforeAndAfterAll}
 import quiz.test.FileTest.testFileName
 
 import java.nio.file.{Files, Path}
@@ -50,10 +50,10 @@ trait FileTest extends BaseTest with BeforeAndAfterAll:
   protected def fileMsg(msg: String, line: Int, file: Option[String]): String =
     s"${fileMsg(msg, file)}, line: $line"
 
-  protected def fileError(f: => Any, msg: String): Unit = domainError(f, fileMsg(msg, None))
+  protected def fileError(f: => Any, msg: String): Assertion = domainError(f, fileMsg(msg, None))
   protected def fileError(
-      f: => Any, msg: String, line: Int): Unit = domainError(f, fileMsg(msg, line, None))
-  protected def fileError(f: => Any, msg: String, line: Int, file: String): Unit = domainError(
+      f: => Any, msg: String, line: Int): Assertion = domainError(f, fileMsg(msg, line, None))
+  protected def fileError(f: => Any, msg: String, line: Int, file: String): Assertion = domainError(
     f, fileMsg(msg, line, file.some))
 
 object FileTest:

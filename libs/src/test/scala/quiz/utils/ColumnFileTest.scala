@@ -1,6 +1,7 @@
 package quiz.utils
 
 import cats.syntax.all.*
+import org.scalatest.Assertion
 import quiz.test.FileTest.testFileName
 import quiz.test.{BaseTest, FileTest}
 import quiz.utils.ColumnFile.*
@@ -266,8 +267,8 @@ class ColumnFileTest extends FileTest:
     testColumnFile.foreach(_.closeFile())
     super.afterEach()
 
-  private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Unit = domainError(
-    f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
+  private def fileError(f: => Any, msg: String, row: Int, c: Column, s: String): Assertion =
+    domainError(f, s"${fileMsg(msg, row, None)}, column: '$c', value: '$s'")
 
   private def create(sep: Char, allowExtraCols: AllowExtraCols, cols: List[Column],
       lines: String*) =
