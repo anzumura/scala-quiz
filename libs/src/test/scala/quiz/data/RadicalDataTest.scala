@@ -1,6 +1,5 @@
 package quiz.data
 
-import quiz.data.RadicalData
 import quiz.data.RadicalData.RadicalFileName
 import quiz.kanji.Radical
 import quiz.kanji.Radical.MaxRadical
