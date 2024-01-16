@@ -1,7 +1,7 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.2-RC1"
 ThisBuild / scalacOptions ++= Seq("-deprecation", "-explain", "-explain-types", "-feature",
-  "-print-lines", "-unchecked", "-Xfatal-warnings", "-Xmigration")
+  "-print-lines", "-unchecked", "-Wunused:all", "-Xfatal-warnings", "-Xmigration")
 ThisBuild / wartremoverErrors ++= Warts.allBut(
   Wart.Any, Wart.DefaultArguments, Wart.Equals, Wart.ImplicitConversion, Wart.MutableDataStructures,
   Wart.Overloading, Wart.SeqApply, Wart.StringPlusAny, Wart.Throw, Wart.Var, Wart.While)
