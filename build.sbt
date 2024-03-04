@@ -1,5 +1,5 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.3.2-RC1"
+ThisBuild / scalaVersion := "3.3.3"
 ThisBuild / scalacOptions ++= Seq("-deprecation", "-explain", "-feature", "-print-lines",
   "-unchecked", "-Werror", "-Wunused:all", "-Wvalue-discard")
 ThisBuild / wartremoverErrors ++= Warts.allBut(
@@ -8,7 +8,7 @@ ThisBuild / wartremoverErrors ++= Warts.allBut(
 ThisBuild / excludeDependencies += "org.scala-lang.modules" % "scala-collection-compat_2.13"
 
 val catsVersion = "2.10.0"
-val scalaTestVersion = "3.2.17"
+val scalaTestVersion = "3.2.18"
 val ammoniteVersion = "3.0.0-M0-60-89836cd8"
 
 lazy val libs = project.settings(
