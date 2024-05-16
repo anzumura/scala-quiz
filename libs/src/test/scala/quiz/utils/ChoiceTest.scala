@@ -1,6 +1,5 @@
 package quiz.utils
 
-import cats.syntax.all.*
 import org.scalatest.Assertion
 import quiz.test.BaseTest
 import quiz.utils.Choice.*
